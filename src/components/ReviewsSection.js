@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { Api } from "@/lib/api";
 import {
@@ -106,7 +107,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
   useEffect(() => {
     if (propReviews && isHomepage) {
       setReviews(propReviews);
-      
+
       return;
     }
     if (productId) {

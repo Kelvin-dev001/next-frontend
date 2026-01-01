@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Slider from "react-slick";
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
