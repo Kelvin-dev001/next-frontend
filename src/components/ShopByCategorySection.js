@@ -13,14 +13,16 @@ export default function ShopByCategorySection() {
 
   useEffect(() => {
     let active = true;
-    Api.getCategories()
+    Api.get("/categories")
       .then((res) => {
         if (!active) return;
-        const catArr = res.categories || res || [];
-        setCategories(catArr);
+        const arr = res.data?.categories || res.data || [];
+        setCategories(arr);
       })
       .catch(() => setCategories([]));
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -32,17 +34,14 @@ export default function ShopByCategorySection() {
         .flip-card { perspective: 900px; min-width: ${CARD_WIDTH}px; max-width: ${CARD_WIDTH}px; flex: 0 0 auto; }
         .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(.4,2,.4,1); transform-style: preserve-3d; }
         .flip-card:hover .flip-card-inner, .flip-card:focus .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back {
-          position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-          display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 18px;
-        }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 18px; }
         .flip-card-front { background: #fff; color: #222; }
         .flip-card-back { background: #f5f7fa; color: #1e3c72; transform: rotateY(180deg); }
       `}</style>
       <Typography
         variant="h4"
         align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2, fontFamily: "'Montserrat', 'Roboto', sans-serif" }}
+        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}
       >
         Shop by Category
       </Typography>
@@ -53,28 +52,51 @@ export default function ShopByCategorySection() {
               className="flip-card"
               elevation={0}
               sx={{
-                width: CARD_WIDTH, height: CARD_HEIGHT, aspectRatio: CARD_ASPECT_RATIO,
-                borderRadius: "20px", background: "#fff", color: "primary.main",
+                width: CARD_WIDTH,
+                height: CARD_HEIGHT,
+                aspectRatio: CARD_ASPECT_RATIO,
+                borderRadius: "20px",
+                background: "#fff",
+                color: "primary.main",
                 boxShadow: "0 4px 24px 0 rgba(30,60,114,0.08)",
                 transition: "transform 0.35s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
-                cursor: "pointer", position: "relative", overflow: "visible", border: "none",
-                "&:hover": { boxShadow: "0 10px 32px 0 rgba(30,60,114,0.14)", zIndex: 2 }
+                cursor: "pointer",
+                position: "relative",
+                overflow: "visible",
+                border: "none",
+                "&:hover": { boxShadow: "0 10px 32px 0 rgba(30,60,114,0.14)", zIndex: 2 },
               }}
               tabIndex={0}
             >
               <CardActionArea
                 sx={{
-                  borderRadius: "20px", height: CARD_HEIGHT, width: CARD_WIDTH,
-                  display: "flex", flexDirection: "column", alignItems: "center", p: 3,
-                  bgcolor: "transparent", "&:focus-visible": { outline: "none" }
+                  borderRadius: "20px",
+                  height: CARD_HEIGHT,
+                  width: CARD_WIDTH,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  p: 3,
+                  bgcolor: "transparent",
+                  "&:focus-visible": { outline: "none" },
                 }}
               >
                 <Box className="flip-card-inner" sx={{ width: "100%", height: "100%" }}>
                   <Box className="flip-card-front">
-                    <Box sx={{
-                      mb: 2.5, mt: 1, width: 80, height: 80, display: "flex", alignItems: "center",
-                      justifyContent: "center", borderRadius: "15px", background: "#fff", boxShadow: "none",
-                    }}>
+                    <Box
+                      sx={{
+                        mb: 2.5,
+                        mt: 1,
+                        width: 80,
+                        height: 80,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: "15px",
+                        background: "#fff",
+                        boxShadow: "none",
+                      }}
+                    >
                       {cat.icon && typeof cat.icon === "string" ? (
                         <img
                           src={cat.icon}
@@ -82,11 +104,19 @@ export default function ShopByCategorySection() {
                           style={{ width: 68, height: 68, objectFit: "contain", borderRadius: 12, background: "#fff" }}
                         />
                       ) : (
-                        <Box sx={{
-                          width: 68, height: 68, background: "#f0f0f0", borderRadius: 12,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          color: "#bbb", fontSize: 32
-                        }}>
+                        <Box
+                          sx={{
+                            width: 68,
+                            height: 68,
+                            background: "#f0f0f0",
+                            borderRadius: 12,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#bbb",
+                            fontSize: 32,
+                          }}
+                        >
                           {cat.name ? cat.name[0] : "?"}
                         </Box>
                       )}

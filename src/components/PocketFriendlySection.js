@@ -15,8 +15,10 @@ export default function PocketFriendlySection() {
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    Api.getProducts(`?maxPrice=${POCKET_FRIENDLY_MAX_PRICE}&limit=${POCKET_FRIENDLY_LIMIT}&sort=price_asc`)
-      .then((res) => setProducts(res.products || []))
+    Api.get("/products", {
+      params: { maxPrice: POCKET_FRIENDLY_MAX_PRICE, limit: POCKET_FRIENDLY_LIMIT, sort: "price_asc" },
+    })
+      .then((res) => setProducts(res.data?.products || []))
       .catch(() => setProducts([]));
   }, []);
 
@@ -34,8 +36,8 @@ export default function PocketFriendlySection() {
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } }
-    ]
+      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
+    ],
   };
 
   return (
@@ -43,7 +45,7 @@ export default function PocketFriendlySection() {
       <Typography
         variant="h4"
         align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2, fontFamily: "'Montserrat', 'Roboto', sans-serif" }}
+        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}
       >
         Pocket Friendly Picks
       </Typography>

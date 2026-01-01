@@ -1,21 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { AppBar, Toolbar, Typography, Button, Box, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Typography, Box, Button, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Api } from "@/lib/api";
 
 export default function MainNavbar() {
-  const [hasData, setHasData] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    // simple ping to verify API works; ignore errors
-    Api.get("/health").then(() => setHasData(true)).catch(() => setHasData(false));
-  }, []);
-
   return (
     <AppBar position="sticky" color="default" elevation={1}>
       <Toolbar>

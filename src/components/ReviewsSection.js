@@ -62,7 +62,7 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
     }
     setSubmitting(true);
     try {
-      await Api.submitProductReview(productId, { name, whatsapp, rating, comment });
+      await Api.post(`/products/${productId}/reviews`, { name, whatsapp, rating, comment });
       setLastSubmitted(Date.now());
       setName(""); setWhatsapp(""); setRating(0); setComment("");
       onSubmitSuccess();
@@ -107,12 +107,11 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
   useEffect(() => {
     if (propReviews && isHomepage) {
       setReviews(propReviews);
-
       return;
     }
     if (productId) {
-      Api.getProductReviews(productId)
-        .then((res) => setReviews(res.reviews || []))
+      Api.get(`/products/${productId}/reviews`)
+        .then((res) => setReviews(res.data?.reviews || []))
         .catch(() => setReviews([]));
     }
   }, [productId, refreshFlag, propReviews, isHomepage]);
