@@ -33,7 +33,7 @@ export default function BrandList() {
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
-      <Paper elevation=3 sx={{ p: 3 }}>
+      <Paper elevation={3} sx={{ p: 3 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h5" fontWeight={700}>
             Brands

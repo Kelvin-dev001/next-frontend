@@ -27,7 +27,7 @@ export default function AdminLogin() {
 
   return (
     <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f5f6fa">
-      <Paper elevation=3 sx={{ p: 4, maxWidth: 360, width: "100%" }}>
+      <Paper elevation={3} sx={{ p: 4, maxWidth: 360, width: "100%" }}>
         <Typography variant="h5" fontWeight={600} mb={2} align="center">
           Admin Login
         </Typography>
