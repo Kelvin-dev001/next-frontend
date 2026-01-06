@@ -1,5 +1,4 @@
 import dynamic from "next/dynamic";
-import Layout from "@/components/Layout";
 import { Api } from "@/lib/api";
 
 const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
@@ -17,7 +16,7 @@ import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews }) {
   return (
-    <Layout>
+    <>
       <HeroBannerSlider />
       <ShopByBrandSection brands={brands} />
       <ShopByCategorySection categories={categories} />
@@ -29,7 +28,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       <WhyChooseUsSection />
       <WhatsAppCTASection />
       <ProductAdvisorBot />
-    </Layout>
+    </>
   );
 }
 
@@ -44,7 +43,6 @@ export async function getStaticProps() {
     ]);
 
     const shuffle = (arr = []) => [...arr].sort(() => 0.5 - Math.random());
-
     const featured = shuffle(featuredRes.data?.products || []);
     const newArrivals = shuffle(allRes.data?.products || []).slice(0, 48);
 

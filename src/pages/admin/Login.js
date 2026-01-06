@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, Paper, CircularProgress, Alert } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { Api, setToken } from "@/lib/api"; // ensure setToken is exported from your api helper
+import { Api, setToken } from "@/lib/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");

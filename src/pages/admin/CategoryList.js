@@ -1,43 +1,81 @@
 "use client";
-import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Paper, CircularProgress, Alert } from "@mui/material";
-import { useRouter } from "next/navigation";
-import { Api, setToken } from "@/lib/api"; // ensure setToken is exported from your api helper
+import React, { useEffect, useState } from "react";
+import { Box, Paper, Typography, Button, List, ListItem, ListItemText, IconButton, Stack } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import CategoryForm from "@/components/CategoryForm";
+import { Api } from "@/lib/api";
 
-export default function AdminLogin() {
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
+export default function CategoryList() {
+  const [categories, setCategories] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editCategory, setEditCategory] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const response = await Api.post("/admin/login", { password });
-      if (response.data?.token) setToken(response.data.token);
-      router.replace("/admin");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please check your password.");
-    } finally {
-      setLoading(false);
-    }
+  const fetchCategories = async () => {
+    const res = await Api.get("/categories");
+    setCategories(res.data?.categories || res.data || []);
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleDelete = async (id) => {
+    const ok = typeof window === "undefined" ? true : window.confirm("Delete this category?");
+    if (!ok) return;
+    await Api.delete(`/categories/${id}`);
+    fetchCategories();
   };
 
   return (
-    <Box minHeight="100vh" display="flex" alignItems="center" justifyContent="center" bgcolor="#f5f6fa">
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 360, width: "100%" }}>
-        <Typography variant="h5" fontWeight={600} mb={2} align="center">
-          Admin Login
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField label="Password" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} required sx={{ mb: 2 }} autoFocus />
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading} sx={{ borderRadius: 2, py: 1.2, fontWeight: 600 }}>
-            {loading ? <CircularProgress size={24} /> : "Login"}
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h5" fontWeight={700}>
+            Categories
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setEditCategory(null);
+              setShowForm(true);
+            }}
+          >
+            Add Category
           </Button>
-        </form>
+        </Stack>
+        {showForm && (
+          <CategoryForm
+            category={editCategory}
+            onSuccess={() => {
+              fetchCategories();
+              setShowForm(false);
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
+        <List>
+          {categories.map((cat) => (
+            <ListItem
+              key={cat._id || cat.name}
+              secondaryAction={
+                <Stack direction="row" spacing={1}>
+                  <IconButton edge="end" aria-label="edit" onClick={() => { setEditCategory(cat); setShowForm(true); }}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton edge="end" aria-label="delete" color="error" onClick={() => handleDelete(cat._id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Stack>
+              }
+              sx={{ mb: 1, border: "1px solid #eee", borderRadius: 1, bgcolor: "#fafafa" }}
+            >
+              <ListItemText primary={cat.name} secondary={cat.description} primaryTypographyProps={{ fontWeight: 600 }} />
+            </ListItem>
+          ))}
+        </List>
       </Paper>
     </Box>
   );

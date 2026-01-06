@@ -1,33 +1,24 @@
-import React from 'react';
-import { Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import API, { removeToken } from '../../api/apiService';
+"use client";
+import React from "react";
+import { Button } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { Api, removeToken } from "@/lib/api";
 
-const LogoutButton = () => {
-  const navigate = useNavigate();
-
+export default function LogoutButton() {
+  const router = useRouter();
   const handleLogout = async () => {
     try {
-      await API.logout(); // Removes JWT client-side
+      await Api.post("/admin/logout");
     } catch (err) {
-      // Optionally handle error
+      /* ignore */
     }
-    // Also remove any legacy isAdmin/local flags if used
-    localStorage.removeItem('isAdmin');
     removeToken();
-    navigate('/admin/login');
+    if (typeof window !== "undefined") localStorage.removeItem("isAdmin");
+    router.push("/admin/login");
   };
-
   return (
-    <Button
-      variant="outlined"
-      color="secondary"
-      onClick={handleLogout}
-      sx={{ borderRadius: 2, ml: 2 }}
-    >
+    <Button variant="outlined" color="secondary" onClick={handleLogout} sx={{ borderRadius: 2, ml: 2 }}>
       Logout
     </Button>
   );
-};
-
-export default LogoutButton;
+}
