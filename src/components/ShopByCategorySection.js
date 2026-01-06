@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Card, CardActionArea } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
@@ -7,6 +7,14 @@ import { Api } from "@/lib/api";
 const CARD_HEIGHT = 200;
 const CARD_WIDTH = 150;
 const CARD_ASPECT_RATIO = "5/7";
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api$/, "");
+
+const resolveImg = (url) => {
+  if (!url) return "/category-placeholder.png";
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/")) return `${API_ORIGIN}${url}`;
+  return url;
+};
 
 export default function ShopByCategorySection() {
   const [categories, setCategories] = useState([]);
@@ -24,6 +32,10 @@ export default function ShopByCategorySection() {
       active = false;
     };
   }, []);
+
+  const hasData = useMemo(() => categories && categories.length > 0, [categories]);
+
+  if (!hasData) return null;
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
@@ -97,29 +109,12 @@ export default function ShopByCategorySection() {
                         boxShadow: "none",
                       }}
                     >
-                      {cat.icon && typeof cat.icon === "string" ? (
-                        <img
-                          src={cat.icon}
-                          alt={cat.name}
-                          style={{ width: 68, height: 68, objectFit: "contain", borderRadius: 12, background: "#fff" }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: 68,
-                            height: 68,
-                            background: "#f0f0f0",
-                            borderRadius: 12,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#bbb",
-                            fontSize: 32,
-                          }}
-                        >
-                          {cat.name ? cat.name[0] : "?"}
-                        </Box>
-                      )}
+                      <img
+                        src={resolveImg(cat.icon)}
+                        alt={cat.name}
+                        style={{ width: 68, height: 68, objectFit: "contain", borderRadius: 12, background: "#fff" }}
+                        loading="lazy"
+                      />
                     </Box>
                     <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
                       {cat.name}

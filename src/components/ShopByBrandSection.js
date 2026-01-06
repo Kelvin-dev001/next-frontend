@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Card, CardActionArea, Avatar } from "@mui/material";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
@@ -8,6 +8,15 @@ import { Api } from "@/lib/api";
 const CARD_HEIGHT = 180;
 const CARD_WIDTH = 140;
 const CARD_ASPECT_RATIO = "7/9";
+
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api$/, "");
+
+const resolveImg = (url) => {
+  if (!url) return "/brand-placeholder.png";
+  if (url.startsWith("http")) return url;
+  if (url.startsWith("/")) return `${API_ORIGIN}${url}`;
+  return url;
+};
 
 export default function ShopByBrandSection() {
   const [brands, setBrands] = useState([]);
@@ -26,13 +35,17 @@ export default function ShopByBrandSection() {
     };
   }, []);
 
+  const hasData = useMemo(() => brands && brands.length > 0, [brands]);
+
+  if (!hasData) return null;
+
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
       <style>{`
         .flip-card { perspective: 900px; min-width: ${CARD_WIDTH}px; max-width: ${CARD_WIDTH}px; flex: 0 0 auto; }
         .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(.4,2,.4,1); transform-style: preserve-3d; }
         .flip-card:hover .flip-card-inner, .flip-card:focus .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 18px; }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justifyContent: center; border-radius: 18px; }
         .flip-card-front { background: #fff; color: #222; }
         .flip-card-back { background: #f5f7fa; color: #1e3c72; transform: rotateY(180deg); }
       `}</style>
@@ -46,7 +59,11 @@ export default function ShopByBrandSection() {
       <Marquee gradient={false} speed={40} pauseOnHover style={{ paddingBottom: 16 }}>
         <Box sx={{ display: "flex", gap: "18px", px: { xs: 1, md: 3 } }}>
           {brands.map((brand, idx) => (
-            <Link href={`/products?brand=${encodeURIComponent(brand.name)}`} key={brand._id || idx} style={{ textDecoration: "none" }}>
+            <Link
+              href={`/products?brand=${encodeURIComponent(brand.name)}`}
+              key={brand._id || idx}
+              style={{ textDecoration: "none" }}
+            >
               <Card
                 className="flip-card"
                 elevation={0}
@@ -83,19 +100,19 @@ export default function ShopByBrandSection() {
                 >
                   <Box className="flip-card-inner" sx={{ width: "100%", height: "100%", minHeight: CARD_HEIGHT }}>
                     <Box className="flip-card-front">
-                      {brand.logo ? (
-                        <Avatar
-                          src={brand.logo}
-                          alt={brand.name}
-                          variant="square"
-                          sx={{ width: 54, height: 54, mb: 1.5, bgcolor: "#fff", objectFit: "contain" }}
-                        />
-                      ) : (
-                        <Avatar variant="square" sx={{ width: 54, height: 54, mb: 1.5, bgcolor: "#fff" }}>
-                          {brand.name?.charAt(0) || "?"}
-                        </Avatar>
-                      )}
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: "primary.dark", letterSpacing: 0.8, fontSize: "1rem", textAlign: "center" }}>
+                      <Avatar
+                        src={resolveImg(brand.logo)}
+                        alt={brand.name}
+                        variant="square"
+                        sx={{ width: 54, height: 54, mb: 1.5, bgcolor: "#fff", objectFit: "contain" }}
+                      >
+                        {brand.name?.charAt(0) || "?"}
+                      </Avatar>
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={700}
+                        sx={{ color: "primary.dark", letterSpacing: 0.8, fontSize: "1rem", textAlign: "center" }}
+                      >
                         {brand.name}
                       </Typography>
                     </Box>
