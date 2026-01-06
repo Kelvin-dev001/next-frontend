@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Card, CardActionArea } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
@@ -7,7 +7,14 @@ import { Api } from "@/lib/api";
 const CARD_HEIGHT = 200;
 const CARD_WIDTH = 150;
 const CARD_ASPECT_RATIO = "5/7";
-const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api$/, "");
+const API_ORIGIN = (() => {
+  const base = process.env.NEXT_PUBLIC_API_URL || "";
+  try {
+    return new URL(base).origin;
+  } catch {
+    return base.replace(/\/api$/, "");
+  }
+})();
 
 const resolveImg = (url) => {
   if (!url) return "/category-placeholder.png";
@@ -28,14 +35,10 @@ export default function ShopByCategorySection() {
         setCategories(arr);
       })
       .catch(() => setCategories([]));
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
-  const hasData = useMemo(() => categories && categories.length > 0, [categories]);
-
-  if (!hasData) return null;
+  const list = categories.length ? categories : [{ name: "Coming Soon", icon: "/category-placeholder.png" }];
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
@@ -50,16 +53,12 @@ export default function ShopByCategorySection() {
         .flip-card-front { background: #fff; color: #222; }
         .flip-card-back { background: #f5f7fa; color: #1e3c72; transform: rotateY(180deg); }
       `}</style>
-      <Typography
-        variant="h4"
-        align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}
-      >
+      <Typography variant="h4" align="center" sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}>
         Shop by Category
       </Typography>
       <Box className="scroll-row" sx={{ px: { xs: 1, md: 3 }, pb: 1 }}>
-        {categories.map((cat, idx) => (
-          <Link href={`/products?category=${encodeURIComponent(cat.name)}`} key={cat._id || idx} style={{ textDecoration: "none" }}>
+        {list.map((cat, idx) => (
+          <Link href={`/products?category=${encodeURIComponent(cat.name || "")}`} key={cat._id || idx} style={{ textDecoration: "none" }}>
             <Card
               className="flip-card"
               elevation={0}
@@ -117,12 +116,12 @@ export default function ShopByCategorySection() {
                       />
                     </Box>
                     <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
-                      {cat.name}
+                      {cat.name || "Loading"}
                     </Typography>
                   </Box>
                   <Box className="flip-card-back">
                     <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
-                      Shop {cat.name}
+                      {cat.name ? `Shop ${cat.name}` : "Stay tuned"}
                     </Typography>
                   </Box>
                 </Box>
