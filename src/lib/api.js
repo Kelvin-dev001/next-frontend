@@ -42,6 +42,14 @@ const toParams = (input) => {
 };
 
 export const Api = {
+  // raw axios helpers
+  get: (...args) => ApiClient.get(...args),
+  post: (...args) => ApiClient.post(...args),
+  put: (...args) => ApiClient.put(...args),
+  patch: (...args) => ApiClient.patch(...args),
+  delete: (...args) => ApiClient.delete(...args),
+
+  // convenience methods
   getProducts: (params) => ApiClient.get("/products", { params: toParams(params) }),
   getProduct: (id) => ApiClient.get(`/products/${id}`),
   getFeaturedProducts: () => ApiClient.get("/products/featured"),
@@ -50,6 +58,7 @@ export const Api = {
   getRecentReviews: (params) => ApiClient.get("/reviews/recent", { params }),
   getProductReviews: (productId) => ApiClient.get(`/products/${productId}/reviews`),
   submitProductReview: (productId, payload) => ApiClient.post(`/products/${productId}/reviews`, payload),
+
   client: ApiClient,
 };
 
