@@ -4,7 +4,7 @@ import { Box, Paper, Typography, Button, List, ListItem, ListItemText, IconButto
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import CategoryForm from "@/components/CategoryForm";
+import CategoryForm from "./CategoryForm";
 import { Api } from "@/lib/api";
 
 export default function CategoryList() {
