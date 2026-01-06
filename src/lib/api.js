@@ -32,6 +32,7 @@ ApiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// helper to accept params object or query string
 const toParams = (input) => {
   if (!input) return {};
   if (typeof input === "string") {
@@ -42,7 +43,7 @@ const toParams = (input) => {
 };
 
 export const Api = {
-  // raw axios helpers
+  // raw HTTP helpers
   get: (...args) => ApiClient.get(...args),
   post: (...args) => ApiClient.post(...args),
   put: (...args) => ApiClient.put(...args),
