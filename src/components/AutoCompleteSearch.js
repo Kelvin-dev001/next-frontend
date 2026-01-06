@@ -1,29 +1,19 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
 import { Api } from "@/lib/api";
-import {
-  Box,
-  InputBase,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Popper,
-} from "@mui/material";
+import { Box, InputBase, List, ListItem, ListItemText, Paper, Popper } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { useRouter } from "next/navigation";
 
-export default function AutoCompleteSearch({
-  onSelect,
-  placeholder = "Search products, brands, categories...",
-  sx = {},
-}) {
+export default function AutoCompleteSearch({ onSelect, placeholder = "Search products, brands, categories...", sx = {} }) {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     Api.get("/products", { params: { limit: 200 } })
-      .then((res) => setProducts(res.data?.products || []))
+      .then((res) => setProducts(res.data?.products || res.data || []))
       .catch(() => setProducts([]));
   }, []);
 
@@ -44,6 +34,7 @@ export default function AutoCompleteSearch({
     setSearch("");
     setAnchorEl(null);
     onSelect?.(productId);
+    if (!onSelect) router.push(`/products/${productId}`);
   };
 
   return (
@@ -73,12 +64,7 @@ export default function AutoCompleteSearch({
           onBlur={() => setTimeout(() => setAnchorEl(null), 150)}
         />
       </Box>
-      <Popper
-        open={Boolean(anchorEl) && results.length > 0}
-        anchorEl={anchorEl}
-        placement="bottom-start"
-        style={{ zIndex: 1300 }}
-      >
+      <Popper open={Boolean(anchorEl) && results.length > 0} anchorEl={anchorEl} placement="bottom-start" style={{ zIndex: 1300 }}>
         <Paper sx={{ mt: 1, maxHeight: 320, overflowY: "auto", width: 350 }}>
           <List>
             {results.map((p) => (
