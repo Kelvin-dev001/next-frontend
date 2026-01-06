@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Card, CardActionArea } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
@@ -7,26 +7,14 @@ import { Api } from "@/lib/api";
 const CARD_HEIGHT = 200;
 const CARD_WIDTH = 150;
 const CARD_ASPECT_RATIO = "5/7";
-const API_ORIGIN = (() => {
-  const base = process.env.NEXT_PUBLIC_API_URL || "";
-  try {
-    return new URL(base).origin;
-  } catch {
-    return base.replace(/\/api$/, "");
-  }
-})();
 
-const resolveImg = (url) => {
-  if (!url) return "/category-placeholder.png";
-  if (url.startsWith("http")) return url;
-  if (url.startsWith("/")) return `${API_ORIGIN}${url}`;
-  return url;
-};
+export default function ShopByCategorySection({ categories: categoriesProp = [] }) {
+  const [categories, setCategories] = useState(categoriesProp);
 
-export default function ShopByCategorySection() {
-  const [categories, setCategories] = useState([]);
+  const shouldFetch = categoriesProp.length === 0;
 
   useEffect(() => {
+    if (!shouldFetch) return;
     let active = true;
     Api.get("/categories")
       .then((res) => {
@@ -35,10 +23,15 @@ export default function ShopByCategorySection() {
         setCategories(arr);
       })
       .catch(() => setCategories([]));
-    return () => { active = false; };
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [shouldFetch]);
 
-  const list = categories.length ? categories : [{ name: "Coming Soon", icon: "/category-placeholder.png" }];
+  const list = useMemo(
+    () => (categories && categories.length > 0 ? categories : [{ name: "Coming Soon", icon: "/category-placeholder.png" }]),
+    [categories]
+  );
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
@@ -109,7 +102,7 @@ export default function ShopByCategorySection() {
                       }}
                     >
                       <img
-                        src={resolveImg(cat.icon)}
+                        src={cat.icon || "/category-placeholder.png"}
                         alt={cat.name}
                         style={{ width: 68, height: 68, objectFit: "contain", borderRadius: 12, background: "#fff" }}
                         loading="lazy"

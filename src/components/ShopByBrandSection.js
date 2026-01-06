@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Card, CardActionArea, Avatar } from "@mui/material";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
@@ -8,26 +8,14 @@ import { Api } from "@/lib/api";
 const CARD_HEIGHT = 180;
 const CARD_WIDTH = 140;
 const CARD_ASPECT_RATIO = "7/9";
-const API_ORIGIN = (() => {
-  const base = process.env.NEXT_PUBLIC_API_URL || "";
-  try {
-    return new URL(base).origin;
-  } catch {
-    return base.replace(/\/api$/, "");
-  }
-})();
 
-const resolveImg = (url) => {
-  if (!url) return "/brand-placeholder.png";
-  if (url.startsWith("http")) return url;
-  if (url.startsWith("/")) return `${API_ORIGIN}${url}`;
-  return url;
-};
+export default function ShopByBrandSection({ brands: brandsProp = [] }) {
+  const [brands, setBrands] = useState(brandsProp);
 
-export default function ShopByBrandSection() {
-  const [brands, setBrands] = useState([]);
+  const shouldFetch = brandsProp.length === 0;
 
   useEffect(() => {
+    if (!shouldFetch) return;
     let active = true;
     Api.get("/brands")
       .then((res) => {
@@ -36,10 +24,16 @@ export default function ShopByBrandSection() {
         setBrands(arr);
       })
       .catch(() => setBrands([]));
-    return () => { active = false; };
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [shouldFetch]);
 
-  const list = brands.length ? brands : [{ name: "Coming Soon", logo: "/brand-placeholder.png" }];
+  // Only show placeholder if we truly have no data
+  const list = useMemo(
+    () => (brands && brands.length > 0 ? brands : [{ name: "Coming Soon", logo: "/brand-placeholder.png" }]),
+    [brands]
+  );
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
@@ -95,7 +89,7 @@ export default function ShopByBrandSection() {
                   <Box className="flip-card-inner" sx={{ width: "100%", height: "100%", minHeight: CARD_HEIGHT }}>
                     <Box className="flip-card-front">
                       <Avatar
-                        src={resolveImg(brand.logo)}
+                        src={brand.logo || "/brand-placeholder.png"}
                         alt={brand.name}
                         variant="square"
                         sx={{ width: 54, height: 54, mb: 1.5, bgcolor: "#fff", objectFit: "contain" }}
