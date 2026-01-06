@@ -1,113 +1,563 @@
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import {
+  Box, Typography, Button, Grid, Card, CardContent, CardMedia,
+  Chip, Container, Divider, Tabs, Tab, List, ListItem,
+  ListItemText, IconButton, Rating, useTheme,
+  useMediaQuery, Breadcrumbs
+} from "@mui/material";
+import {
+  Favorite, FavoriteBorder, Star,
+  WhatsApp, Share, LocalShipping,
+  AssignmentReturn, VerifiedUser
+} from "@mui/icons-material";
 import { Api } from "@/lib/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ErrorAlert from "@/components/ErrorAlert";
+import ReviewSection from "@/components/ReviewsSection";
+import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 
 const FALLBACK_IMAGE = "/fallback.png";
 
-export default function ProductDetail({ product }) {
-  if (!product) {
+export default function ProductDetailPage({ product, related = [] }) {
+  const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [wishlist, setWishlist] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
+  const [error, setError] = useState(null);
+
+  // If product failed to load server-side
+  if (product === null) {
     return (
-      <div className="max-w-4xl mx-auto py-12 px-4">
-        <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-        <Link href="/products" className="text-blue-600 underline">
-          Back to products
-        </Link>
-      </div>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ErrorAlert error="Product not found" onClose={() => router.push("/products")} />
+      </Container>
     );
   }
 
-  const mainImage = product.images?.[0] || product.thumbnail || FALLBACK_IMAGE;
+  // Local loading state not needed; data is SSR. Use error guard.
+  useEffect(() => {
+    setError(null);
+  }, [product?._id]);
+
+  const toggleWishlist = (productId) => {
+    setWishlist((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (value > 0 && value <= (product?.inStock ? 10 : 0)) {
+      setQuantity(value);
+    }
+  };
+
+  const incrementQuantity = () => {
+    if (quantity < (product?.inStock ? 10 : 0)) setQuantity(quantity + 1);
+  };
+
+  const decrementQuantity = () => {
+    if (quantity > 1) setQuantity(quantity - 1);
+  };
+
+  const handleTabChange = (_event, newValue) => setTabValue(newValue);
+
+  const formatPrice = (price) =>
+    new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES" }).format(price);
+
+  const handleWhatsAppBuy = () => {
+    if (!product) return;
+    const message = `I'm interested in: ${product.name}\nPrice: ${formatPrice(
+      product.discountPrice || product.price
+    )}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
+    window.open(`https://wa.me/254711111602?text=${encodeURIComponent(message)}`, "_blank");
+  };
+
+  const images =
+    product?.images && product.images.length > 0 ? product.images : [FALLBACK_IMAGE];
+
+  const mainImage =
+    getOptimizedCloudinaryUrl(images[selectedImage], { width: isMobile ? 350 : 600 }) ||
+    FALLBACK_IMAGE;
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-full md:w-1/2">
-          <div className="relative w-full aspect-square bg-gray-50 rounded-xl overflow-hidden border">
-            <Image
-              src={mainImage}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: "contain" }}
-            />
-          </div>
-          <div className="flex gap-2 mt-3 overflow-x-auto">
-            {(product.images || [mainImage]).map((img, idx) => (
-              <div
-                key={idx}
-                className="relative w-20 h-20 rounded-lg overflow-hidden border bg-white flex-shrink-0"
-              >
-                <Image
-                  src={img || FALLBACK_IMAGE}
-                  alt={`${product.name} ${idx + 1}`}
-                  fill
-                  sizes="80px"
-                  style={{ objectFit: "contain" }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+        <Link href="/" style={{ color: "inherit" }}>Home</Link>
+        <Link
+          href={`/products?category=${encodeURIComponent(product.category || "")}`}
+          style={{ color: "inherit" }}
+        >
+          {product.category}
+        </Link>
+        <Typography color="text.primary">{product.name}</Typography>
+      </Breadcrumbs>
 
-        <div className="w-full md:w-1/2">
-          <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-          <p className="text-gray-600 mb-2">Brand: {product.brand}</p>
-          <p className="text-gray-600 mb-4">Category: {product.category}</p>
-
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl font-bold text-primary">
-              KES {product.discountPrice || product.price}
-            </span>
-            {product.discountPrice && (
-              <span className="line-through text-gray-500">
-                KES {product.price}
-              </span>
-            )}
-          </div>
-
-          <p className="text-gray-800 leading-relaxed mb-6">
-            {product.shortDescription || product.fullDescription || "No description available."}
-          </p>
-
-          <div className="flex gap-3 mb-6">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg">
-              Add to Cart
-            </button>
-            <Link
-              href="/contact"
-              className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-5 py-2 rounded-lg"
+      <Grid container spacing={4}>
+        {/* Product Images */}
+        <Grid item xs={12} md={6}>
+          <Box sx={{ position: "sticky", top: 16, borderRadius: 2, overflow: "hidden" }}>
+            <Box>
+              <CardMedia
+                component="img"
+                src={mainImage}
+                alt={`${product.name} - main`}
+                loading="lazy"
+                width={isMobile ? 350 : 600}
+                height={isMobile ? 250 : 400}
+                sx={{
+                  width: "100%",
+                  height: isMobile ? 250 : 400,
+                  objectFit: "contain",
+                  borderRadius: 2,
+                  background: "#fafafa",
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1,
+                mt: 2,
+                overflowX: "auto",
+                py: 1,
+              }}
             >
-              Talk to Sales
-            </Link>
-          </div>
+              {images.map((image, index) => (
+                <Box
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  sx={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: 1,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    border:
+                      selectedImage === index
+                        ? `2px solid ${theme.palette.primary.main}`
+                        : "1px solid #eee",
+                    opacity: selectedImage === index ? 1 : 0.7,
+                    transition: "all 0.3s",
+                    flexShrink: 0,
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  <img
+                    src={getOptimizedCloudinaryUrl(image, { width: 100 }) || FALLBACK_IMAGE}
+                    alt={`Thumbnail ${index + 1}`}
+                    width={70}
+                    height={70}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    loading="lazy"
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Grid>
 
-          <div className="space-y-2 text-sm text-gray-700">
-            <div>Availability: {product.inStock ? "In stock" : "Out of stock"}</div>
-            {product.warrantyPeriod && <div>Warranty: {product.warrantyPeriod}</div>}
-            {product.sku && <div>SKU: {product.sku}</div>}
-          </div>
-        </div>
-      </div>
+        {/* Product Info */}
+        <Grid item xs={12} md={6}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
+              {product.name}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Rating value={4.5} precision={0.1} readOnly sx={{ mr: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                4.5 (24 reviews)
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+              <Typography variant="h4" color="primary" sx={{ fontWeight: 700 }}>
+                {formatPrice(product.discountPrice || product.price)}
+              </Typography>
+              {product.discountPrice && (
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{ textDecoration: "line-through" }}
+                >
+                  {formatPrice(product.price)}
+                </Typography>
+              )}
+              {product.discountPrice && (
+                <Chip
+                  label={`Save ${formatPrice(product.price - product.discountPrice)}`}
+                  color="error"
+                  size="small"
+                  sx={{ fontWeight: 600 }}
+                />
+              )}
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body1" paragraph>
+                {product.shortDescription}
+              </Typography>
+              <List dense sx={{ mb: 2 }}>
+                <ListItem>
+                  <ListItemText
+                    primary="Brand"
+                    secondary={product.brand}
+                    secondaryTypographyProps={{ fontWeight: 600 }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Category"
+                    secondary={product.category}
+                    secondaryTypographyProps={{ fontWeight: 600 }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Warranty"
+                    secondary={product.warrantyPeriod || "1 year"}
+                    secondaryTypographyProps={{ fontWeight: 600 }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Availability"
+                    secondary={product.inStock ? "In stock" : "Out of stock"}
+                    secondaryTypographyProps={{
+                      fontWeight: 600,
+                      color: product.inStock ? "success.main" : "error.main",
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Box>
+            <Divider sx={{ my: 3 }} />
 
-      {product.fullDescription && (
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-3">Description</h2>
-          <p className="text-gray-800 leading-relaxed whitespace-pre-line">
-            {product.fullDescription}
-          </p>
-        </div>
+            {/* Quantity and WhatsApp Buy */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                Quantity
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  mb: 3,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    border: "1px solid #ddd",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Button
+                    variant="text"
+                    onClick={decrementQuantity}
+                    disabled={quantity <= 1}
+                    sx={{ minWidth: "40px", px: 1 }}
+                  >
+                    -
+                  </Button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    min={1}
+                    max={product.inStock ? 10 : 0}
+                    onChange={handleQuantityChange}
+                    style={{
+                      width: 50,
+                      textAlign: "center",
+                      border: "none",
+                      outline: "none",
+                    }}
+                  />
+                  <Button
+                    variant="text"
+                    onClick={incrementQuantity}
+                    disabled={quantity >= (product.inStock ? 10 : 0)}
+                    sx={{ minWidth: "40px", px: 1 }}
+                  >
+                    +
+                  </Button>
+                </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {product.inStock ? "In stock" : "Out of stock"}
+                </Typography>
+              </Box>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<WhatsApp />}
+                fullWidth
+                sx={{
+                  borderRadius: "50px",
+                  py: 1.5,
+                  fontWeight: 600,
+                  fontSize: "1.1rem",
+                }}
+                disabled={!product.inStock}
+                onClick={handleWhatsAppBuy}
+              >
+                Buy on WhatsApp
+              </Button>
+              <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+                <IconButton
+                  aria-label="add to wishlist"
+                  onClick={() => toggleWishlist(product._id)}
+                  sx={{
+                    border: "1px solid #ddd",
+                    borderRadius: "50%",
+                  }}
+                >
+                  {wishlist.includes(product._id) ? (
+                    <Favorite color="error" />
+                  ) : (
+                    <FavoriteBorder />
+                  )}
+                </IconButton>
+                <IconButton
+                  aria-label="share"
+                  sx={{
+                    border: "1px solid #ddd",
+                    borderRadius: "50%",
+                  }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("Product link copied!");
+                  }}
+                >
+                  <Share />
+                </IconButton>
+              </Box>
+            </Box>
+            <Divider sx={{ my: 3 }} />
+
+            {/* Delivery Info */}
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 3,
+                mb: 3,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <LocalShipping color="primary" />
+                <Box>
+                  <Typography variant="body2">Free Delivery</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    For orders above KES 10,000
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <AssignmentReturn color="primary" />
+                <Box>
+                  <Typography variant="body2">7-Day Returns</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    No questions asked
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <VerifiedUser color="primary" />
+                <Box>
+                  <Typography variant="body2">Warranty</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {product.warrantyPeriod || "1 year"} warranty
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* Product Tabs */}
+      <Box sx={{ mt: 6 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          sx={{
+            mb: 3,
+            "& .MuiTabs-indicator": { height: 3 },
+          }}
+        >
+          <Tab label="Description" />
+          <Tab label="Specifications" />
+          <Tab label="Reviews" />
+        </Tabs>
+
+        <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
+          {tabValue === 0 && (
+            <Typography variant="body1" whiteSpace="pre-line">
+              {product.fullDescription || "No description available"}
+            </Typography>
+          )}
+          {tabValue === 1 && (
+            <Grid container spacing={2}>
+              {product.specs &&
+                Object.entries(product.specs)
+                  .filter(([, value]) => value)
+                  .map(([key, value]) => (
+                    <Grid item xs={12} sm={6} key={key}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          py: 1.5,
+                          borderBottom: "1px solid #eee",
+                        }}
+                      >
+                        <Typography variant="body1" color="text.secondary">
+                          {key.replace(/^[a-z]/, (char) => char.toUpperCase())}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {value}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+            </Grid>
+          )}
+          {tabValue === 2 && (
+            <Box>
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                Customer Reviews
+              </Typography>
+              <Box sx={{ mt: 4 }}>
+                <ReviewSection productId={product._id} />
+              </Box>
+            </Box>
+          )}
+        </Box>
+      </Box>
+
+      {/* Related Products */}
+      {related.length > 0 && (
+        <Box sx={{ mt: 8 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
+            You may also like
+          </Typography>
+          <Grid container spacing={3}>
+            {related.map((rel) => (
+              <Grid item xs={12} sm={6} md={3} key={rel._id}>
+                <Card
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 3,
+                    transition: "transform 0.3s",
+                    "&:hover": { transform: "translateY(-5px)" },
+                    cursor: "pointer",
+                  }}
+                  onClick={() => router.push(`/products/${rel._id}`)}
+                >
+                  <Box sx={{ position: "relative" }}>
+                    <CardMedia
+                      component="img"
+                      height="160"
+                      image={
+                        getOptimizedCloudinaryUrl(
+                          rel.thumbnail || rel.images?.[0] || FALLBACK_IMAGE,
+                          { width: 220 }
+                        ) || FALLBACK_IMAGE
+                      }
+                      alt={rel.name}
+                      sx={{ objectFit: "contain", p: 2 }}
+                      loading="lazy"
+                      width={220}
+                    />
+                    <IconButton
+                      aria-label="add to wishlist"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(rel._id);
+                      }}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        backgroundColor: "background.paper",
+                        "&:hover": { backgroundColor: "background.default" },
+                      }}
+                    >
+                      {wishlist.includes(rel._id) ? (
+                        <Favorite color="error" />
+                      ) : (
+                        <FavoriteBorder />
+                      )}
+                    </IconButton>
+                  </Box>
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                      {rel.category}
+                    </Typography>
+                    <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
+                      {rel.name}
+                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                      <Star color="warning" fontSize="small" />
+                      <Typography variant="body2" sx={{ ml: 0.5 }}>
+                        4.5
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                      {formatPrice(rel.discountPrice || rel.price)}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      fullWidth
+                      sx={{ mt: 2, borderRadius: "50px" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/products/${rel._id}`);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }
 
+// Server-side fetch for product + related
 export async function getServerSideProps({ params }) {
   try {
     const res = await Api.get(`/products/${params.id}`);
-    return {
-      props: { product: res.data?.product || null },
-    };
+    const product = res.data?.product || null;
+
+    let related = [];
+    if (product?.category) {
+      try {
+        const relRes = await Api.get("/products", {
+          params: { category: product.category, limit: 4 },
+        });
+        related = (relRes.data?.products || []).filter((p) => p._id !== params.id);
+      } catch {
+        related = [];
+      }
+    }
+
+    return { props: { product, related } };
   } catch (e) {
-    return { props: { product: null } };
+    return { props: { product: null, related: [] } };
   }
 }
