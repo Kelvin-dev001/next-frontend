@@ -35,7 +35,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 export async function getStaticProps() {
   try {
     const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes] = await Promise.all([
-      Api.get("/products", { params: { featured: true } }),
+      Api.get("/products", { params: { featured: true, limit: 16 } }), // limit for faster first paint
       Api.get("/products", { params: { limit: 120 } }),
       Api.get("/categories"),
       Api.get("/brands"),

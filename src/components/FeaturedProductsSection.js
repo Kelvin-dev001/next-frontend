@@ -11,11 +11,14 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
+  // Trim for first paint on mobile
+  const visibleProducts = isMobile ? products.slice(0, 8) : isTablet ? products.slice(0, 12) : products;
+
   const sliderSettings = {
     dots: false,
-    infinite: products.length > (isMobile ? 1 : isTablet ? 2 : 4),
+    infinite: visibleProducts.length > (isMobile ? 1 : isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isMobile ? 1 : isTablet ? 2 : 4,
+    slidesToShow: isMobile ? 1.1 : isTablet ? 2 : 4,
     slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
     arrows: !isMobile,
     autoplay: true,
@@ -38,7 +41,7 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
         Featured Products
       </Typography>
       <Slider {...sliderSettings}>
-        {products.map((product) => (
+        {visibleProducts.map((product) => (
           <Box key={product._id} sx={{ px: 2, outline: "none" }}>
             <ProductCard
               product={product}

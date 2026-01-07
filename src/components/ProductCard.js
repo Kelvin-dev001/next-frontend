@@ -1,10 +1,11 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
-  Card, CardMedia, CardContent, Typography, Box, Button, Stack, Chip, IconButton, Rating
+  Card, CardContent, Typography, Box, Button, Stack, Chip, IconButton, Rating
 } from "@mui/material";
-import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
+  import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 
 const formatPrice = (price) =>
@@ -12,8 +13,6 @@ const formatPrice = (price) =>
 
 const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning" };
 const WHATSAPP_NUMBER = "254711111602";
-const CARD_IMAGE_WIDTH = 400;
-const CARD_IMAGE_HEIGHT = 300;
 
 export default function ProductCard({
   product,
@@ -26,6 +25,8 @@ export default function ProductCard({
   ...props
 }) {
   const router = useRouter();
+  const [imgLoaded, setImgLoaded] = useState(false);
+
   const discountPercent =
     product?.discountPrice && product?.price
       ? Math.round(100 - (product.discountPrice / product.price) * 100)
@@ -34,7 +35,7 @@ export default function ProductCard({
   const cloudUrl =
     product?.thumbnail ||
     (Array.isArray(product?.images) && product.images.length > 0 && product.images[0]);
-  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: CARD_IMAGE_WIDTH });
+  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 600 }) || "/fallback.png";
 
   const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
 
@@ -61,24 +62,29 @@ export default function ProductCard({
       onClick={() => router.push(`/products/${product?._id || product?.id || ""}`)}
     >
       <Box sx={{ position: "relative", pt: 2, px: 2 }}>
-        <CardMedia
-          component="img"
-          src={imgUrl || "/fallback.png"}
-          alt={product?.name || "Product"}
-          loading="lazy"
-          width={CARD_IMAGE_WIDTH}
-          height={CARD_IMAGE_HEIGHT}
+        <Box
           sx={{
-            objectFit: "contain",
-            mx: "auto",
-            maxHeight: CARD_IMAGE_HEIGHT,
-            minHeight: CARD_IMAGE_HEIGHT,
-            maxWidth: CARD_IMAGE_WIDTH,
-            minWidth: CARD_IMAGE_WIDTH,
+            position: "relative",
+            width: "100%",
+            aspectRatio: "3 / 4",
             borderRadius: "16px",
-            background: "#f7f8fa"
+            overflow: "hidden",
+            bgcolor: "#f4f6f8",
+            transition: "background 0.2s ease",
           }}
-        />
+        >
+          <Image
+            src={imgUrl}
+            alt={product?.name || "Product"}
+            fill
+            sizes="(max-width: 600px) 80vw, (max-width: 960px) 40vw, 25vw"
+            style={{ objectFit: "contain" }}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
+            priority={false}
+          />
+        </Box>
+
         {badge && (
           <Chip
             label={badge}
@@ -116,6 +122,7 @@ export default function ProductCard({
           {isWishlisted ? <Favorite color="error" /> : <FavoriteBorder />}
         </IconButton>
       </Box>
+
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
           {product?.brand}
@@ -153,6 +160,7 @@ export default function ProductCard({
           </Stack>
         ) : null}
       </CardContent>
+
       <Box sx={{ px: 2, pb: 2, pt: 0 }}>
         {showWhatsApp && (
           <Button
