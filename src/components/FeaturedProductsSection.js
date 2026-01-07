@@ -11,8 +11,12 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Trim for first paint on mobile
-  const visibleProducts = isMobile ? products.slice(0, 8) : isTablet ? products.slice(0, 12) : products;
+  // Trim for first paint on mobile/tablet
+  const visibleProducts = isMobile
+    ? products.slice(0, 8)
+    : isTablet
+    ? products.slice(0, 12)
+    : products;
 
   const sliderSettings = {
     dots: false,
@@ -20,6 +24,8 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
     speed: 600,
     slidesToShow: isMobile ? 1.1 : isTablet ? 2 : 4,
     slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
+    centerMode: isMobile,
+    centerPadding: isMobile ? "10px" : "0px",
     arrows: !isMobile,
     autoplay: true,
     autoplaySpeed: 5200,
@@ -27,7 +33,7 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
+      { breakpoint: 600, settings: { slidesToShow: 1.1, slidesToScroll: 1, centerMode: true, centerPadding: "10px" } },
     ],
   };
 
@@ -36,13 +42,26 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
       <Typography
         variant="h4"
         align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2, fontFamily: "'Montserrat', 'Roboto', sans-serif" }}
+        sx={{
+          fontWeight: 700,
+          mb: 4,
+          color: "primary.main",
+          letterSpacing: 1.2,
+          fontFamily: "'Montserrat', 'Roboto', sans-serif",
+        }}
       >
         Featured Products
       </Typography>
       <Slider {...sliderSettings}>
         {visibleProducts.map((product) => (
-          <Box key={product._id} sx={{ px: 2, outline: "none" }}>
+          <Box
+            key={product._id}
+            sx={{
+              px: 1.5,
+              width: isMobile ? 240 : "auto", // fixed mobile width for stability
+              outline: "none",
+            }}
+          >
             <ProductCard
               product={product}
               badge={product.isFeatured ? "FEATURED" : undefined}
@@ -57,8 +76,8 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
                 "&:hover": {
                   boxShadow: "0 12px 46px 0 #1e3c72cc",
                   transform: "translateY(-9px) scale(1.03)",
-                  zIndex: 3
-                }
+                  zIndex: 3,
+                },
               }}
             />
           </Box>

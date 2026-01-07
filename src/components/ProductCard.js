@@ -1,9 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import {
   Card, CardContent, Typography, Box, Button, Stack, Chip, IconButton, Rating
 } from "@mui/material";
-  import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
+import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
@@ -25,7 +25,6 @@ export default function ProductCard({
   ...props
 }) {
   const router = useRouter();
-  const [imgLoaded, setImgLoaded] = useState(false);
 
   const discountPercent =
     product?.discountPrice && product?.price
@@ -55,7 +54,7 @@ export default function ProductCard({
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        ...sx
+        ...sx,
       }}
       elevation={0}
       {...props}
@@ -70,7 +69,6 @@ export default function ProductCard({
             borderRadius: "16px",
             overflow: "hidden",
             bgcolor: "#f4f6f8",
-            transition: "background 0.2s ease",
           }}
         >
           <Image
@@ -79,8 +77,6 @@ export default function ProductCard({
             fill
             sizes="(max-width: 600px) 80vw, (max-width: 960px) 40vw, 25vw"
             style={{ objectFit: "contain" }}
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgLoaded(true)}
             priority={false}
           />
         </Box>
@@ -112,7 +108,7 @@ export default function ProductCard({
             borderRadius: "50%",
             zIndex: 2,
             boxShadow: "0 2px 8px #2221",
-            "&:hover": { bgcolor: "primary.light" }
+            "&:hover": { bgcolor: "primary.light" },
           }}
           onClick={(e) => {
             e.stopPropagation();
@@ -127,7 +123,18 @@ export default function ProductCard({
         <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
           {product?.brand}
         </Typography>
-        <Typography variant="h6" fontWeight={700} gutterBottom sx={{ color: "#1e3c72" }}>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          gutterBottom
+          sx={{
+            color: "#1e3c72",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
           {product?.name}
         </Typography>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
@@ -173,7 +180,7 @@ export default function ProductCard({
               textTransform: "none",
               bgcolor: "success.main",
               "&:hover": { bgcolor: "success.dark" },
-              mb: 1
+              mb: 1,
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -200,8 +207,8 @@ export default function ProductCard({
                 color: "#fff",
                 borderColor: "transparent",
                 boxShadow: "0 2px 24px #1e3c72cc",
-                transform: "scale(1.06)"
-              }
+                transform: "scale(1.06)",
+              },
             }}
             onClick={(e) => {
               e.stopPropagation();
