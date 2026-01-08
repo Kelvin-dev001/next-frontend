@@ -11,29 +11,24 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
-  // Trim for first paint on mobile/tablet
   const visibleProducts = isMobile
-    ? products.slice(0, 8)
+    ? products.slice(0, 6)
     : isTablet
     ? products.slice(0, 12)
     : products;
 
   const sliderSettings = {
     dots: false,
-    infinite: visibleProducts.length > (isMobile ? 1 : isTablet ? 2 : 4),
+    infinite: visibleProducts.length > (isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isMobile ? 1.1 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
-    centerMode: isMobile,
-    centerPadding: isMobile ? "10px" : "0px",
-    arrows: !isMobile,
-    autoplay: true,
-    autoplaySpeed: 5200,
+    slidesToShow: isTablet ? 2 : 4,
+    slidesToScroll: isTablet ? 2 : 4,
+    arrows: true,
+    autoplay: false,
     cssEase: "cubic-bezier(.4,2,.4,1)",
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1.1, slidesToScroll: 1, centerMode: true, centerPadding: "10px" } },
     ],
   };
 
@@ -52,37 +47,49 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
       >
         Featured Products
       </Typography>
-      <Slider {...sliderSettings}>
-        {visibleProducts.map((product) => (
-          <Box
-            key={product._id}
-            sx={{
-              px: 1.5,
-              width: isMobile ? 240 : "auto", // fixed mobile width for stability
-              outline: "none",
-            }}
-          >
-            <ProductCard
-              product={product}
-              badge={product.isFeatured ? "FEATURED" : undefined}
-              showWhatsApp
-              showViewBtn
-              sx={{
-                minHeight: 420,
-                borderRadius: "22px",
-                boxShadow: "0 4px 24px 0 rgba(30,60,114,0.12)",
-                transition: "transform 0.28s cubic-bezier(.4,2,.4,1), box-shadow 0.28s",
-                bgcolor: "#fff",
-                "&:hover": {
-                  boxShadow: "0 12px 46px 0 #1e3c72cc",
-                  transform: "translateY(-9px) scale(1.03)",
-                  zIndex: 3,
-                },
-              }}
-            />
-          </Box>
-        ))}
-      </Slider>
+
+      {isMobile ? (
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            overflowX: "auto",
+            px: 1.5,
+            py: 1,
+            scrollSnapType: "x mandatory",
+            "& > *": { scrollSnapAlign: "start" },
+          }}
+        >
+          {visibleProducts.map((product) => (
+            <Box key={product._id} sx={{ minWidth: 240 }}>
+              <ProductCard product={product} badge={product.isFeatured ? "FEATURED" : undefined} />
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Slider {...sliderSettings}>
+          {visibleProducts.map((product) => (
+            <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+              <ProductCard
+                product={product}
+                badge={product.isFeatured ? "FEATURED" : undefined}
+                sx={{
+                  minHeight: 420,
+                  borderRadius: "22px",
+                  boxShadow: "0 4px 24px 0 rgba(30,60,114,0.12)",
+                  transition: "transform 0.28s cubic-bezier(.4,2,.4,1), box-shadow 0.28s",
+                  bgcolor: "#fff",
+                  "&:hover": {
+                    boxShadow: "0 12px 46px 0 #1e3c72cc",
+                    transform: "translateY(-9px) scale(1.03)",
+                    zIndex: 3,
+                  },
+                }}
+              />
+            </Box>
+          ))}
+        </Slider>
+      )}
     </Box>
   );
 }

@@ -26,17 +26,15 @@ export default function PocketFriendlySection() {
 
   const sliderSettings = {
     dots: false,
-    infinite: products.length > (isMobile ? 1 : isTablet ? 2 : 4),
+    infinite: products.length > (isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isMobile ? 1 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
-    arrows: !isMobile,
-    autoplay: true,
-    autoplaySpeed: 6000,
+    slidesToShow: isTablet ? 2 : 4,
+    slidesToScroll: isTablet ? 2 : 4,
+    arrows: true,
+    autoplay: false,
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
     ],
   };
 
@@ -49,13 +47,34 @@ export default function PocketFriendlySection() {
       >
         Pocket Friendly Picks
       </Typography>
-      <Slider {...sliderSettings}>
-        {products.map((product) => (
-          <Box key={product._id} sx={{ px: 2, outline: "none" }}>
-            <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
-          </Box>
-        ))}
-      </Slider>
+
+      {isMobile ? (
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            overflowX: "auto",
+            px: 1.5,
+            py: 1,
+            scrollSnapType: "x mandatory",
+            "& > *": { scrollSnapAlign: "start" },
+          }}
+        >
+          {products.slice(0, 8).map((product) => (
+            <Box key={product._id} sx={{ minWidth: 240 }}>
+              <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Slider {...sliderSettings}>
+          {products.map((product) => (
+            <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+              <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
+            </Box>
+          ))}
+        </Slider>
+      )}
     </Box>
   );
 }

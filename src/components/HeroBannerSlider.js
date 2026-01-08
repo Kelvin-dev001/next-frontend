@@ -1,9 +1,9 @@
 import React from "react";
+import Image from "next/image";
 import { Box, Typography, Button, useMediaQuery, useTheme, Stack } from "@mui/material";
 
-// Cloudinary image URLs
 const HERO_IMAGE_DESKTOP = "https://res.cloudinary.com/dltfgasbb/image/upload/f_auto,q_auto,w_1200/banner5_e5vkse.jpg";
-const HERO_IMAGE_MOBILE = "https://res.cloudinary.com/dltfgasbb/image/upload/f_auto,q_auto,w_500/banner5_e5vkse.jpg";
+const HERO_IMAGE_MOBILE = "https://res.cloudinary.com/dltfgasbb/image/upload/f_auto,q_auto,w_600/banner5_e5vkse.jpg";
 
 const banner = {
   title: "Stay Connected, Stay Ahead!",
@@ -17,8 +17,8 @@ const HeroBannerSlider = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const imageUrl = isMobile ? HERO_IMAGE_MOBILE : HERO_IMAGE_DESKTOP;
-  const imgWidth = isMobile ? 500 : 1200;
-  const imgHeight = isMobile ? 210 : 370;
+  const imgWidth = isMobile ? 600 : 1200;
+  const imgHeight = isMobile ? 260 : 420;
 
   return (
     <Box
@@ -30,44 +30,34 @@ const HeroBannerSlider = () => {
         aspectRatio: `${imgWidth} / ${imgHeight}`,
         minHeight: imgHeight,
         height: imgHeight,
+        bgcolor: "#1e3c72",
       }}
     >
       <Box
         sx={{
           position: "relative",
-          minHeight: imgHeight,
-          height: imgHeight,
-          aspectRatio: `${imgWidth} / ${imgHeight}`,
+          width: "100%",
+          height: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: isMobile ? "center" : "flex-start",
           px: { xs: 1, md: 8 },
           py: { xs: 2, md: 0 },
-          bgcolor: "#1e3c72",
-          borderRadius: { xs: 0, md: "0 0 32px 32px" },
-          overflow: "hidden",
         }}
       >
-        <img
+        <Image
           src={imageUrl}
           alt={banner.title}
-          width={imgWidth}
-          height={imgHeight}
-          loading="eager"
-          decoding="async"
+          fill
+          priority
+          sizes="100vw"
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            zIndex: 0,
+            objectFit: "cover",
             filter: "brightness(.88) saturate(1.08)",
-            borderRadius: isMobile ? 0 : "0 0 32px 32px"
+            borderRadius: isMobile ? 0 : "0 0 32px 32px",
           }}
         />
-        {/* Content - NO animation property */}
+
         <Box
           sx={{
             mt: 0,
@@ -88,7 +78,7 @@ const HeroBannerSlider = () => {
             bgcolor: "rgba(18, 36, 60, 0.32)",
             boxShadow: "0 2px 14px 0 #6dd5ed22",
             borderRadius: { xs: "12px", md: "22px" },
-            border: "1.5px solid rgba(255,255,255,0.07)"
+            border: "1.5px solid rgba(255,255,255,0.07)",
           }}
         >
           <Typography
@@ -101,7 +91,7 @@ const HeroBannerSlider = () => {
               letterSpacing: 1.05,
               fontFamily: "'Montserrat', 'Roboto', sans-serif",
               lineHeight: 1.1,
-              fontSize: "1.05rem"
+              fontSize: "1.05rem",
             }}
           >
             {banner.title}
@@ -111,11 +101,11 @@ const HeroBannerSlider = () => {
             sx={{
               mb: 1.2,
               color: "#e6f2ff",
-              opacity: .94,
+              opacity: 0.94,
               textShadow: "0 2px 12px #2a5298bb",
               letterSpacing: 0.12,
               fontWeight: 500,
-              fontSize: "0.94rem"
+              fontSize: "0.94rem",
             }}
           >
             {banner.subtitle}
@@ -139,8 +129,8 @@ const HeroBannerSlider = () => {
                   background: "linear-gradient(96deg,#1e3c72 10%,#6dd5ed 90%)",
                   color: "#fff",
                   boxShadow: "0 2px 24px #1e3c72cc",
-                  transform: "scale(1.06)"
-                }
+                  transform: "scale(1.06)",
+                },
               }}
             >
               {banner.cta}

@@ -9,20 +9,20 @@ export default function NewArrivalsSection({ products = [], title = "New Smartph
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
+  const visibleProducts = isMobile ? products.slice(0, 8) : products;
+
   const sliderSettings = {
     dots: false,
-    infinite: products.length > (isMobile ? 1 : isTablet ? 2 : 4),
+    infinite: visibleProducts.length > (isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isMobile ? 1 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
-    arrows: !isMobile,
-    autoplay: true,
-    autoplaySpeed: 5300,
+    slidesToShow: isTablet ? 2 : 4,
+    slidesToScroll: isTablet ? 2 : 4,
+    arrows: true,
+    autoplay: false,
     cssEase: "cubic-bezier(.4,2,.4,1)",
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
     ],
   };
 
@@ -35,30 +35,49 @@ export default function NewArrivalsSection({ products = [], title = "New Smartph
       >
         {title}
       </Typography>
-      <Slider {...sliderSettings}>
-        {products.map((product) => (
-          <Box key={product._id} sx={{ px: 2, outline: "none" }}>
-            <ProductCard
-              product={product}
-              badge={product.badge}
-              showWhatsApp
-              showViewBtn
-              sx={{
-                minHeight: 420,
-                borderRadius: "22px",
-                boxShadow: "0 4px 24px 0 rgba(30,60,114,0.12)",
-                transition: "transform 0.28s cubic-bezier(.4,2,.4,1), box-shadow 0.28s",
-                bgcolor: "#fff",
-                "&:hover": {
-                  boxShadow: "0 12px 46px 0 #1e3c72cc",
-                  transform: "translateY(-9px) scale(1.03)",
-                  zIndex: 3
-                }
-              }}
-            />
-          </Box>
-        ))}
-      </Slider>
+
+      {isMobile ? (
+        <Box
+          sx={{
+            display: "flex",
+            gap: 1.5,
+            overflowX: "auto",
+            px: 1.5,
+            py: 1,
+            scrollSnapType: "x mandatory",
+            "& > *": { scrollSnapAlign: "start" },
+          }}
+        >
+          {visibleProducts.map((product) => (
+            <Box key={product._id} sx={{ minWidth: 240 }}>
+              <ProductCard product={product} badge={product.badge} />
+            </Box>
+          ))}
+        </Box>
+      ) : (
+        <Slider {...sliderSettings}>
+          {visibleProducts.map((product) => (
+            <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+              <ProductCard
+                product={product}
+                badge={product.badge}
+                sx={{
+                  minHeight: 420,
+                  borderRadius: "22px",
+                  boxShadow: "0 4px 24px 0 rgba(30,60,114,0.12)",
+                  transition: "transform 0.28s cubic-bezier(.4,2,.4,1), box-shadow 0.28s",
+                  bgcolor: "#fff",
+                  "&:hover": {
+                    boxShadow: "0 12px 46px 0 #1e3c72cc",
+                    transform: "translateY(-9px) scale(1.03)",
+                    zIndex: 3,
+                  },
+                }}
+              />
+            </Box>
+          ))}
+        </Slider>
+      )}
     </Box>
   );
 }

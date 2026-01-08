@@ -35,14 +35,13 @@ export default function DealsSection() {
     dots: false,
     infinite: false,
     speed: 600,
-    slidesToShow: isMobile ? 1 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 1 : isTablet ? 2 : 4,
-    arrows: !isMobile,
+    slidesToShow: isTablet ? 2 : 4,
+    slidesToScroll: isTablet ? 2 : 4,
+    arrows: true,
     autoplay: false,
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
       { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
     ],
   };
 
@@ -56,13 +55,34 @@ export default function DealsSection() {
                 {label}
               </Typography>
             </Stack>
-            <Slider {...sliderSettings}>
-              {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                <Box key={product._id} sx={{ px: 2, outline: "none" }}>
-                  <ProductCard product={product} badge="SALE" />
-                </Box>
-              ))}
-            </Slider>
+
+            {isMobile ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
+                  overflowX: "auto",
+                  px: 1.5,
+                  py: 1,
+                  scrollSnapType: "x mandatory",
+                  "& > *": { scrollSnapAlign: "start" },
+                }}
+              >
+                {deals[key].slice(0, DEALS_LIMIT).map((product) => (
+                  <Box key={product._id} sx={{ minWidth: 240 }}>
+                    <ProductCard product={product} badge="SALE" />
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Slider {...sliderSettings}>
+                {deals[key].slice(0, DEALS_LIMIT).map((product) => (
+                  <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+                    <ProductCard product={product} badge="SALE" />
+                  </Box>
+                ))}
+              </Slider>
+            )}
           </Box>
         ) : null
       )}
