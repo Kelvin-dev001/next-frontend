@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -19,6 +20,8 @@ import ReviewSection from "@/components/ReviewsSection";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 
 const FALLBACK_IMAGE = "/fallback.png";
+const SITE_NAME = "Snaap Connections";
+const SITE_URL = "https://www.snaapconnections.co.ke";
 
 export default function ProductDetailPage({ product, related = [] }) {
   const router = useRouter();
@@ -31,7 +34,6 @@ export default function ProductDetailPage({ product, related = [] }) {
   const [tabValue, setTabValue] = useState(0);
   const [error, setError] = useState(null);
 
-  // If product failed to load server-side
   if (product === null) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -40,7 +42,6 @@ export default function ProductDetailPage({ product, related = [] }) {
     );
   }
 
-  // Local loading state not needed; data is SSR. Use error guard.
   useEffect(() => {
     setError(null);
   }, [product?._id]);
@@ -88,8 +89,55 @@ export default function ProductDetailPage({ product, related = [] }) {
     getOptimizedCloudinaryUrl(images[selectedImage], { width: isMobile ? 350 : 600 }) ||
     FALLBACK_IMAGE;
 
+  const seoTitle = `${product?.name} | Buy in Mombasa, Kenya | ${SITE_NAME}`;
+  const seoDescription =
+    product?.shortDescription ||
+    `Buy ${product?.name} in Mombasa with fast nationwide delivery across Kenya.`;
+  const seoImage = getOptimizedCloudinaryUrl(images[0], { width: 900 }) || FALLBACK_IMAGE;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product?.name,
+    image: [seoImage],
+    description: product?.shortDescription || product?.fullDescription || seoDescription,
+    brand: { "@type": "Brand", name: product?.brand || SITE_NAME },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "KES",
+      price: product?.discountPrice || product?.price || undefined,
+      availability: product?.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `${SITE_URL}/products/${product?._id}`,
+    },
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Head>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={`${SITE_URL}/products/${product?._id}`} />
+
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={`${SITE_URL}/products/${product?._id}`} />
+        <meta property="og:locale" content="en_KE" />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:image" content={seoImage} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content={seoImage} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+      </Head>
+
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
         <Link href="/" style={{ color: "inherit" }}>Home</Link>
         <Link
@@ -102,7 +150,6 @@ export default function ProductDetailPage({ product, related = [] }) {
       </Breadcrumbs>
 
       <Grid container spacing={4}>
-        {/* Product Images */}
         <Grid item xs={12} md={6}>
           <Box sx={{ position: "sticky", top: 16, borderRadius: 2, overflow: "hidden" }}>
             <Box>
@@ -165,7 +212,6 @@ export default function ProductDetailPage({ product, related = [] }) {
           </Box>
         </Grid>
 
-        {/* Product Info */}
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 3 }}>
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
@@ -239,7 +285,6 @@ export default function ProductDetailPage({ product, related = [] }) {
             </Box>
             <Divider sx={{ my: 3 }} />
 
-            {/* Quantity and WhatsApp Buy */}
             <Box sx={{ mb: 4 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                 Quantity
@@ -342,7 +387,6 @@ export default function ProductDetailPage({ product, related = [] }) {
             </Box>
             <Divider sx={{ my: 3 }} />
 
-            {/* Delivery Info */}
             <Box
               sx={{
                 display: "flex",
@@ -383,7 +427,6 @@ export default function ProductDetailPage({ product, related = [] }) {
         </Grid>
       </Grid>
 
-      {/* Product Tabs */}
       <Box sx={{ mt: 6 }}>
         <Tabs
           value={tabValue}
@@ -444,7 +487,6 @@ export default function ProductDetailPage({ product, related = [] }) {
         </Box>
       </Box>
 
-      {/* Related Products */}
       {related.length > 0 && (
         <Box sx={{ mt: 8 }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
@@ -538,7 +580,6 @@ export default function ProductDetailPage({ product, related = [] }) {
   );
 }
 
-// Server-side fetch for product + related
 export async function getServerSideProps({ params }) {
   try {
     const res = await Api.get(`/products/${params.id}`);

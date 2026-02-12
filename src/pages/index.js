@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import Head from "next/head";
 import { Api } from "@/lib/api";
 
 const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
@@ -13,9 +14,53 @@ import DealsSection from "@/components/DealsSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 
+const SITE_NAME = "Snaap Connections";
+const SITE_URL = "https://www.snaapconnections.co.ke";
+const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
+const PAGE_DESCRIPTION =
+  "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
+
 export default function Home({ featured, newArrivals, brands, categories, recentReviews }) {
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ElectronicsStore",
+    name: SITE_NAME,
+    url: SITE_URL,
+    description: PAGE_DESCRIPTION,
+    areaServed: ["Mombasa", "Kenya"],
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Mombasa",
+      addressCountry: "KE",
+    },
+    telephone: "+254711111602",
+  };
+
   return (
     <>
+      <Head>
+        <title>{PAGE_TITLE}</title>
+        <meta name="description" content={PAGE_DESCRIPTION} />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={SITE_URL} />
+
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:locale" content="en_KE" />
+        <meta property="og:site_name" content={SITE_NAME} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+      </Head>
+
       <PromoCardsSection />
       <ShopByBrandSection brands={brands} />
       <ShopByCategorySection categories={categories} />

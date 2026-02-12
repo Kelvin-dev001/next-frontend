@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Head from "next/head";
 import {
   Box, Typography, Button, Grid, Container, Pagination, Select, MenuItem,
   IconButton, useTheme, useMediaQuery, Slider, Divider
@@ -10,6 +11,11 @@ import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import ProductCard from "@/components/ProductCard";
 
 const PRODUCTS_PER_PAGE_OPTIONS = [12, 24, 48, 96, 200, 500, 1000];
+const SITE_NAME = "Snaap Connections";
+const SITE_URL = "https://www.snaapconnections.co.ke";
+const PAGE_TITLE = "Shop Phones in Mombasa & Kenya | Snaap Connections";
+const PAGE_DESCRIPTION =
+  "Browse smartphones, accessories, and top deals in Mombasa with nationwide delivery across Kenya.";
 
 export default function ProductListingPage() {
   const theme = useTheme();
@@ -38,6 +44,16 @@ export default function ProductListingPage() {
     sort: "random",
     search: "",
   });
+
+  const listingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    url: `${SITE_URL}/products`,
+    inLanguage: "en-KE",
+    about: "Phones and electronics in Mombasa and Kenya",
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -180,6 +196,29 @@ export default function ProductListingPage() {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Head>
+        <title>{PAGE_TITLE}</title>
+        <meta name="description" content={PAGE_DESCRIPTION} />
+        <meta name="robots" content="index,follow" />
+        <link rel="canonical" href={`${SITE_URL}/products`} />
+
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${SITE_URL}/products`} />
+        <meta property="og:locale" content="en_KE" />
+        <meta property="og:site_name" content={SITE_NAME} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={PAGE_TITLE} />
+        <meta name="twitter:description" content={PAGE_DESCRIPTION} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }}
+        />
+      </Head>
+
       <Box
         sx={{
           display: "flex",
