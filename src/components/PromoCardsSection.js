@@ -1,182 +1,230 @@
+"use client";
 import React from "react";
-import { Box, Typography, Grid, Paper, Avatar, useTheme, useMediaQuery } from "@mui/material";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import DiscountIcon from "@mui/icons-material/Discount";
-import FlashOnIcon from "@mui/icons-material/FlashOn";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Chip,
+  Stack,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
 
-// You can customize these reasons or pass them as a prop
-const reasons = [
+const PLACEHOLDER_IMAGE =
+  "https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_900/sample.jpg";
+
+const promoCards = [
   {
-    icon: <VerifiedUserIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "100% Genuine Products",
-    description: "All our phones are sourced from authorized distributors with a full warranty."
+    id: "valentine-announcement",
+    type: "announcement",
+    badge: "LIMITED TIME",
+    title: "Valentine’s Upgrade Offer",
+    subtitle:
+      "Save big on select phones + free accessories this week. Shop sweet deals before they’re gone.",
+    cta: "Shop Valentine Deals",
+    href: "/products?tag=valentine",
+    image: PLACEHOLDER_IMAGE,
+    alt: "Valentine’s limited time phone offer announcement",
+    tone: "soft",
   },
   {
-    icon: <LocalShippingIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Fast & Free Delivery",
-    description: "Enjoy same-day delivery in Nairobi and fast, reliable shipping countrywide."
+    id: "offer-1",
+    type: "phone",
+    badge: "NEW IN STOCK",
+    title: "Infinix Hot 40 Series",
+    subtitle: "Up to 10% off + free screen protector",
+    cta: "View Infinix Deals",
+    href: "/products?brand=Infinix",
+    image: PLACEHOLDER_IMAGE,
+    alt: "Infinix Hot 40 Series promo phone",
+    tone: "light",
   },
   {
-    icon: <SupportAgentIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Exceptional Support",
-    description: "Our friendly experts are available on WhatsApp, phone & live chat to help you anytime."
+    id: "offer-2",
+    type: "phone",
+    badge: "FRESH DEAL",
+    title: "Camon 40 Series",
+    subtitle: "Limited drop with launch pricing",
+    cta: "Shop Camon 40",
+    href: "/products?brand=Tecno",
+    image: PLACEHOLDER_IMAGE,
+    alt: "Camon 40 Series promo phone",
+    tone: "cool",
   },
   {
-    icon: <DiscountIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Unbeatable Deals",
-    description: "Save big with exclusive discounts, flash sales, and trade-in offers."
+    id: "offer-3",
+    type: "phone",
+    badge: "ONE MORE DEAL",
+    title: "iPhone 17 Series",
+    subtitle: "Premium upgrades. Up to 10% off.",
+    cta: "Explore iPhone 17",
+    href: "/products?brand=Apple",
+    image: PLACEHOLDER_IMAGE,
+    alt: "iPhone 17 Series promo phone",
+    tone: "dark",
   },
   {
-    icon: <FlashOnIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Easy, Secure Payments",
-    description: "Pay with M-Pesa, card, or cash on delivery, with robust buyer protection."
+    id: "offer-4",
+    type: "phone",
+    badge: "MAKE THE UPGRADE",
+    title: "Galaxy S25 Series",
+    subtitle: "2‑year warranty + fast delivery",
+    cta: "Shop Galaxy S25",
+    href: "/products?brand=Samsung",
+    image: PLACEHOLDER_IMAGE,
+    alt: "Galaxy S25 Series promo phone",
+    tone: "midnight",
   },
-  {
-    icon: <EmojiEventsIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Trusted by Thousands",
-    description: "Thousands of happy customers across Kenya trust us for their mobile needs."
-  }
 ];
 
-const WhyChooseUsSection = () => {
+const toneStyles = {
+  soft: {
+    background: "linear-gradient(180deg, #fff5f7 0%, #ffeef1 100%)",
+    text: "#3a1b2b",
+    chip: "#b4235f",
+  },
+  light: {
+    background: "linear-gradient(180deg, #f7f7f7 0%, #f1f1f1 100%)",
+    text: "#1c1c1c",
+    chip: "#b42318",
+  },
+  cool: {
+    background: "linear-gradient(180deg, #e9f3ff 0%, #dcecff 100%)",
+    text: "#123252",
+    chip: "#2e7d32",
+  },
+  dark: {
+    background: "linear-gradient(180deg, #0b0b0b 0%, #151515 100%)",
+    text: "#ffffff",
+    chip: "#ef4444",
+  },
+  midnight: {
+    background: "linear-gradient(180deg, #0b1533 0%, #101b3c 100%)",
+    text: "#ffffff",
+    chip: "#3b82f6",
+  },
+};
+
+function PromoCard({ card, priority = false }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const styles = toneStyles[card.tone] || toneStyles.light;
 
-  // Glassmorphism and animation
   return (
     <Box
       sx={{
-        py: { xs: 6, md: 10 },
-        px: { xs: 2, md: 0 },
-        bgcolor: "background.default",
-        position: "relative",
-        overflow: "hidden"
+        borderRadius: 3,
+        overflow: "hidden",
+        bgcolor: styles.background,
+        color: styles.text,
+        boxShadow: "0 12px 36px rgba(17, 24, 39, 0.12)",
+        border: "1px solid rgba(255,255,255,0.7)",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", md: "1.1fr 0.9fr" },
+        alignItems: "center",
+        minHeight: { xs: 320, md: 320 },
       }}
     >
-      {/* Animated keyframes for card pop and gradient */}
-      <style>
-        {`
-        @keyframes whyCardPop {
-          0%   { transform: scale(1);}
-          50%  { transform: scale(1.04);}
-          100% { transform: scale(1);}
-        }
-        .why-card:hover {
-          animation: whyCardPop 0.7s;
-          box-shadow: 0 10px 32px #1e3c7299, 0 1.5px 12px #6dd5ed33;
-          border-color: #6dd5ed;
-        }
-        .why-avatar {
-          background: linear-gradient(120deg, #6dd5ed 0%, #1e3c72 100%);
-          color: #fff;
-          box-shadow: 0 2px 18px #6dd5ed44;
-        }
-        @keyframes whyGradientMove {
-          0% { background-position: 0% 50%;}
-          100% { background-position: 100% 50%;}
-        }
-        .why-gradient-bg {
-          position: absolute;
-          z-index: 0;
-          width: 100vw;
-          height: 100%;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(120deg, #6dd5ed33 0%, #1e3c721a 100%);
-          background-size: 200% 200%;
-          animation: whyGradientMove 14s linear infinite alternate;
-          pointer-events: none;
-        }
-        `}
-      </style>
-      <div className="why-gradient-bg" aria-hidden="true" />
-      <Typography
-        variant="h4"
-        align="center"
+      <Box sx={{ p: { xs: 3, md: 4 } }}>
+        <Stack spacing={1.3}>
+          <Chip
+            label={card.badge}
+            sx={{
+              bgcolor: styles.chip,
+              color: "#fff",
+              fontWeight: 700,
+              letterSpacing: 0.6,
+              width: "fit-content",
+            }}
+            size="small"
+          />
+          <Typography
+            variant={card.type === "announcement" ? "h1" : "h2"}
+            component={card.type === "announcement" ? "h1" : "h2"}
+            sx={{
+              fontWeight: 800,
+              fontSize: {
+                xs: card.type === "announcement" ? "1.8rem" : "1.6rem",
+                md: card.type === "announcement" ? "2.4rem" : "2rem",
+              },
+              lineHeight: 1.15,
+            }}
+          >
+            {card.title}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ opacity: 0.9, fontSize: { xs: "0.98rem", md: "1.05rem" } }}
+          >
+            {card.subtitle}
+          </Typography>
+          <Button
+            component={Link}
+            href={card.href}
+            variant="contained"
+            size={isMobile ? "medium" : "large"}
+            sx={{
+              width: "fit-content",
+              borderRadius: "999px",
+              fontWeight: 700,
+              textTransform: "none",
+              px: 3,
+              bgcolor: "#111827",
+              "&:hover": { bgcolor: "#0f172a" },
+            }}
+            aria-label={card.cta}
+          >
+            {card.cta}
+          </Button>
+        </Stack>
+      </Box>
+      <Box
         sx={{
-          fontWeight: 700,
-          mb: 4,
-          mt: 1,
-          color: "primary.main",
-          letterSpacing: 1.2,
-          fontFamily: "'Montserrat', 'Roboto', sans-serif",
-          zIndex: 1,
-          position: "relative"
+          position: "relative",
+          minHeight: { xs: 220, md: 280 },
         }}
       >
-        Why Choose Snaap Connections?
-      </Typography>
-      <Grid
-        container
-        spacing={{ xs: 2, md: 4 }}
-        justifyContent="center"
-        sx={{ zIndex: 1, position: "relative" }}
-      >
-        {reasons.map((reason, idx) => (
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            key={reason.title}
-            sx={{ display: "flex" }}
-          >
-            <Paper
-              className="why-card"
-              elevation={0}
-              sx={{
-                flex: 1,
-                borderRadius: "26px",
-                p: { xs: 3, md: 4 },
-                background: "rgba(255,255,255,0.73)",
-                border: "1.5px solid #e6f2ff",
-                boxShadow: "0 6px 32px 0 rgba(30,60,114,0.07)",
-                backdropFilter: "blur(10px)",
-                minHeight: 180,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                justifyContent: "flex-start",
-                position: "relative",
-                transition: "box-shadow 0.22s, border-color 0.22s, transform 0.22s cubic-bezier(.4,2,.4,1)"
-              }}
-            >
-              <Avatar className="why-avatar" sx={{ width: 54, height: 54, mb: 2 }}>
-                {reason.icon}
-              </Avatar>
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{
-                  color: "#1e3c72",
-                  letterSpacing: 0.8,
-                  mb: 1,
-                  textShadow: "0 2px 8px #6dd5ed22"
-                }}
-              >
-                {reason.title}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#244269",
-                  opacity: 0.92,
-                  fontWeight: 500,
-                  fontSize: isMobile ? "1.01rem" : "1.09rem"
-                }}
-              >
-                {reason.description}
-              </Typography>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+        <Image
+          src={card.image}
+          alt={card.alt}
+          fill
+          priority={priority}
+          sizes="(max-width: 600px) 90vw, (max-width: 1200px) 40vw, 420px"
+          style={{ objectFit: "contain" }}
+        />
+      </Box>
     </Box>
   );
-};
+}
 
-export default WhyChooseUsSection;
+export default function PromoCardsSection() {
+  const announcement = promoCards.find((c) => c.type === "announcement");
+  const offers = promoCards.filter((c) => c.type !== "announcement");
+
+  return (
+    <Box component="section" aria-label="Promotions" sx={{ py: { xs: 4, md: 8 } }}>
+      <Container maxWidth="xl">
+        {announcement && (
+          <Box sx={{ mb: { xs: 3, md: 4 } }}>
+            <PromoCard card={announcement} priority />
+          </Box>
+        )}
+
+        <Box
+          sx={{
+            display: "grid",
+            gap: { xs: 2.5, md: 3 },
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          }}
+        >
+          {offers.map((card) => (
+            <PromoCard key={card.id} card={card} />
+          ))}
+        </Box>
+      </Container>
+    </Box>
+  );
+}
