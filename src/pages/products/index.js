@@ -195,7 +195,7 @@ export default function ProductListingPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1.2, sm: 2 } }}>
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
@@ -223,7 +223,7 @@ export default function ProductListingPage() {
         sx={{
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
-          gap: 4,
+          gap: 3,
         }}
       >
         {(!isMobile || showFilters) && (
@@ -364,7 +364,7 @@ export default function ProductListingPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              mb: 3,
+              mb: 2,
             }}
           >
             <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
@@ -436,7 +436,7 @@ export default function ProductListingPage() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={{ xs: 2, md: 3 }}>
+              <Grid container spacing={{ xs: 1.5, md: 3 }}>
                 {products.map((product) => (
                   <Grid item key={product._id || product.id} xs={6} sm={6} md={4} lg={3}>
                     <ProductCard

@@ -34,13 +34,14 @@ export default function ProductCard({
   const cloudUrl =
     product?.thumbnail ||
     (Array.isArray(product?.images) && product.images.length > 0 && product.images[0]);
-  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 520 }) || "/fallback.png";
+  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 620 }) || "/fallback.png";
 
   const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
 
   return (
     <Card
       sx={{
+        width: "100%",
         borderRadius: "18px",
         background: "#fff",
         color: "primary.main",
@@ -48,9 +49,9 @@ export default function ProductCard({
         transition: "transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
         cursor: "pointer",
         position: "relative",
-        overflow: "visible",
+        overflow: "hidden",
         border: "none",
-        minHeight: { xs: 320, md: 350 },
+        minHeight: { xs: 360, md: 350 },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -60,12 +61,12 @@ export default function ProductCard({
       {...props}
       onClick={() => router.push(`/products/${product?._id || product?.id || ""}`)}
     >
-      <Box sx={{ position: "relative", pt: 1.5, px: 1.5 }}>
+      <Box sx={{ position: "relative", pt: 1.2, px: 1.2 }}>
         <Box
           sx={{
             position: "relative",
             width: "100%",
-            aspectRatio: "3 / 4",
+            aspectRatio: "4 / 5",
             borderRadius: "14px",
             overflow: "hidden",
             bgcolor: "#f4f6f8",
@@ -75,7 +76,7 @@ export default function ProductCard({
             src={imgUrl}
             alt={product?.name || "Product"}
             fill
-            sizes="(max-width: 600px) 44vw, (max-width: 960px) 30vw, 22vw"
+            sizes="(max-width: 600px) 48vw, (max-width: 960px) 32vw, 22vw"
             style={{ objectFit: "contain" }}
             priority={false}
           />
@@ -119,8 +120,8 @@ export default function ProductCard({
         </IconButton>
       </Box>
 
-      <CardContent sx={{ flexGrow: 1, px: 1.5, pt: 1.5, pb: 1 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.4, display: "block" }}>
+      <CardContent sx={{ flexGrow: 1, px: 1.2, pt: 1.2, pb: 0.8 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.3, display: "block" }}>
           {product?.brand}
         </Typography>
         <Typography
@@ -163,7 +164,7 @@ export default function ProductCard({
         </Stack>
 
         {(product?.specs?.storage || product?.specs?.ram) && (
-          <Stack direction="column" spacing={0.5} sx={{ mt: 0.8 }}>
+          <Stack direction="column" spacing={0.4} sx={{ mt: 0.7 }}>
             {product.specs?.storage && (
               <Chip
                 label={`Storage: ${product.specs.storage}`}
@@ -184,7 +185,7 @@ export default function ProductCard({
         )}
       </CardContent>
 
-      <Box sx={{ px: 1.5, pb: 1.5, pt: 0 }}>
+      <Box sx={{ px: 1.2, pb: 1.2, pt: 0.6 }}>
         {showWhatsApp && (
           <Button
             variant="contained"
