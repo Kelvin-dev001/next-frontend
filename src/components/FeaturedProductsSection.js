@@ -21,9 +21,9 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
     dots: false,
     infinite: visibleProducts.length > (isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isTablet ? 2 : 4,
-    slidesToScroll: isTablet ? 2 : 4,
-    arrows: true,
+    slidesToShow: isMobile ? 2 : isTablet ? 2 : 4,
+    slidesToScroll: isMobile ? 2 : isTablet ? 2 : 4,
+    arrows: !isMobile,
     autoplay: false,
     cssEase: "cubic-bezier(.4,2,.4,1)",
     responsive: [
@@ -43,6 +43,7 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
           color: "primary.main",
           letterSpacing: 1.2,
           fontFamily: "'Montserrat', 'Roboto', sans-serif",
+          fontSize: { xs: "1.45rem", md: "1.8rem" },
         }}
       >
         Featured Products
@@ -51,37 +52,32 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
       {isMobile ? (
         <Box
           sx={{
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             gap: 1.5,
-            overflowX: "auto",
             px: 1.5,
-            py: 1,
-            scrollSnapType: "x mandatory",
-            "& > *": { scrollSnapAlign: "start" },
           }}
         >
           {visibleProducts.map((product) => (
-            <Box key={product._id} sx={{ minWidth: 240 }}>
-              <ProductCard product={product} badge={product.isFeatured ? "FEATURED" : undefined} />
-            </Box>
+            <ProductCard key={product._id} product={product} badge={product.isFeatured ? "FEATURED" : undefined} />
           ))}
         </Box>
       ) : (
         <Slider {...sliderSettings}>
           {visibleProducts.map((product) => (
-            <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+            <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
               <ProductCard
                 product={product}
                 badge={product.isFeatured ? "FEATURED" : undefined}
                 sx={{
-                  minHeight: 420,
-                  borderRadius: "22px",
-                  boxShadow: "0 4px 24px 0 rgba(30,60,114,0.12)",
-                  transition: "transform 0.28s cubic-bezier(.4,2,.4,1), box-shadow 0.28s",
+                  minHeight: 380,
+                  borderRadius: "20px",
+                  boxShadow: "0 4px 22px 0 rgba(30,60,114,0.1)",
+                  transition: "transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
                   bgcolor: "#fff",
                   "&:hover": {
-                    boxShadow: "0 12px 46px 0 #1e3c72cc",
-                    transform: "translateY(-9px) scale(1.03)",
+                    boxShadow: "0 12px 40px 0 #1e3c72cc",
+                    transform: "translateY(-8px) scale(1.02)",
                     zIndex: 3,
                   },
                 }}

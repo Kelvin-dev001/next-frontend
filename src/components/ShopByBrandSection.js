@@ -29,12 +29,12 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
   );
 
   return (
-    <Box component="section" aria-label="Shop by top brands" sx={{ py: { xs: 6, md: 9 }, bgcolor: "background.default" }}>
+    <Box component="section" aria-label="Shop by top brands" sx={{ py: { xs: 5, md: 8 }, bgcolor: "background.default" }}>
       <Container maxWidth="xl">
         <Typography
-          variant="h2"
+          variant="h3"
           align="center"
-          sx={{ fontWeight: 800, mb: 4, color: "primary.main", letterSpacing: 0.6 }}
+          sx={{ fontWeight: 800, mb: 3, color: "primary.main", letterSpacing: 0.4, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
         >
           Shop by Top Brands
         </Typography>
@@ -43,12 +43,12 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "repeat(2, minmax(0, 1fr))",
-              sm: "repeat(3, minmax(0, 1fr))",
-              md: "repeat(4, minmax(0, 1fr))",
+              xs: "repeat(3, minmax(0, 1fr))",
+              sm: "repeat(4, minmax(0, 1fr))",
+              md: "repeat(5, minmax(0, 1fr))",
               lg: "repeat(6, minmax(0, 1fr))",
             },
-            gap: { xs: 2, md: 2.5 },
+            gap: { xs: 1.5, md: 2 },
           }}
         >
           {list.map((brand, idx) => (
@@ -56,9 +56,9 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
               key={brand._id || idx}
               elevation={0}
               sx={{
-                borderRadius: 3,
+                borderRadius: 2.5,
                 bgcolor: "#fff",
-                boxShadow: "0 6px 24px rgba(30, 60, 114, 0.08)",
+                boxShadow: "0 5px 18px rgba(30, 60, 114, 0.08)",
                 border: "1px solid rgba(15, 23, 42, 0.05)",
               }}
             >
@@ -66,31 +66,32 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
                 component={Link}
                 href={`/products?brand=${encodeURIComponent(brand.name || "")}`}
                 sx={{
-                  p: 2.5,
+                  p: 1.5,
                   textAlign: "center",
-                  minHeight: 140,
+                  minHeight: 110,
                   display: "flex",
                   flexDirection: "column",
-                  gap: 1.5,
+                  gap: 1,
                 }}
               >
                 <Avatar
                   src={brand.logo || "/brand-placeholder.png"}
                   alt={`${brand.name} logo`}
                   variant="rounded"
-                  sx={{ width: 56, height: 56, bgcolor: "#f8fafc" }}
+                  sx={{ width: 44, height: 44, bgcolor: "#f8fafc" }}
                 />
-                <Typography variant="subtitle1" fontWeight={700} sx={{ color: "primary.dark" }}>
+                <Typography variant="caption" fontWeight={700} sx={{ color: "primary.dark" }}>
                   {brand.name || "Loading"}
                 </Typography>
                 <Chip
                   label="Shop now"
                   size="small"
                   sx={{
-                    bgcolor: "#0f172a",
+                    bgcolor: "#1e3c72",
                     color: "#fff",
                     fontWeight: 700,
                     letterSpacing: 0.3,
+                    fontSize: "0.68rem",
                   }}
                 />
               </CardActionArea>

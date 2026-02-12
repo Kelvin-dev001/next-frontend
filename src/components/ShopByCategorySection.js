@@ -29,12 +29,12 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
   );
 
   return (
-    <Box component="section" aria-label="Shop by category" sx={{ py: { xs: 6, md: 9 }, bgcolor: "background.default" }}>
+    <Box component="section" aria-label="Shop by category" sx={{ py: { xs: 5, md: 8 }, bgcolor: "background.default" }}>
       <Container maxWidth="xl">
         <Typography
-          variant="h2"
+          variant="h3"
           align="center"
-          sx={{ fontWeight: 800, mb: 4, color: "primary.main", letterSpacing: 0.6 }}
+          sx={{ fontWeight: 800, mb: 3, color: "primary.main", letterSpacing: 0.4, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
         >
           Shop by Category
         </Typography>
@@ -43,12 +43,12 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "repeat(2, minmax(0, 1fr))",
-              sm: "repeat(3, minmax(0, 1fr))",
-              md: "repeat(4, minmax(0, 1fr))",
+              xs: "repeat(3, minmax(0, 1fr))",
+              sm: "repeat(4, minmax(0, 1fr))",
+              md: "repeat(5, minmax(0, 1fr))",
               lg: "repeat(6, minmax(0, 1fr))",
             },
-            gap: { xs: 2, md: 2.5 },
+            gap: { xs: 1.5, md: 2 },
           }}
         >
           {list.map((cat, idx) => (
@@ -56,9 +56,9 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
               key={cat._id || idx}
               elevation={0}
               sx={{
-                borderRadius: 3,
+                borderRadius: 2.5,
                 bgcolor: "#fff",
-                boxShadow: "0 6px 24px rgba(30, 60, 114, 0.08)",
+                boxShadow: "0 5px 18px rgba(30, 60, 114, 0.08)",
                 border: "1px solid rgba(15, 23, 42, 0.05)",
               }}
             >
@@ -66,19 +66,19 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
                 component={Link}
                 href={`/products?category=${encodeURIComponent(cat.name || "")}`}
                 sx={{
-                  p: 2.5,
+                  p: 1.5,
                   textAlign: "center",
-                  minHeight: 160,
+                  minHeight: 120,
                   display: "flex",
                   flexDirection: "column",
-                  gap: 1.5,
+                  gap: 1,
                 }}
               >
                 <Box
                   sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: 2,
+                    width: 52,
+                    height: 52,
+                    borderRadius: 1.5,
                     bgcolor: "#f8fafc",
                     display: "flex",
                     alignItems: "center",
@@ -89,23 +89,24 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
                   <img
                     src={cat.icon || "/category-placeholder.png"}
                     alt={`${cat.name} category`}
-                    width={56}
-                    height={56}
+                    width={40}
+                    height={40}
                     style={{ objectFit: "contain" }}
                     loading="lazy"
                   />
                 </Box>
-                <Typography variant="subtitle1" fontWeight={700} sx={{ color: "primary.dark" }}>
+                <Typography variant="caption" fontWeight={700} sx={{ color: "primary.dark" }}>
                   {cat.name || "Loading"}
                 </Typography>
                 <Chip
                   label="Explore"
                   size="small"
                   sx={{
-                    bgcolor: "#0f172a",
+                    bgcolor: "#1e3c72",
                     color: "#fff",
                     fontWeight: 700,
                     letterSpacing: 0.3,
+                    fontSize: "0.68rem",
                   }}
                 />
               </CardActionArea>

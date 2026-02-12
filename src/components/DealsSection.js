@@ -35,9 +35,9 @@ export default function DealsSection() {
     dots: false,
     infinite: false,
     speed: 600,
-    slidesToShow: isTablet ? 2 : 4,
-    slidesToScroll: isTablet ? 2 : 4,
-    arrows: true,
+    slidesToShow: isMobile ? 2 : isTablet ? 2 : 4,
+    slidesToScroll: isMobile ? 2 : isTablet ? 2 : 4,
+    arrows: !isMobile,
     autoplay: false,
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
@@ -51,33 +51,21 @@ export default function DealsSection() {
         deals[key]?.length ? (
           <Box key={key} sx={{ mb: { xs: 6, md: 8 } }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2, px: 1 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: "primary.dark", letterSpacing: 1 }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "primary.dark", letterSpacing: 0.6 }}>
                 {label}
               </Typography>
             </Stack>
 
             {isMobile ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1.5,
-                  overflowX: "auto",
-                  px: 1.5,
-                  py: 1,
-                  scrollSnapType: "x mandatory",
-                  "& > *": { scrollSnapAlign: "start" },
-                }}
-              >
+              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
                 {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                  <Box key={product._id} sx={{ minWidth: 240 }}>
-                    <ProductCard product={product} badge="SALE" />
-                  </Box>
+                  <ProductCard key={product._id} product={product} badge="SALE" />
                 ))}
               </Box>
             ) : (
               <Slider {...sliderSettings}>
                 {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                  <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+                  <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
                     <ProductCard product={product} badge="SALE" />
                   </Box>
                 ))}

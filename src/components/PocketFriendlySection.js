@@ -28,9 +28,9 @@ export default function PocketFriendlySection() {
     dots: false,
     infinite: products.length > (isTablet ? 2 : 4),
     speed: 600,
-    slidesToShow: isTablet ? 2 : 4,
-    slidesToScroll: isTablet ? 2 : 4,
-    arrows: true,
+    slidesToShow: isMobile ? 2 : isTablet ? 2 : 4,
+    slidesToScroll: isMobile ? 2 : isTablet ? 2 : 4,
+    arrows: !isMobile,
     autoplay: false,
     responsive: [
       { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
@@ -43,33 +43,21 @@ export default function PocketFriendlySection() {
       <Typography
         variant="h4"
         align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}
+        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.0, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
       >
         Pocket Friendly Picks
       </Typography>
 
       {isMobile ? (
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1.5,
-            overflowX: "auto",
-            px: 1.5,
-            py: 1,
-            scrollSnapType: "x mandatory",
-            "& > *": { scrollSnapAlign: "start" },
-          }}
-        >
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
           {products.slice(0, 8).map((product) => (
-            <Box key={product._id} sx={{ minWidth: 240 }}>
-              <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
-            </Box>
+            <ProductCard key={product._id} product={product} badge={product.discountPrice ? "SALE" : undefined} />
           ))}
         </Box>
       ) : (
         <Slider {...sliderSettings}>
           {products.map((product) => (
-            <Box key={product._id} sx={{ px: 1.5, outline: "none" }}>
+            <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
               <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
             </Box>
           ))}
