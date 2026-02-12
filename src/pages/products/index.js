@@ -436,19 +436,9 @@ export default function ProductListingPage() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={{ xs: 2, md: 3 }} columns={12}>
+              <Grid container spacing={{ xs: 2, md: 3 }}>
                 {products.map((product) => (
-                  <Grid
-                    key={product._id || product.id}
-                    sx={{
-                      gridColumn: {
-                        xs: "span 6",
-                        sm: "span 6",
-                        md: "span 4",
-                        lg: "span 3",
-                      },
-                    }}
-                  >
+                  <Grid item key={product._id || product.id} xs={6} sm={6} md={4} lg={3}>
                     <ProductCard
                       product={product}
                       isWishlisted={wishlist.includes(product._id)}
