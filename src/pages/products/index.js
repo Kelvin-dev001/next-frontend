@@ -39,7 +39,6 @@ export default function ProductListingPage() {
     search: "",
   });
 
-  // Initialize filters from query when router is ready
   useEffect(() => {
     if (!router.isReady) return;
     setFilters((prev) => ({
@@ -50,7 +49,6 @@ export default function ProductListingPage() {
     }));
   }, [router.isReady, categoryFromQuery, brandFromQuery]);
 
-  // Fetch categories and brands once
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -68,7 +66,6 @@ export default function ProductListingPage() {
     fetchInitialData();
   }, []);
 
-  // Fetch products whenever filters change
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -190,7 +187,6 @@ export default function ProductListingPage() {
           gap: 4,
         }}
       >
-        {/* Filters Sidebar */}
         {(!isMobile || showFilters) && (
           <Box
             sx={{
@@ -323,7 +319,6 @@ export default function ProductListingPage() {
           </Box>
         )}
 
-        {/* Main Content */}
         <Box sx={{ flexGrow: 1 }}>
           <Box
             sx={{
@@ -402,13 +397,13 @@ export default function ProductListingPage() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={3} columns={12}>
+              <Grid container spacing={{ xs: 2, md: 3 }} columns={12}>
                 {products.map((product) => (
                   <Grid
                     key={product._id || product.id}
                     sx={{
                       gridColumn: {
-                        xs: "span 12",
+                        xs: "span 6",
                         sm: "span 6",
                         md: "span 4",
                         lg: "span 3",

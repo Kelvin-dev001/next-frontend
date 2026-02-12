@@ -161,12 +161,27 @@ export default function ProductCard({
             </Typography>
           )}
         </Stack>
-        {product?.specs?.storage || product?.specs?.ram ? (
-          <Stack direction="row" spacing={0.6} sx={{ mt: 0.8 }}>
-            {product.specs?.storage && <Chip label={`Storage: ${product.specs.storage}`} size="small" variant="outlined" />}
-            {product.specs?.ram && <Chip label={`RAM: ${product.specs.ram}`} size="small" variant="outlined" />}
+
+        {(product?.specs?.storage || product?.specs?.ram) && (
+          <Stack direction="column" spacing={0.5} sx={{ mt: 0.8 }}>
+            {product.specs?.storage && (
+              <Chip
+                label={`Storage: ${product.specs.storage}`}
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: "0.68rem" }}
+              />
+            )}
+            {product.specs?.ram && (
+              <Chip
+                label={`RAM: ${product.specs.ram}`}
+                size="small"
+                variant="outlined"
+                sx={{ height: 22, fontSize: "0.68rem" }}
+              />
+            )}
           </Stack>
-        ) : null}
+        )}
       </CardContent>
 
       <Box sx={{ px: 1.5, pb: 1.5, pt: 0 }}>
@@ -182,6 +197,8 @@ export default function ProductCard({
               bgcolor: "success.main",
               "&:hover": { bgcolor: "success.dark" },
               mb: 0.6,
+              py: 0.9,
+              fontSize: "0.92rem",
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -201,7 +218,8 @@ export default function ProductCard({
               color: "primary.main",
               borderColor: "#6dd5ed",
               textTransform: "none",
-              fontSize: "0.98rem",
+              fontSize: "0.95rem",
+              py: 0.85,
               transition: "all 0.19s cubic-bezier(.4,2,.4,1)",
               "&:hover": {
                 background: "linear-gradient(96deg,#6dd5ed 10%,#1e3c72 90%)",
