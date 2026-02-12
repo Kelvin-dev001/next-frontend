@@ -1,16 +1,11 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Card, CardActionArea } from "@mui/material";
+import { Box, Typography, Card, CardActionArea, Container, Chip } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
 
-const CARD_HEIGHT = 200;
-const CARD_WIDTH = 150;
-const CARD_ASPECT_RATIO = "5/7";
-
 export default function ShopByCategorySection({ categories: categoriesProp = [] }) {
   const [categories, setCategories] = useState(categoriesProp);
-
   const shouldFetch = categoriesProp.length === 0;
 
   useEffect(() => {
@@ -34,95 +29,90 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
   );
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
-      <style>{`
-        .scroll-row { display: flex; flex-direction: row; overflow-x: auto; gap: 18px; scrollbar-width: thin; }
-        .scroll-row::-webkit-scrollbar { height: 8px; background: #f5f7fa; }
-        .scroll-row::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
-        .flip-card { perspective: 900px; min-width: ${CARD_WIDTH}px; max-width: ${CARD_WIDTH}px; flex: 0 0 auto; }
-        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(.4,2,.4,1); transform-style: preserve-3d; }
-        .flip-card:hover .flip-card-inner, .flip-card:focus .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 18px; }
-        .flip-card-front { background: #fff; color: #222; }
-        .flip-card-back { background: #f5f7fa; color: #1e3c72; transform: rotateY(180deg); }
-      `}</style>
-      <Typography variant="h4" align="center" sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}>
-        Shop by Category
-      </Typography>
-      <Box className="scroll-row" sx={{ px: { xs: 1, md: 3 }, pb: 1 }}>
-        {list.map((cat, idx) => (
-          <Link href={`/products?category=${encodeURIComponent(cat.name || "")}`} key={cat._id || idx} style={{ textDecoration: "none" }}>
+    <Box component="section" aria-label="Shop by category" sx={{ py: { xs: 6, md: 9 }, bgcolor: "background.default" }}>
+      <Container maxWidth="xl">
+        <Typography
+          variant="h2"
+          align="center"
+          sx={{ fontWeight: 800, mb: 4, color: "primary.main", letterSpacing: 0.6 }}
+        >
+          Shop by Category
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, minmax(0, 1fr))",
+              sm: "repeat(3, minmax(0, 1fr))",
+              md: "repeat(4, minmax(0, 1fr))",
+              lg: "repeat(6, minmax(0, 1fr))",
+            },
+            gap: { xs: 2, md: 2.5 },
+          }}
+        >
+          {list.map((cat, idx) => (
             <Card
-              className="flip-card"
+              key={cat._id || idx}
               elevation={0}
               sx={{
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT,
-                aspectRatio: CARD_ASPECT_RATIO,
-                borderRadius: "20px",
-                background: "#fff",
-                color: "primary.main",
-                boxShadow: "0 4px 24px 0 rgba(30,60,114,0.08)",
-                transition: "transform 0.35s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
-                cursor: "pointer",
-                position: "relative",
-                overflow: "visible",
-                border: "none",
-                "&:hover": { boxShadow: "0 10px 32px 0 rgba(30,60,114,0.14)", zIndex: 2 },
+                borderRadius: 3,
+                bgcolor: "#fff",
+                boxShadow: "0 6px 24px rgba(30, 60, 114, 0.08)",
+                border: "1px solid rgba(15, 23, 42, 0.05)",
               }}
-              tabIndex={0}
             >
               <CardActionArea
+                component={Link}
+                href={`/products?category=${encodeURIComponent(cat.name || "")}`}
                 sx={{
-                  borderRadius: "20px",
-                  height: CARD_HEIGHT,
-                  width: CARD_WIDTH,
+                  p: 2.5,
+                  textAlign: "center",
+                  minHeight: 160,
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center",
-                  p: 3,
-                  bgcolor: "transparent",
-                  "&:focus-visible": { outline: "none" },
+                  gap: 1.5,
                 }}
               >
-                <Box className="flip-card-inner" sx={{ width: "100%", height: "100%" }}>
-                  <Box className="flip-card-front">
-                    <Box
-                      sx={{
-                        mb: 2.5,
-                        mt: 1,
-                        width: 80,
-                        height: 80,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "15px",
-                        background: "#fff",
-                        boxShadow: "none",
-                      }}
-                    >
-                      <img
-                        src={cat.icon || "/category-placeholder.png"}
-                        alt={cat.name}
-                        style={{ width: 68, height: 68, objectFit: "contain", borderRadius: 12, background: "#fff" }}
-                        loading="lazy"
-                      />
-                    </Box>
-                    <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
-                      {cat.name || "Loading"}
-                    </Typography>
-                  </Box>
-                  <Box className="flip-card-back">
-                    <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
-                      {cat.name ? `Shop ${cat.name}` : "Stay tuned"}
-                    </Typography>
-                  </Box>
+                <Box
+                  sx={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 2,
+                    bgcolor: "#f8fafc",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                  }}
+                >
+                  <img
+                    src={cat.icon || "/category-placeholder.png"}
+                    alt={`${cat.name} category`}
+                    width={56}
+                    height={56}
+                    style={{ objectFit: "contain" }}
+                    loading="lazy"
+                  />
                 </Box>
+                <Typography variant="subtitle1" fontWeight={700} sx={{ color: "primary.dark" }}>
+                  {cat.name || "Loading"}
+                </Typography>
+                <Chip
+                  label="Explore"
+                  size="small"
+                  sx={{
+                    bgcolor: "#0f172a",
+                    color: "#fff",
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
+                  }}
+                />
               </CardActionArea>
             </Card>
-          </Link>
-        ))}
-      </Box>
+          ))}
+        </Box>
+      </Container>
     </Box>
   );
 }

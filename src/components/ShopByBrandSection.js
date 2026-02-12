@@ -1,17 +1,11 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Card, CardActionArea, Avatar } from "@mui/material";
+import { Box, Typography, Card, CardActionArea, Avatar, Container, Chip } from "@mui/material";
 import Link from "next/link";
-import Marquee from "react-fast-marquee";
 import { Api } from "@/lib/api";
-
-const CARD_HEIGHT = 180;
-const CARD_WIDTH = 140;
-const CARD_ASPECT_RATIO = "7/9";
 
 export default function ShopByBrandSection({ brands: brandsProp = [] }) {
   const [brands, setBrands] = useState(brandsProp);
-
   const shouldFetch = brandsProp.length === 0;
 
   useEffect(() => {
@@ -29,89 +23,81 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
     };
   }, [shouldFetch]);
 
-  // Only show placeholder if we truly have no data
   const list = useMemo(
     () => (brands && brands.length > 0 ? brands : [{ name: "Coming Soon", logo: "/brand-placeholder.png" }]),
     [brands]
   );
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
-      <style>{`
-        .flip-card { perspective: 900px; min-width: ${CARD_WIDTH}px; max-width: ${CARD_WIDTH}px; flex: 0 0 auto; }
-        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(.4,2,.4,1); transform-style: preserve-3d; }
-        .flip-card:hover .flip-card-inner, .flip-card:focus .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 18px; }
-        .flip-card-front { background: #fff; color: #222; }
-        .flip-card-back { background: #f5f7fa; color: #1e3c72; transform: rotateY(180deg); }
-      `}</style>
-      <Typography variant="h4" align="center" sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.2 }}>
-        Shop Top Brands
-      </Typography>
-      <Marquee gradient={false} speed={40} pauseOnHover style={{ paddingBottom: 16 }}>
-        <Box sx={{ display: "flex", gap: "18px", px: { xs: 1, md: 3 } }}>
+    <Box component="section" aria-label="Shop by top brands" sx={{ py: { xs: 6, md: 9 }, bgcolor: "background.default" }}>
+      <Container maxWidth="xl">
+        <Typography
+          variant="h2"
+          align="center"
+          sx={{ fontWeight: 800, mb: 4, color: "primary.main", letterSpacing: 0.6 }}
+        >
+          Shop by Top Brands
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, minmax(0, 1fr))",
+              sm: "repeat(3, minmax(0, 1fr))",
+              md: "repeat(4, minmax(0, 1fr))",
+              lg: "repeat(6, minmax(0, 1fr))",
+            },
+            gap: { xs: 2, md: 2.5 },
+          }}
+        >
           {list.map((brand, idx) => (
-            <Link href={`/products?brand=${encodeURIComponent(brand.name || "")}`} key={brand._id || idx} style={{ textDecoration: "none" }}>
-              <Card
-                className="flip-card"
-                elevation={0}
+            <Card
+              key={brand._id || idx}
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                bgcolor: "#fff",
+                boxShadow: "0 6px 24px rgba(30, 60, 114, 0.08)",
+                border: "1px solid rgba(15, 23, 42, 0.05)",
+              }}
+            >
+              <CardActionArea
+                component={Link}
+                href={`/products?brand=${encodeURIComponent(brand.name || "")}`}
                 sx={{
-                  width: CARD_WIDTH,
-                  height: CARD_HEIGHT,
-                  aspectRatio: CARD_ASPECT_RATIO,
-                  borderRadius: "20px",
-                  background: "#fff",
-                  color: "primary.main",
-                  boxShadow: "0 4px 24px 0 rgba(30,60,114,0.08)",
-                  transition: "transform 0.35s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
-                  cursor: "pointer",
-                  position: "relative",
-                  overflow: "visible",
-                  border: "none",
-                  "&:hover": { boxShadow: "0 10px 32px 0 rgba(30,60,114,0.14)", zIndex: 2 },
+                  p: 2.5,
+                  textAlign: "center",
+                  minHeight: 140,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.5,
                 }}
-                tabIndex={0}
               >
-                <CardActionArea
+                <Avatar
+                  src={brand.logo || "/brand-placeholder.png"}
+                  alt={`${brand.name} logo`}
+                  variant="rounded"
+                  sx={{ width: 56, height: 56, bgcolor: "#f8fafc" }}
+                />
+                <Typography variant="subtitle1" fontWeight={700} sx={{ color: "primary.dark" }}>
+                  {brand.name || "Loading"}
+                </Typography>
+                <Chip
+                  label="Shop now"
+                  size="small"
                   sx={{
-                    borderRadius: "20px",
-                    minHeight: CARD_HEIGHT,
-                    height: CARD_HEIGHT,
-                    width: CARD_WIDTH,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    p: 3,
-                    bgcolor: "transparent",
-                    "&:focus-visible": { outline: "none" },
+                    bgcolor: "#0f172a",
+                    color: "#fff",
+                    fontWeight: 700,
+                    letterSpacing: 0.3,
                   }}
-                >
-                  <Box className="flip-card-inner" sx={{ width: "100%", height: "100%", minHeight: CARD_HEIGHT }}>
-                    <Box className="flip-card-front">
-                      <Avatar
-                        src={brand.logo || "/brand-placeholder.png"}
-                        alt={brand.name}
-                        variant="square"
-                        sx={{ width: 54, height: 54, mb: 1.5, bgcolor: "#fff", objectFit: "contain" }}
-                      >
-                        {brand.name?.charAt(0) || "?"}
-                      </Avatar>
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: "primary.dark", letterSpacing: 0.8, fontSize: "1rem", textAlign: "center" }}>
-                        {brand.name || "Loading"}
-                      </Typography>
-                    </Box>
-                    <Box className="flip-card-back">
-                      <Typography variant="subtitle1" fontWeight={700} sx={{ fontSize: "1.10rem", letterSpacing: ".4px", textAlign: "center" }}>
-                        {brand.name ? `Shop ${brand.name}` : "Stay tuned"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardActionArea>
-              </Card>
-            </Link>
+                />
+              </CardActionArea>
+            </Card>
           ))}
         </Box>
-      </Marquee>
+      </Container>
     </Box>
   );
 }

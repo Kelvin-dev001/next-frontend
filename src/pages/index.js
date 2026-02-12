@@ -3,7 +3,7 @@ import { Api } from "@/lib/api";
 
 const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
 
-import HeroBannerSlider from "@/components/HeroBannerSlider";
+import PromoCardsSection from "@/components/PromoCardsSection";
 import ShopByBrandSection from "@/components/ShopByBrandSection";
 import ShopByCategorySection from "@/components/ShopByCategorySection";
 import FeaturedProductsSection from "@/components/FeaturedProductsSection";
@@ -11,13 +11,12 @@ import NewArrivalsSection from "@/components/NewArrivalsSection";
 import PocketFriendlySection from "@/components/PocketFriendlySection";
 import DealsSection from "@/components/DealsSection";
 import ReviewsSection from "@/components/ReviewsSection";
-import WhyChooseUsSection from "@/components/WhyChooseUsSection";
 import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews }) {
   return (
     <>
-      <HeroBannerSlider />
+      <PromoCardsSection />
       <ShopByBrandSection brands={brands} />
       <ShopByCategorySection categories={categories} />
       <FeaturedProductsSection products={featured} />
@@ -25,7 +24,6 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       <DealsSection />
       <NewArrivalsSection products={newArrivals} title="Hot Selling Smartphones in Kenya" />
       <ReviewsSection reviews={recentReviews} isHomepage />
-      <WhyChooseUsSection />
       <WhatsAppCTASection />
       <ProductAdvisorBot />
     </>
@@ -35,7 +33,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 export async function getStaticProps() {
   try {
     const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes] = await Promise.all([
-      Api.get("/products", { params: { featured: true, limit: 16 } }), // limit for faster first paint
+      Api.get("/products", { params: { featured: true, limit: 16 } }),
       Api.get("/products", { params: { limit: 120 } }),
       Api.get("/categories"),
       Api.get("/brands"),
