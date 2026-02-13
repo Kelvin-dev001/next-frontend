@@ -50,16 +50,9 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
       </Typography>
 
       {isMobile ? (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 1.5,
-            px: 1.5,
-          }}
-        >
+        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
           {visibleProducts.map((product) => (
-            <ProductCard key={product._id} product={product} badge={product.isFeatured ? "FEATURED" : undefined} />
+            <ProductCard key={product._id} product={product} badge={product.isFeatured ? "FEATURED" : undefined} size="compact" />
           ))}
         </Box>
       ) : (
@@ -69,6 +62,7 @@ export default function FeaturedProductsSection({ products = demoProducts }) {
               <ProductCard
                 product={product}
                 badge={product.isFeatured ? "FEATURED" : undefined}
+                size="compact"
                 sx={{
                   minHeight: 380,
                   borderRadius: "20px",

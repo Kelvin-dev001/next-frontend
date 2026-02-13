@@ -51,14 +51,14 @@ export default function PocketFriendlySection() {
       {isMobile ? (
         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
           {products.slice(0, 8).map((product) => (
-            <ProductCard key={product._id} product={product} badge={product.discountPrice ? "SALE" : undefined} />
+            <ProductCard key={product._id} product={product} badge={product.discountPrice ? "SALE" : undefined} size="compact" />
           ))}
         </Box>
       ) : (
         <Slider {...sliderSettings}>
           {products.map((product) => (
             <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
-              <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} />
+              <ProductCard product={product} badge={product.discountPrice ? "SALE" : undefined} size="compact" />
             </Box>
           ))}
         </Slider>

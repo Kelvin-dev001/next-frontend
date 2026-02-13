@@ -39,29 +39,14 @@ export default function NewArrivalsSection({ products = [], title = "New Smartph
       {isMobile ? (
         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
           {visibleProducts.map((product) => (
-            <ProductCard key={product._id} product={product} badge={product.badge} />
+            <ProductCard key={product._id} product={product} badge={product.badge} size="compact" />
           ))}
         </Box>
       ) : (
         <Slider {...sliderSettings}>
           {visibleProducts.map((product) => (
             <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
-              <ProductCard
-                product={product}
-                badge={product.badge}
-                sx={{
-                  minHeight: 380,
-                  borderRadius: "20px",
-                  boxShadow: "0 4px 22px 0 rgba(30,60,114,0.1)",
-                  transition: "transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
-                  bgcolor: "#fff",
-                  "&:hover": {
-                    boxShadow: "0 12px 40px 0 #1e3c72cc",
-                    transform: "translateY(-8px) scale(1.02)",
-                    zIndex: 3,
-                  },
-                }}
-              />
+              <ProductCard product={product} badge={product.badge} size="compact" />
             </Box>
           ))}
         </Slider>

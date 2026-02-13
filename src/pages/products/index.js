@@ -436,15 +436,16 @@ export default function ProductListingPage() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={{ xs: 1.5, md: 3 }}>
+              <Grid container spacing={{ xs: 2, md: 3 }}>
                 {products.map((product) => (
-                  <Grid item key={product._id || product.id} xs={6} sm={6} md={4} lg={3}>
+                  <Grid item key={product._id || product.id} xs={12} sm={6} md={4} lg={3}>
                     <ProductCard
                       product={product}
                       isWishlisted={wishlist.includes(product._id)}
                       onWishlistToggle={toggleWishlist}
                       showWhatsApp={true}
                       showViewBtn={true}
+                      size="full"
                     />
                   </Grid>
                 ))}

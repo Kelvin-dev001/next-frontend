@@ -59,14 +59,14 @@ export default function DealsSection() {
             {isMobile ? (
               <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
                 {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                  <ProductCard key={product._id} product={product} badge="SALE" />
+                  <ProductCard key={product._id} product={product} badge="SALE" size="compact" />
                 ))}
               </Box>
             ) : (
               <Slider {...sliderSettings}>
                 {deals[key].slice(0, DEALS_LIMIT).map((product) => (
                   <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
-                    <ProductCard product={product} badge="SALE" />
+                    <ProductCard product={product} badge="SALE" size="compact" />
                   </Box>
                 ))}
               </Slider>

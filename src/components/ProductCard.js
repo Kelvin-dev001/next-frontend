@@ -21,6 +21,7 @@ export default function ProductCard({
   showWhatsApp = true,
   showViewBtn = true,
   badge,
+  size = "compact",
   sx = {},
   ...props
 }) {
@@ -34,24 +35,26 @@ export default function ProductCard({
   const cloudUrl =
     product?.thumbnail ||
     (Array.isArray(product?.images) && product.images.length > 0 && product.images[0]);
-  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 620 }) || "/fallback.png";
+  const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 720 }) || "/fallback.png";
 
   const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
+
+  const isFull = size === "full";
 
   return (
     <Card
       sx={{
         width: "100%",
-        borderRadius: "18px",
+        borderRadius: isFull ? "22px" : "18px",
         background: "#fff",
         color: "primary.main",
-        boxShadow: "0 4px 20px 0 rgba(30,60,114,0.08)",
+        boxShadow: "0 6px 24px rgba(30,60,114,0.1)",
         transition: "transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
         cursor: "pointer",
         position: "relative",
         overflow: "hidden",
         border: "none",
-        minHeight: { xs: 360, md: 350 },
+        minHeight: isFull ? { xs: 420, md: 360 } : { xs: 360, md: 350 },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -61,13 +64,13 @@ export default function ProductCard({
       {...props}
       onClick={() => router.push(`/products/${product?._id || product?.id || ""}`)}
     >
-      <Box sx={{ position: "relative", pt: 1.2, px: 1.2 }}>
+      <Box sx={{ position: "relative", pt: isFull ? 1.6 : 1.2, px: isFull ? 1.8 : 1.2 }}>
         <Box
           sx={{
             position: "relative",
             width: "100%",
-            aspectRatio: "4 / 5",
-            borderRadius: "14px",
+            aspectRatio: isFull ? "5 / 4" : "4 / 5",
+            borderRadius: isFull ? "16px" : "14px",
             overflow: "hidden",
             bgcolor: "#f4f6f8",
           }}
@@ -76,7 +79,7 @@ export default function ProductCard({
             src={imgUrl}
             alt={product?.name || "Product"}
             fill
-            sizes="(max-width: 600px) 48vw, (max-width: 960px) 32vw, 22vw"
+            sizes={isFull ? "(max-width: 600px) 90vw, 600px" : "(max-width: 600px) 48vw, 32vw"}
             style={{ objectFit: "contain" }}
             priority={false}
           />
@@ -120,12 +123,12 @@ export default function ProductCard({
         </IconButton>
       </Box>
 
-      <CardContent sx={{ flexGrow: 1, px: 1.2, pt: 1.2, pb: 0.8 }}>
+      <CardContent sx={{ flexGrow: 1, px: isFull ? 2 : 1.2, pt: 1.2, pb: 0.8 }}>
         <Typography variant="caption" color="text.secondary" sx={{ mb: 0.3, display: "block" }}>
           {product?.brand}
         </Typography>
         <Typography
-          variant="subtitle1"
+          variant={isFull ? "h6" : "subtitle1"}
           fontWeight={700}
           gutterBottom
           sx={{
@@ -153,7 +156,7 @@ export default function ProductCard({
           </Typography>
         </Stack>
         <Stack direction="row" alignItems="center" spacing={0.8}>
-          <Typography variant="subtitle1" color="primary" fontWeight={700}>
+          <Typography variant={isFull ? "h6" : "subtitle1"} color="primary" fontWeight={700}>
             {product?.discountPrice || product?.price ? formatPrice(product.discountPrice || product.price) : "—"}
           </Typography>
           {product?.discountPrice && (
@@ -185,7 +188,7 @@ export default function ProductCard({
         )}
       </CardContent>
 
-      <Box sx={{ px: 1.2, pb: 1.2, pt: 0.6 }}>
+      <Box sx={{ px: isFull ? 2 : 1.2, pb: isFull ? 1.6 : 1.2, pt: 0.6 }}>
         {showWhatsApp && (
           <Button
             variant="contained"
@@ -198,8 +201,8 @@ export default function ProductCard({
               bgcolor: "success.main",
               "&:hover": { bgcolor: "success.dark" },
               mb: 0.6,
-              py: 0.9,
-              fontSize: "0.92rem",
+              py: isFull ? 1.1 : 0.9,
+              fontSize: isFull ? "1rem" : "0.92rem",
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -219,8 +222,8 @@ export default function ProductCard({
               color: "primary.main",
               borderColor: "#6dd5ed",
               textTransform: "none",
-              fontSize: "0.95rem",
-              py: 0.85,
+              fontSize: isFull ? "1rem" : "0.95rem",
+              py: isFull ? 1 : 0.85,
               transition: "all 0.19s cubic-bezier(.4,2,.4,1)",
               "&:hover": {
                 background: "linear-gradient(96deg,#6dd5ed 10%,#1e3c72 90%)",
