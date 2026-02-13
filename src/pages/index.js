@@ -23,7 +23,7 @@ const PAGE_DESCRIPTION =
 export default function Home({ featured, newArrivals, brands, categories, recentReviews }) {
   const organizationJsonLd = {
     "@context": "https://schema.org",
-    "@type": "ElectronicsStore",
+    "@type": "mobilephoneStore",
     name: SITE_NAME,
     url: SITE_URL,
     description: PAGE_DESCRIPTION,
@@ -33,7 +33,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       addressLocality: "Mombasa",
       addressCountry: "KE",
     },
-    telephone: "+254711111602",
+    telephone: "+254117000900",
   };
 
   return (
