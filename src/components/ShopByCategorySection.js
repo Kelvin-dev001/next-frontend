@@ -43,12 +43,12 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "repeat(3, minmax(0, 1fr))",
-              sm: "repeat(4, minmax(0, 1fr))",
-              md: "repeat(5, minmax(0, 1fr))",
+              xs: "repeat(2, minmax(0, 1fr))",
+              sm: "repeat(3, minmax(0, 1fr))",
+              md: "repeat(4, minmax(0, 1fr))",
               lg: "repeat(6, minmax(0, 1fr))",
             },
-            gap: { xs: 1.5, md: 2 },
+            gap: { xs: 1.6, md: 2 },
           }}
         >
           {list.map((cat, idx) => (
@@ -66,9 +66,9 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
                 component={Link}
                 href={`/products?category=${encodeURIComponent(cat.name || "")}`}
                 sx={{
-                  p: 1.5,
+                  p: 1.6,
                   textAlign: "center",
-                  minHeight: 120,
+                  minHeight: 125,
                   display: "flex",
                   flexDirection: "column",
                   gap: 1,

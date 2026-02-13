@@ -28,7 +28,7 @@ const menuSections = [
 
 export default function MainNavbar({ brands: brandsProp = [], categories: categoriesProp = [], onMenuClick }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true, defaultMatches: false });
   const router = useRouter();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -80,7 +80,12 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
           boxShadow: "0 2px 24px 0 rgba(0,0,0,0.06), 0 0.5px 1.5px 0 rgba(0,0,0,0.03)"
         }}
       >
-        <Toolbar>
+        <Toolbar
+          sx={{
+            minHeight: { xs: 64, md: 72 },
+            alignItems: "center",
+          }}
+        >
           {isMobile && (
             <IconButton edge="start" color="inherit" onClick={handleMenuClick} sx={{ mr: 1 }}>
               <MenuIcon fontSize="large" />

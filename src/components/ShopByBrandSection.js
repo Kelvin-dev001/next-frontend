@@ -43,12 +43,12 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
           sx={{
             display: "grid",
             gridTemplateColumns: {
-              xs: "repeat(3, minmax(0, 1fr))",
-              sm: "repeat(4, minmax(0, 1fr))",
-              md: "repeat(5, minmax(0, 1fr))",
+              xs: "repeat(2, minmax(0, 1fr))",
+              sm: "repeat(3, minmax(0, 1fr))",
+              md: "repeat(4, minmax(0, 1fr))",
               lg: "repeat(6, minmax(0, 1fr))",
             },
-            gap: { xs: 1.5, md: 2 },
+            gap: { xs: 1.6, md: 2 },
           }}
         >
           {list.map((brand, idx) => (
@@ -66,9 +66,9 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
                 component={Link}
                 href={`/products?brand=${encodeURIComponent(brand.name || "")}`}
                 sx={{
-                  p: 1.5,
+                  p: 1.6,
                   textAlign: "center",
-                  minHeight: 110,
+                  minHeight: 120,
                   display: "flex",
                   flexDirection: "column",
                   gap: 1,
@@ -78,7 +78,7 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
                   src={brand.logo || "/brand-placeholder.png"}
                   alt={`${brand.name} logo`}
                   variant="rounded"
-                  sx={{ width: 44, height: 44, bgcolor: "#f8fafc" }}
+                  sx={{ width: 46, height: 46, bgcolor: "#f8fafc" }}
                 />
                 <Typography variant="caption" fontWeight={700} sx={{ color: "primary.dark" }}>
                   {brand.name || "Loading"}

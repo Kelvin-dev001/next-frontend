@@ -24,6 +24,16 @@ export default function ProductListingPage() {
 
   const brandFromQuery = useMemo(() => (router.query.brand ? String(router.query.brand) : ""), [router.query.brand]);
   const categoryFromQuery = useMemo(() => (router.query.category ? String(router.query.category) : ""), [router.query.category]);
+  const sortFromQuery = useMemo(() => (router.query.sort ? String(router.query.sort) : ""), [router.query.sort]);
+  const dealTypeFromQuery = useMemo(() => (router.query.dealType ? String(router.query.dealType) : ""), [router.query.dealType]);
+  const minPriceFromQuery = useMemo(
+    () => (router.query.minPrice ? Number(router.query.minPrice) : 0),
+    [router.query.minPrice]
+  );
+  const maxPriceFromQuery = useMemo(
+    () => (router.query.maxPrice ? Number(router.query.maxPrice) : 500000),
+    [router.query.maxPrice]
+  );
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +53,7 @@ export default function ProductListingPage() {
     maxPrice: 500000,
     sort: "random",
     search: "",
+    dealType: "",
   });
 
   const listingJsonLd = {
@@ -61,9 +72,21 @@ export default function ProductListingPage() {
       ...prev,
       category: categoryFromQuery,
       brand: brandFromQuery,
+      sort: sortFromQuery || prev.sort,
+      minPrice: Number.isFinite(minPriceFromQuery) ? minPriceFromQuery : 0,
+      maxPrice: Number.isFinite(maxPriceFromQuery) ? maxPriceFromQuery : 500000,
+      dealType: dealTypeFromQuery,
       page: 1,
     }));
-  }, [router.isReady, categoryFromQuery, brandFromQuery]);
+  }, [
+    router.isReady,
+    categoryFromQuery,
+    brandFromQuery,
+    sortFromQuery,
+    minPriceFromQuery,
+    maxPriceFromQuery,
+    dealTypeFromQuery,
+  ]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -97,6 +120,7 @@ export default function ProductListingPage() {
             maxPrice: filters.maxPrice,
             search: filters.search,
             sort: filters.sort,
+            dealType: filters.dealType,
           },
         });
         setProducts(response.data?.products || []);
@@ -152,6 +176,7 @@ export default function ProductListingPage() {
       maxPrice: 500000,
       sort: "random",
       search: "",
+      dealType: "",
     });
     router.replace("/products", undefined, { shallow: true });
   };
@@ -438,14 +463,14 @@ export default function ProductListingPage() {
             <>
               <Grid container spacing={{ xs: 2, md: 3 }}>
                 {products.map((product) => (
-                  <Grid item key={product._id || product.id} xs={12} sm={6} md={4} lg={3}>
+                  <Grid item key={product._id || product.id} xs={6} sm={6} md={3} lg={3}>
                     <ProductCard
                       product={product}
                       isWishlisted={wishlist.includes(product._id)}
                       onWishlistToggle={toggleWishlist}
                       showWhatsApp={true}
                       showViewBtn={true}
-                      size="full"
+                      size="compact"
                     />
                   </Grid>
                 ))}
