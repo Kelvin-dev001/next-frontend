@@ -15,7 +15,7 @@ export default function AdminLogin() {
     setError("");
     setLoading(true);
     try {
-      const response = await Api.post("/admin/login", { password });
+      const response = await Api.post("/auth/login", { password });
       if (response.data?.token) setToken(response.data.token);
       router.replace("/admin");
     } catch (err) {

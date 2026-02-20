@@ -8,7 +8,7 @@ export default function LogoutButton() {
   const router = useRouter();
   const handleLogout = async () => {
     try {
-      await Api.post("/admin/logout");
+      await Api.post("/auth/logout");
     } catch (err) {
       /* ignore */
     }

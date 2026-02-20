@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Api } from "@/lib/api";
 
-const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("jwtToken") : null);
 
 export default function RequireAdmin({ children }) {
   const [checking, setChecking] = useState(true);
@@ -24,7 +24,7 @@ export default function RequireAdmin({ children }) {
         return;
       }
       try {
-        const { data } = await Api.get("/admin/check");
+        const { data } = await Api.get("/auth/check");
         if (!cancelled) {
           setIsAdmin(Boolean(data?.isAdmin));
           setChecking(false);
