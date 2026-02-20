@@ -5,6 +5,7 @@ import { Api } from "@/lib/api";
 const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
 
 import PromoCardsSection from "@/components/PromoCardsSection";
+import SafaricomCorner from "@/components/SafaricomCorner";
 import ShopByBrandSection from "@/components/ShopByBrandSection";
 import ShopByCategorySection from "@/components/ShopByCategorySection";
 import FeaturedProductsSection from "@/components/FeaturedProductsSection";
@@ -20,7 +21,7 @@ const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
 
-export default function Home({ featured, newArrivals, brands, categories, recentReviews }) {
+export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "mobilephoneStore",
@@ -62,6 +63,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       </Head>
 
       <PromoCardsSection />
+      <SafaricomCorner sections={sections} />
       <ShopByBrandSection brands={brands} />
       <ShopByCategorySection categories={categories} />
       <FeaturedProductsSection products={featured} />
@@ -77,12 +79,13 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
 export async function getStaticProps() {
   try {
-    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes] = await Promise.all([
+    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes] = await Promise.all([
       Api.get("/products", { params: { featured: true, limit: 16 } }),
       Api.get("/products", { params: { limit: 120 } }),
       Api.get("/categories"),
       Api.get("/brands"),
       Api.get("/reviews/recent"),
+      Api.get("/homepage-sections"),
     ]);
 
     const shuffle = (arr = []) => [...arr].sort(() => 0.5 - Math.random());
@@ -96,13 +99,14 @@ export async function getStaticProps() {
         categories: categoriesRes.data?.categories || categoriesRes.data || [],
         brands: brandsRes.data?.brands || brandsRes.data || [],
         recentReviews: reviewsRes.data?.reviews || [],
+        sections: sectionsRes.data || [],
       },
       revalidate: 60,
     };
   } catch (e) {
     console.error("Home data error", e);
     return {
-      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [] },
+      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [] },
       revalidate: 30,
     };
   }

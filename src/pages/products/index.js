@@ -220,7 +220,7 @@ export default function ProductListingPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1.2, sm: 2 } }}>
+    <Container maxWidth="xl" sx={{ py: 3, px: { xs: 1, sm: 2 }, mx: "auto" }}>
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
@@ -244,13 +244,7 @@ export default function ProductListingPage() {
         />
       </Head>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          gap: 3,
-        }}
-      >
+      <Box sx={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 3 }}>
         {(!isMobile || showFilters) && (
           <Box
             sx={{
@@ -267,14 +261,7 @@ export default function ProductListingPage() {
             }}
           >
             {isMobile && (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-                }}
-              >
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                 <Typography variant="h6">Filters</Typography>
                 <IconButton onClick={() => setShowFilters(false)}>
                   <Close />
@@ -286,11 +273,7 @@ export default function ProductListingPage() {
               <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
                 Search
               </Typography>
-              <AutoCompleteSearch
-                onSelect={handleSearchSelect}
-                placeholder="Search products..."
-                sx={{ mb: 2 }}
-              />
+              <AutoCompleteSearch onSelect={handleSearchSelect} placeholder="Search products..." sx={{ mb: 2 }} />
             </Box>
 
             <Box sx={{ mb: 3 }}>
@@ -321,13 +304,7 @@ export default function ProductListingPage() {
               <Select
                 name="category"
                 value={filters.category}
-                onChange={(e) =>
-                  setFilters((f) => ({
-                    ...f,
-                    category: e.target.value,
-                    page: 1,
-                  }))
-                }
+                onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value, page: 1 }))}
                 fullWidth
                 displayEmpty
                 size="small"
@@ -349,13 +326,7 @@ export default function ProductListingPage() {
               <Select
                 name="brand"
                 value={filters.brand}
-                onChange={(e) =>
-                  setFilters((f) => ({
-                    ...f,
-                    brand: e.target.value,
-                    page: 1,
-                  }))
-                }
+                onChange={(e) => setFilters((f) => ({ ...f, brand: e.target.value, page: 1 }))}
                 fullWidth
                 displayEmpty
                 size="small"
@@ -383,50 +354,24 @@ export default function ProductListingPage() {
           </Box>
         )}
 
-        <Box sx={{ flexGrow: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
+        <Box sx={{ flexGrow: 1, width: "100%" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
-              {filters.category
-                ? filters.category
-                : filters.brand
-                ? filters.brand
-                : "All Products"}
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                component="span"
-                sx={{ ml: 1 }}
-              >
+              {filters.category ? filters.category : filters.brand ? filters.brand : "All Products"}
+              <Typography variant="body2" color="text.secondary" component="span" sx={{ ml: 1 }}>
                 ({totalProducts} products)
               </Typography>
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Select
-                value={filters.limit}
-                onChange={handleProductsPerPageChange}
-                size="small"
-                sx={{ minWidth: 120 }}
-              >
+              <Select value={filters.limit} onChange={handleProductsPerPageChange} size="small" sx={{ minWidth: 120 }}>
                 {PRODUCTS_PER_PAGE_OPTIONS.map((option) => (
                   <MenuItem key={option} value={option}>
                     {option} / page
                   </MenuItem>
                 ))}
               </Select>
-              <Select
-                value={filters.sort}
-                onChange={handleSortChange}
-                size="small"
-                sx={{ minWidth: 180 }}
-              >
+              <Select value={filters.sort} onChange={handleSortChange} size="small" sx={{ minWidth: 180 }}>
                 <MenuItem value="random">Random</MenuItem>
                 <MenuItem value="newest">Newest</MenuItem>
                 <MenuItem value="price-low">Price: Low to High</MenuItem>
@@ -442,16 +387,7 @@ export default function ProductListingPage() {
           </Box>
 
           {products.length === 0 ? (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "50vh",
-                textAlign: "center",
-              }}
-            >
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "50vh", textAlign: "center" }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 No products found matching your filters
               </Typography>
@@ -461,7 +397,7 @@ export default function ProductListingPage() {
             </Box>
           ) : (
             <>
-              <Grid container spacing={{ xs: 2, md: 3 }}>
+              <Grid container spacing={{ xs: 2, md: 3 }} sx={{ width: "100%", ml: 0 }}>
                 {products.map((product) => (
                   <Grid item key={product._id || product.id} xs={6} sm={6} md={3} lg={3}>
                     <ProductCard

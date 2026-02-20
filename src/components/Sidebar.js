@@ -23,6 +23,7 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 
 const DRAWER_WIDTH = 240;
 
@@ -37,6 +38,7 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
     { text: "Customers", icon: <CustomersIcon />, path: "/admin/customers" },
     { text: "Categories", icon: <CategoryIcon />, path: "/admin/categories" },
     { text: "Brands", icon: <BrandIcon />, path: "/admin/brands" },
+    { text: "Homepage Sections", icon: <ViewCarouselIcon />, path: "/admin/homepage-sections" },
   ];
 
   const secondaryItems = [
