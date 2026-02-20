@@ -28,7 +28,6 @@ const iconMap = {
 
 export default function SafaricomCorner({ sections = [] }) {
   const section = sections.find((s) => s.sectionKey === "safaricom_corner" && s.enabled);
-
   if (!section) return null;
 
   return (
@@ -47,6 +46,7 @@ export default function SafaricomCorner({ sections = [] }) {
         >
           {section.title}
         </Typography>
+
         {section.subtitle && (
           <Typography align="center" sx={{ mb: 4, color: "text.secondary", maxWidth: 720, mx: "auto" }}>
             {section.subtitle}
@@ -69,12 +69,14 @@ export default function SafaricomCorner({ sections = [] }) {
             const link = item.ctaLink
               ? item.ctaLink
               : `/products?category=${encodeURIComponent(item.category || "")}&search=${encodeURIComponent(item.search || "")}`;
+
             return (
               <Card
                 key={`${item.title}-${idx}`}
                 elevation={0}
                 sx={{
                   borderRadius: 2.5,
+                  overflow: "hidden",
                   bgcolor: "#fff",
                   boxShadow: "0 5px 18px rgba(30, 60, 114, 0.08)",
                   border: "1px solid rgba(15, 23, 42, 0.05)",
@@ -84,47 +86,75 @@ export default function SafaricomCorner({ sections = [] }) {
                   component={Link}
                   href={link}
                   sx={{
-                    p: 2,
-                    textAlign: "center",
-                    minHeight: 150,
+                    position: "relative",
+                    minHeight: 170,
                     display: "flex",
                     flexDirection: "column",
-                    gap: 1.2,
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    textAlign: "center",
+                    p: 2,
+                    color: "#fff",
+                    backgroundImage: item.image ? `url(${item.image})` : "none",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
                   }}
                 >
-                  <Stack
-                    alignItems="center"
-                    justifyContent="center"
+                  {/* Overlay */}
+                  <Box
                     sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 2,
-                      bgcolor: "#f5f8ff",
-                      color: "primary.main",
-                      mx: "auto",
-                    }}
-                  >
-                    {iconMap[item.iconKey] || iconMap.default}
-                  </Stack>
-                  <Typography variant="subtitle2" fontWeight={700} sx={{ color: "primary.dark" }}>
-                    {item.title}
-                  </Typography>
-                  {item.subtitle && (
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      {item.subtitle}
-                    </Typography>
-                  )}
-                  <Chip
-                    label={item.ctaLabel || "View Service"}
-                    size="small"
-                    sx={{
-                      bgcolor: "#1e3c72",
-                      color: "#fff",
-                      fontWeight: 700,
-                      letterSpacing: 0.3,
-                      fontSize: "0.68rem",
+                      position: "absolute",
+                      inset: 0,
+                      bgcolor: item.image ? "rgba(0,0,0,0.55)" : "transparent",
                     }}
                   />
+
+                  {/* Fallback icon if no image */}
+                  {!item.image && (
+                    <Stack
+                      alignItems="center"
+                      justifyContent="center"
+                      sx={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 2,
+                        bgcolor: "#f5f8ff",
+                        color: "primary.main",
+                        mx: "auto",
+                        mb: 1.5,
+                        zIndex: 1,
+                      }}
+                    >
+                      {iconMap[item.iconKey] || iconMap.default}
+                    </Stack>
+                  )}
+
+                  {/* Text */}
+                  <Box sx={{ position: "relative", zIndex: 1 }}>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ color: "#fff" }}>
+                      {item.title}
+                    </Typography>
+
+                    {item.subtitle && (
+                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)" }}>
+                        {item.subtitle}
+                      </Typography>
+                    )}
+
+                    <Chip
+                      label={item.ctaLabel || "View Service"}
+                      size="small"
+                      sx={{
+                        mt: 1,
+                        bgcolor: "#1e3c72",
+                        color: "#fff",
+                        fontWeight: 700,
+                        letterSpacing: 0.3,
+                        fontSize: "0.68rem",
+                      }}
+                    />
+                  </Box>
                 </CardActionArea>
               </Card>
             );
