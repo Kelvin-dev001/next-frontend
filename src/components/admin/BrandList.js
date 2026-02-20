@@ -8,7 +8,7 @@ import {
   import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import BrandForm from "./BrandForm";
+import BrandForm from "@/components/admin/BrandForm";
 
 export default function BrandList() {
   const [brands, setBrands] = useState([]);
