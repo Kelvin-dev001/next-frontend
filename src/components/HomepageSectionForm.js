@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Button, Stack, IconButton, Divider,
-  FormControlLabel, Checkbox, MenuItem, Select, InputLabel, FormControl
+  FormControlLabel, Checkbox, MenuItem, Select, InputLabel, FormControl, Avatar
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -36,6 +36,16 @@ export default function HomepageSectionForm({ section, onSave, onCancel }) {
     updateField("items", items);
   };
 
+  const handleImageChange = (idx, file) => {
+    const items = [...form.items];
+    items[idx] = {
+      ...items[idx],
+      _file: file,
+      _preview: file ? URL.createObjectURL(file) : "",
+    };
+    updateField("items", items);
+  };
+
   const addItem = () => {
     updateField("items", [
       ...form.items,
@@ -48,6 +58,8 @@ export default function HomepageSectionForm({ section, onSave, onCancel }) {
         ctaLabel: "View Service",
         ctaLink: "",
         image: "",
+        _file: null,
+        _preview: "",
       },
     ]);
   };
@@ -73,31 +85,46 @@ export default function HomepageSectionForm({ section, onSave, onCancel }) {
 
           <Divider />
 
-          {form.items.map((item, idx) => (
-            <Stack key={idx} spacing={1} sx={{ p: 2, border: "1px solid #eee", borderRadius: 2 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <strong>Card #{idx + 1}</strong>
-                <IconButton color="error" onClick={() => removeItem(idx)}>
-                  <DeleteIcon />
-                </IconButton>
+          {form.items.map((item, idx) => {
+            const preview = item._preview || item.image || "";
+            return (
+              <Stack key={idx} spacing={1} sx={{ p: 2, border: "1px solid #eee", borderRadius: 2 }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <strong>Card #{idx + 1}</strong>
+                  <IconButton color="error" onClick={() => removeItem(idx)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Stack>
+                <TextField label="Title" value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} fullWidth required />
+                <TextField label="Subtitle" value={item.subtitle} onChange={(e) => updateItem(idx, "subtitle", e.target.value)} fullWidth />
+                <FormControl fullWidth>
+                  <InputLabel>Icon</InputLabel>
+                  <Select value={item.iconKey} label="Icon" onChange={(e) => updateItem(idx, "iconKey", e.target.value)}>
+                    {iconOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField label="Category" value={item.category} onChange={(e) => updateItem(idx, "category", e.target.value)} fullWidth />
+                <TextField label="Search Query" value={item.search} onChange={(e) => updateItem(idx, "search", e.target.value)} fullWidth />
+                <TextField label="CTA Label" value={item.ctaLabel} onChange={(e) => updateItem(idx, "ctaLabel", e.target.value)} fullWidth />
+                <TextField label="CTA Link (optional)" value={item.ctaLink} onChange={(e) => updateItem(idx, "ctaLink", e.target.value)} fullWidth />
+
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Button variant="outlined" component="label">
+                    Upload Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={(e) => handleImageChange(idx, e.target.files?.[0] || null)}
+                    />
+                  </Button>
+                  {preview && <Avatar src={preview} sx={{ width: 56, height: 56 }} />}
+                </Stack>
               </Stack>
-              <TextField label="Title" value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} fullWidth required />
-              <TextField label="Subtitle" value={item.subtitle} onChange={(e) => updateItem(idx, "subtitle", e.target.value)} fullWidth />
-              <FormControl fullWidth>
-                <InputLabel>Icon</InputLabel>
-                <Select value={item.iconKey} label="Icon" onChange={(e) => updateItem(idx, "iconKey", e.target.value)}>
-                  {iconOptions.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField label="Category" value={item.category} onChange={(e) => updateItem(idx, "category", e.target.value)} fullWidth />
-              <TextField label="Search Query" value={item.search} onChange={(e) => updateItem(idx, "search", e.target.value)} fullWidth />
-              <TextField label="CTA Label" value={item.ctaLabel} onChange={(e) => updateItem(idx, "ctaLabel", e.target.value)} fullWidth />
-              <TextField label="CTA Link (optional)" value={item.ctaLink} onChange={(e) => updateItem(idx, "ctaLink", e.target.value)} fullWidth />
-              <TextField label="Image URL (optional)" value={item.image} onChange={(e) => updateItem(idx, "image", e.target.value)} fullWidth />
-            </Stack>
-          ))}
+            );
+          })}
 
           <Button variant="outlined" onClick={addItem}>Add Card</Button>
         </Stack>

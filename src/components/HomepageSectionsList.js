@@ -32,11 +32,51 @@ export default function HomepageSectionsList() {
   };
 
   const handleSave = async (form) => {
-    if (editSection?._id) {
-      await Api.put(`/homepage-sections/${editSection._id}`, form);
-    } else {
-      await Api.post("/homepage-sections", form);
+    // validate required images
+    for (let i = 0; i < form.items.length; i++) {
+      const item = form.items[i];
+      if (!item._file && !item.image) {
+        alert(`Card #${i + 1} requires an image.`);
+        return;
+      }
     }
+
+    const payload = new FormData();
+    payload.append("sectionKey", form.sectionKey);
+    payload.append("title", form.title);
+    payload.append("subtitle", form.subtitle || "");
+    payload.append("enabled", String(form.enabled));
+    payload.append("order", String(form.order || 0));
+
+    const items = form.items.map((item) => ({
+      title: item.title,
+      subtitle: item.subtitle,
+      iconKey: item.iconKey,
+      category: item.category,
+      search: item.search,
+      ctaLabel: item.ctaLabel,
+      ctaLink: item.ctaLink,
+      image: item.image || "",
+    }));
+
+    payload.append("items", JSON.stringify(items));
+
+    form.items.forEach((item, idx) => {
+      if (item._file) {
+        payload.append(`itemImage_${idx}`, item._file);
+      }
+    });
+
+    if (editSection?._id) {
+      await Api.put(`/homepage-sections/${editSection._id}`, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } else {
+      await Api.post("/homepage-sections", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    }
+
     setShowForm(false);
     setEditSection(null);
     fetchSections();
