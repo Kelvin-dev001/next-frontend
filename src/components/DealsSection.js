@@ -1,9 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Stack, useTheme, useMediaQuery } from "@mui/material";
-import Slider from "react-slick";
+import { Box, Typography, Stack } from "@mui/material";
 import { Api } from "@/lib/api";
-import ProductCard from "./ProductCard";
+import ProductGrid from "@/components/ProductGrid";
 
 const DEALS_LIMIT = 8;
 const dealTypes = [
@@ -14,9 +13,6 @@ const dealTypes = [
 
 export default function DealsSection() {
   const [deals, setDeals] = useState({ dealOfTheDay: [], flashSale: [], limitedOffer: [] });
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     Api.get("/products", { params: { isOnSale: true, limit: 30 } })
@@ -31,20 +27,6 @@ export default function DealsSection() {
       .catch(() => setDeals({ dealOfTheDay: [], flashSale: [], limitedOffer: [] }));
   }, []);
 
-  const sliderSettings = {
-    dots: false,
-    infinite: false,
-    speed: 600,
-    slidesToShow: isMobile ? 2 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 2 : isTablet ? 2 : 4,
-    arrows: !isMobile,
-    autoplay: false,
-    responsive: [
-      { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
-      { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-    ],
-  };
-
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
       {dealTypes.map(({ key, label }) =>
@@ -56,21 +38,13 @@ export default function DealsSection() {
               </Typography>
             </Stack>
 
-            {isMobile ? (
-              <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
-                {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                  <ProductCard key={product._id} product={product} badge="SALE" size="compact" />
-                ))}
-              </Box>
-            ) : (
-              <Slider {...sliderSettings}>
-                {deals[key].slice(0, DEALS_LIMIT).map((product) => (
-                  <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
-                    <ProductCard product={product} badge="SALE" size="compact" />
-                  </Box>
-                ))}
-              </Slider>
-            )}
+            <ProductGrid
+              items={deals[key].slice(0, DEALS_LIMIT)}
+              eagerCount={4}
+              size="compact"
+              showWhatsApp
+              showViewBtn
+            />
           </Box>
         ) : null
       )}

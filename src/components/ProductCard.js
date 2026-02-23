@@ -23,6 +23,7 @@ export default function ProductCard({
   badge,
   size = "compact",
   sx = {},
+  imagePriority = false,
   ...props
 }) {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function ProductCard({
             fill
             sizes={isFull ? "(max-width: 600px) 90vw, 600px" : "(max-width: 600px) 48vw, 32vw"}
             style={{ objectFit: "contain" }}
-            priority={false}
+            priority={imagePriority}
           />
         </Box>
 

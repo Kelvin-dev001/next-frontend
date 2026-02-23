@@ -1,30 +1,10 @@
 "use client";
 import React from "react";
-import Slider from "react-slick";
-import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-import ProductCard from "./ProductCard";
+import { Box, Typography } from "@mui/material";
+import ProductGrid from "@/components/ProductGrid";
 
 export default function NewArrivalsSection({ products = [], title = "New Smartphones in Kenya" }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
-
-  const visibleProducts = isMobile ? products.slice(0, 8) : products;
-
-  const sliderSettings = {
-    dots: false,
-    infinite: visibleProducts.length > (isTablet ? 2 : 4),
-    speed: 600,
-    slidesToShow: isMobile ? 2 : isTablet ? 2 : 4,
-    slidesToScroll: isMobile ? 2 : isTablet ? 2 : 4,
-    arrows: !isMobile,
-    autoplay: false,
-    cssEase: "cubic-bezier(.4,2,.4,1)",
-    responsive: [
-      { breakpoint: 1200, settings: { slidesToShow: 3, slidesToScroll: 3 } },
-      { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-    ],
-  };
+  if (!products.length) return null;
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
@@ -36,21 +16,13 @@ export default function NewArrivalsSection({ products = [], title = "New Smartph
         {title}
       </Typography>
 
-      {isMobile ? (
-        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1.5, px: 1.5 }}>
-          {visibleProducts.map((product) => (
-            <ProductCard key={product._id} product={product} badge={product.badge} size="compact" />
-          ))}
-        </Box>
-      ) : (
-        <Slider {...sliderSettings}>
-          {visibleProducts.map((product) => (
-            <Box key={product._id} sx={{ px: 1.2, outline: "none" }}>
-              <ProductCard product={product} badge={product.badge} size="compact" />
-            </Box>
-          ))}
-        </Slider>
-      )}
+      <ProductGrid
+        items={products}
+        eagerCount={6}
+        size="compact"
+        showWhatsApp
+        showViewBtn
+      />
     </Box>
   );
 }
