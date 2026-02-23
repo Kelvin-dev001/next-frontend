@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  Box, Typography, Button, Grid, Card, CardContent, CardMedia,
+  Box, Typography, Button, Card, CardContent, CardMedia,
   Chip, Container, Divider, Tabs, Tab, List, ListItem,
   ListItemText, IconButton, Rating, useTheme,
   useMediaQuery, Breadcrumbs
@@ -14,9 +14,9 @@ import {
   AssignmentReturn, VerifiedUser
 } from "@mui/icons-material";
 import { Api } from "@/lib/api";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import ErrorAlert from "@/components/ErrorAlert";
 import ReviewSection from "@/components/ReviewsSection";
+import ProductGrid from "@/components/ProductGrid";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 
 const FALLBACK_IMAGE = "/fallback.png";
@@ -112,60 +112,73 @@ export default function ProductDetailPage({ product, related = [] }) {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Head>
-        <title>{seoTitle}</title>
-        <meta name="description" content={seoDescription} />
-        <meta name="robots" content="index,follow" />
-        <link rel="canonical" href={`${SITE_URL}/products/${product?._id}`} />
+    <Box sx={{ width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, md: 3 } }}>
+        <Head>
+          <title>{seoTitle}</title>
+          <meta name="description" content={seoDescription} />
+          <meta name="robots" content="index,follow" />
+          <link rel="canonical" href={`${SITE_URL}/products/${product?._id}`} />
 
-        <meta property="og:title" content={seoTitle} />
-        <meta property="og:description" content={seoDescription} />
-        <meta property="og:type" content="product" />
-        <meta property="og:url" content={`${SITE_URL}/products/${product?._id}`} />
-        <meta property="og:locale" content="en_KE" />
-        <meta property="og:site_name" content={SITE_NAME} />
-        <meta property="og:image" content={seoImage} />
+          <meta property="og:title" content={seoTitle} />
+          <meta property="og:description" content={seoDescription} />
+          <meta property="og:type" content="product" />
+          <meta property="og:url" content={`${SITE_URL}/products/${product?._id}`} />
+          <meta property="og:locale" content="en_KE" />
+          <meta property="og:site_name" content={SITE_NAME} />
+          <meta property="og:image" content={seoImage} />
 
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seoTitle} />
-        <meta name="twitter:description" content={seoDescription} />
-        <meta name="twitter:image" content={seoImage} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={seoTitle} />
+          <meta name="twitter:description" content={seoDescription} />
+          <meta name="twitter:image" content={seoImage} />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-        />
-      </Head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+          />
+        </Head>
 
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        <Link href="/" style={{ color: "inherit" }}>Home</Link>
-        <Link
-          href={`/products?category=${encodeURIComponent(product.category || "")}`}
-          style={{ color: "inherit" }}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2, fontSize: { xs: "0.8rem", md: "0.875rem" } }}>
+          <Link href="/" style={{ color: "inherit" }}>Home</Link>
+          <Link
+            href={`/products?category=${encodeURIComponent(product.category || "")}`}
+            style={{ color: "inherit" }}
+          >
+            {product.category}
+          </Link>
+          <Typography color="text.primary" sx={{ fontSize: "inherit" }}>{product.name}</Typography>
+        </Breadcrumbs>
+
+        {/* Product detail: image + info */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: { xs: 2, md: 4 },
+          }}
         >
-          {product.category}
-        </Link>
-        <Typography color="text.primary">{product.name}</Typography>
-      </Breadcrumbs>
-
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ position: "sticky", top: 16, borderRadius: 2, overflow: "hidden" }}>
-            <Box>
+          {/* LEFT: Images */}
+          <Box sx={{ position: { md: "sticky" }, top: 16 }}>
+            <Box
+              sx={{
+                position: "relative",
+                width: "100%",
+                aspectRatio: "1 / 1",
+                borderRadius: 2,
+                overflow: "hidden",
+                bgcolor: "#fafafa",
+              }}
+            >
               <CardMedia
                 component="img"
                 src={mainImage}
                 alt={`${product.name} - main`}
-                loading="lazy"
-                width={isMobile ? 350 : 600}
-                height={isMobile ? 250 : 400}
+                loading="eager"
                 sx={{
                   width: "100%",
-                  height: isMobile ? 250 : 400,
+                  height: "100%",
                   objectFit: "contain",
-                  borderRadius: 2,
-                  background: "#fafafa",
                 }}
               />
             </Box>
@@ -173,9 +186,9 @@ export default function ProductDetailPage({ product, related = [] }) {
               sx={{
                 display: "flex",
                 gap: 1,
-                mt: 2,
+                mt: 1.5,
                 overflowX: "auto",
-                py: 1,
+                py: 0.5,
               }}
             >
               {images.map((image, index) => (
@@ -183,8 +196,8 @@ export default function ProductDetailPage({ product, related = [] }) {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   sx={{
-                    width: 70,
-                    height: 70,
+                    width: { xs: 56, md: 70 },
+                    height: { xs: 56, md: 70 },
                     borderRadius: 1,
                     overflow: "hidden",
                     cursor: "pointer",
@@ -210,28 +223,35 @@ export default function ProductDetailPage({ product, related = [] }) {
               ))}
             </Box>
           </Box>
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
+          {/* RIGHT: Product info */}
+          <Box>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{ fontWeight: 700, mb: 1, fontSize: { xs: "1.4rem", md: "2rem" } }}
+            >
               {product.name}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Rating value={4.5} precision={0.1} readOnly sx={{ mr: 1 }} />
+              <Rating value={4.5} precision={0.1} readOnly size={isMobile ? "small" : "medium"} sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
                 4.5 (24 reviews)
               </Typography>
             </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-              <Typography variant="h4" color="primary" sx={{ fontWeight: 700 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
+              <Typography
+                variant="h4"
+                color="primary"
+                sx={{ fontWeight: 700, fontSize: { xs: "1.3rem", md: "1.8rem" } }}
+              >
                 {formatPrice(product.discountPrice || product.price)}
               </Typography>
               {product.discountPrice && (
                 <Typography
                   variant="body1"
                   color="text.secondary"
-                  sx={{ textDecoration: "line-through" }}
+                  sx={{ textDecoration: "line-through", fontSize: { xs: "0.85rem", md: "1rem" } }}
                 >
                   {formatPrice(product.price)}
                 </Typography>
@@ -245,338 +265,242 @@ export default function ProductDetailPage({ product, related = [] }) {
                 />
               )}
             </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body1" paragraph>
-                {product.shortDescription}
-              </Typography>
-              <List dense sx={{ mb: 2 }}>
-                <ListItem>
+
+            <Typography variant="body1" paragraph sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
+              {product.shortDescription}
+            </Typography>
+
+            <List dense sx={{ mb: 1 }}>
+              {[
+                { label: "Brand", value: product.brand },
+                { label: "Category", value: product.category },
+                { label: "Warranty", value: product.warrantyPeriod || "1 year" },
+                {
+                  label: "Availability",
+                  value: product.inStock ? "In stock" : "Out of stock",
+                  color: product.inStock ? "success.main" : "error.main",
+                },
+              ].map((item) => (
+                <ListItem key={item.label} disablePadding sx={{ py: 0.3 }}>
                   <ListItemText
-                    primary="Brand"
-                    secondary={product.brand}
-                    secondaryTypographyProps={{ fontWeight: 600 }}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Category"
-                    secondary={product.category}
-                    secondaryTypographyProps={{ fontWeight: 600 }}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Warranty"
-                    secondary={product.warrantyPeriod || "1 year"}
-                    secondaryTypographyProps={{ fontWeight: 600 }}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Availability"
-                    secondary={product.inStock ? "In stock" : "Out of stock"}
+                    primary={item.label}
+                    secondary={item.value}
+                    primaryTypographyProps={{ fontSize: { xs: "0.8rem", md: "0.875rem" } }}
                     secondaryTypographyProps={{
                       fontWeight: 600,
-                      color: product.inStock ? "success.main" : "error.main",
+                      fontSize: { xs: "0.8rem", md: "0.875rem" },
+                      color: item.color || "text.primary",
                     }}
                   />
                 </ListItem>
-              </List>
-            </Box>
-            <Divider sx={{ my: 3 }} />
+              ))}
+            </List>
 
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                Quantity
-              </Typography>
+            <Divider sx={{ my: 2 }} />
+
+            {/* Quantity + Buy */}
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "0.9rem", md: "1rem" } }}>
+              Quantity
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <Box
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  mb: 3,
+                  border: "1px solid #ddd",
+                  borderRadius: 1,
+                  overflow: "hidden",
                 }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    border: "1px solid #ddd",
-                    borderRadius: 1,
-                    overflow: "hidden",
-                  }}
+                <Button
+                  variant="text"
+                  onClick={decrementQuantity}
+                  disabled={quantity <= 1}
+                  sx={{ minWidth: "36px", px: 0.5 }}
                 >
-                  <Button
-                    variant="text"
-                    onClick={decrementQuantity}
-                    disabled={quantity <= 1}
-                    sx={{ minWidth: "40px", px: 1 }}
-                  >
-                    -
-                  </Button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    min={1}
-                    max={product.inStock ? 10 : 0}
-                    onChange={handleQuantityChange}
-                    style={{
-                      width: 50,
-                      textAlign: "center",
-                      border: "none",
-                      outline: "none",
-                    }}
-                  />
-                  <Button
-                    variant="text"
-                    onClick={incrementQuantity}
-                    disabled={quantity >= (product.inStock ? 10 : 0)}
-                    sx={{ minWidth: "40px", px: 1 }}
-                  >
-                    +
-                  </Button>
-                </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {product.inStock ? "In stock" : "Out of stock"}
-                </Typography>
+                  -
+                </Button>
+                <input
+                  type="number"
+                  value={quantity}
+                  min={1}
+                  max={product.inStock ? 10 : 0}
+                  onChange={handleQuantityChange}
+                  style={{
+                    width: 44,
+                    textAlign: "center",
+                    border: "none",
+                    outline: "none",
+                    fontSize: "0.95rem",
+                  }}
+                />
+                <Button
+                  variant="text"
+                  onClick={incrementQuantity}
+                  disabled={quantity >= (product.inStock ? 10 : 0)}
+                  sx={{ minWidth: "36px", px: 0.5 }}
+                >
+                  +
+                </Button>
               </Box>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<WhatsApp />}
-                fullWidth
-                sx={{
-                  borderRadius: "50px",
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: "1.1rem",
-                }}
-                disabled={!product.inStock}
-                onClick={handleWhatsAppBuy}
-              >
-                Buy on WhatsApp
-              </Button>
-              <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                <IconButton
-                  aria-label="add to wishlist"
-                  onClick={() => toggleWishlist(product._id)}
-                  sx={{
-                    border: "1px solid #ddd",
-                    borderRadius: "50%",
-                  }}
-                >
-                  {wishlist.includes(product._id) ? (
-                    <Favorite color="error" />
-                  ) : (
-                    <FavoriteBorder />
-                  )}
-                </IconButton>
-                <IconButton
-                  aria-label="share"
-                  sx={{
-                    border: "1px solid #ddd",
-                    borderRadius: "50%",
-                  }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert("Product link copied!");
-                  }}
-                >
-                  <Share />
-                </IconButton>
-              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {product.inStock ? "In stock" : "Out of stock"}
+              </Typography>
             </Box>
-            <Divider sx={{ my: 3 }} />
 
+            <Button
+              variant="contained"
+              size="large"
+              startIcon={<WhatsApp />}
+              fullWidth
+              sx={{
+                borderRadius: "50px",
+                py: { xs: 1.2, md: 1.5 },
+                fontWeight: 600,
+                fontSize: { xs: "0.95rem", md: "1.1rem" },
+              }}
+              disabled={!product.inStock}
+              onClick={handleWhatsAppBuy}
+            >
+              Buy on WhatsApp
+            </Button>
+
+            <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+              <IconButton
+                aria-label="add to wishlist"
+                onClick={() => toggleWishlist(product._id)}
+                sx={{ border: "1px solid #ddd", borderRadius: "50%" }}
+              >
+                {wishlist.includes(product._id) ? <Favorite color="error" /> : <FavoriteBorder />}
+              </IconButton>
+              <IconButton
+                aria-label="share"
+                sx={{ border: "1px solid #ddd", borderRadius: "50%" }}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Product link copied!");
+                }}
+              >
+                <Share />
+              </IconButton>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Trust badges */}
             <Box
               sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 3,
-                mb: 3,
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+                gap: 2,
+                mb: 2,
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <LocalShipping color="primary" />
-                <Box>
-                  <Typography variant="body2">Free Delivery</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    For orders above KES 10,000
-                  </Typography>
+              {[
+                { icon: <LocalShipping color="primary" />, title: "Free Delivery", sub: "Orders above KES 10,000" },
+                { icon: <AssignmentReturn color="primary" />, title: "7-Day Returns", sub: "No questions asked" },
+                { icon: <VerifiedUser color="primary" />, title: "Warranty", sub: `${product.warrantyPeriod || "1 year"} warranty` },
+              ].map((badge) => (
+                <Box key={badge.title} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {badge.icon}
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: "0.78rem", md: "0.875rem" } }}>
+                      {badge.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: "0.68rem", md: "0.75rem" } }}>
+                      {badge.sub}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <AssignmentReturn color="primary" />
-                <Box>
-                  <Typography variant="body2">7-Day Returns</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    No questions asked
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <VerifiedUser color="primary" />
-                <Box>
-                  <Typography variant="body2">Warranty</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {product.warrantyPeriod || "1 year"} warranty
-                  </Typography>
-                </Box>
-              </Box>
+              ))}
             </Box>
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
 
-      <Box sx={{ mt: 6 }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          sx={{
-            mb: 3,
-            "& .MuiTabs-indicator": { height: 3 },
-          }}
-        >
-          <Tab label="Description" />
-          <Tab label="Specifications" />
-          <Tab label="Reviews" />
-        </Tabs>
+        {/* Tabs: Description / Specs / Reviews */}
+        <Box sx={{ mt: { xs: 4, md: 6 } }}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{
+              mb: 2,
+              "& .MuiTabs-indicator": { height: 3 },
+              "& .MuiTab-root": { fontSize: { xs: "0.78rem", md: "0.875rem" } },
+            }}
+          >
+            <Tab label="Description" />
+            <Tab label="Specifications" />
+            <Tab label="Reviews" />
+          </Tabs>
 
-        <Box sx={{ p: 3, bgcolor: "background.paper", borderRadius: 2 }}>
-          {tabValue === 0 && (
-            <Typography variant="body1" whiteSpace="pre-line">
-              {product.fullDescription || "No description available"}
-            </Typography>
-          )}
-          {tabValue === 1 && (
-            <Grid container spacing={2}>
-              {product.specs &&
-                Object.entries(product.specs)
-                  .filter(([, value]) => value)
-                  .map(([key, value]) => (
-                    <Grid item xs={12} sm={6} key={key}>
+          <Box sx={{ p: { xs: 1.5, md: 3 }, bgcolor: "background.paper", borderRadius: 2 }}>
+            {tabValue === 0 && (
+              <Typography variant="body1" whiteSpace="pre-line" sx={{ fontSize: { xs: "0.88rem", md: "1rem" } }}>
+                {product.fullDescription || "No description available"}
+              </Typography>
+            )}
+            {tabValue === 1 && (
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                  gap: 1,
+                }}
+              >
+                {product.specs &&
+                  Object.entries(product.specs)
+                    .filter(([, value]) => value)
+                    .map(([key, value]) => (
                       <Box
+                        key={key}
                         sx={{
                           display: "flex",
                           justifyContent: "space-between",
-                          py: 1.5,
+                          py: 1.2,
                           borderBottom: "1px solid #eee",
                         }}
                       >
-                        <Typography variant="body1" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary">
                           {key.replace(/^[a-z]/, (char) => char.toUpperCase())}
                         </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
                           {value}
                         </Typography>
                       </Box>
-                    </Grid>
-                  ))}
-            </Grid>
-          )}
-          {tabValue === 2 && (
-            <Box>
-              <Typography variant="h6" sx={{ mb: 3 }}>
-                Customer Reviews
-              </Typography>
-              <Box sx={{ mt: 4 }}>
+                    ))}
+              </Box>
+            )}
+            {tabValue === 2 && (
+              <Box>
+                <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: "1rem", md: "1.25rem" } }}>
+                  Customer Reviews
+                </Typography>
                 <ReviewSection productId={product._id} />
               </Box>
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
-      </Box>
 
-      {related.length > 0 && (
-        <Box sx={{ mt: 8 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-            You may also like
-          </Typography>
-          <Grid container spacing={3}>
-            {related.map((rel) => (
-              <Grid item xs={12} sm={6} md={3} key={rel._id}>
-                <Card
-                  sx={{
-                    borderRadius: 2,
-                    boxShadow: 3,
-                    transition: "transform 0.3s",
-                    "&:hover": { transform: "translateY(-5px)" },
-                    cursor: "pointer",
-                  }}
-                  onClick={() => router.push(`/products/${rel._id}`)}
-                >
-                  <Box sx={{ position: "relative" }}>
-                    <CardMedia
-                      component="img"
-                      height="160"
-                      image={
-                        getOptimizedCloudinaryUrl(
-                          rel.thumbnail || rel.images?.[0] || FALLBACK_IMAGE,
-                          { width: 220 }
-                        ) || FALLBACK_IMAGE
-                      }
-                      alt={rel.name}
-                      sx={{ objectFit: "contain", p: 2 }}
-                      loading="lazy"
-                      width={220}
-                    />
-                    <IconButton
-                      aria-label="add to wishlist"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleWishlist(rel._id);
-                      }}
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        backgroundColor: "background.paper",
-                        "&:hover": { backgroundColor: "background.default" },
-                      }}
-                    >
-                      {wishlist.includes(rel._id) ? (
-                        <Favorite color="error" />
-                      ) : (
-                        <FavoriteBorder />
-                      )}
-                    </IconButton>
-                  </Box>
-                  <CardContent>
-                    <Typography variant="body2" color="text.secondary">
-                      {rel.category}
-                    </Typography>
-                    <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
-                      {rel.name}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                      <Star color="warning" fontSize="small" />
-                      <Typography variant="body2" sx={{ ml: 0.5 }}>
-                        4.5
-                      </Typography>
-                    </Box>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                      {formatPrice(rel.discountPrice || rel.price)}
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      fullWidth
-                      sx={{ mt: 2, borderRadius: "50px" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/products/${rel._id}`);
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-    </Container>
+        {/* Related products — uses ProductGrid for consistent 2‑col mobile */}
+        {related.length > 0 && (
+          <Box sx={{ mt: { xs: 4, md: 8 } }}>
+            <Typography
+              variant="h5"
+              sx={{ fontWeight: 600, mb: 2, fontSize: { xs: "1.1rem", md: "1.5rem" } }}
+            >
+              You may also like
+            </Typography>
+            <ProductGrid
+              items={related}
+              eagerCount={4}
+              size="compact"
+              showWhatsApp
+              showViewBtn
+            />
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 }
 
