@@ -11,7 +11,7 @@ import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(price);
 
-const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning" };
+const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning", FEATURED: "primary" };
 const WHATSAPP_NUMBER = "254711111602";
 
 export default function ProductCard({
@@ -46,7 +46,8 @@ export default function ProductCard({
     <Card
       sx={{
         width: "100%",
-        borderRadius: isFull ? "22px" : "18px",
+        minWidth: 0,
+        borderRadius: { xs: "14px", md: isFull ? "22px" : "18px" },
         background: "#fff",
         color: "primary.main",
         boxShadow: "0 6px 24px rgba(30,60,114,0.1)",
@@ -55,7 +56,6 @@ export default function ProductCard({
         position: "relative",
         overflow: "hidden",
         border: "none",
-        minHeight: isFull ? { xs: 420, md: 360 } : { xs: 360, md: 350 },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -65,13 +65,13 @@ export default function ProductCard({
       {...props}
       onClick={() => router.push(`/products/${product?._id || product?.id || ""}`)}
     >
-      <Box sx={{ position: "relative", pt: isFull ? 1.6 : 1.2, px: isFull ? 1.8 : 1.2 }}>
+      <Box sx={{ position: "relative", pt: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, px: { xs: 0.8, md: isFull ? 1.8 : 1.2 } }}>
         <Box
           sx={{
             position: "relative",
             width: "100%",
-            aspectRatio: isFull ? "5 / 4" : "4 / 5",
-            borderRadius: isFull ? "16px" : "14px",
+            aspectRatio: "4 / 5",
+            borderRadius: { xs: "10px", md: isFull ? "16px" : "14px" },
             overflow: "hidden",
             bgcolor: "#f4f6f8",
           }}
@@ -80,7 +80,7 @@ export default function ProductCard({
             src={imgUrl}
             alt={product?.name || "Product"}
             fill
-            sizes={isFull ? "(max-width: 600px) 90vw, 600px" : "(max-width: 600px) 48vw, 32vw"}
+            sizes="(max-width: 600px) 48vw, (max-width: 900px) 32vw, 25vw"
             style={{ objectFit: "contain" }}
             priority={imagePriority}
           />
@@ -91,7 +91,7 @@ export default function ProductCard({
             label={badge}
             color={BADGE_COLOR[badge] || "info"}
             size="small"
-            sx={{ position: "absolute", top: 10, left: 10, fontWeight: 700, zIndex: 2 }}
+            sx={{ position: "absolute", top: 8, left: 8, fontWeight: 700, zIndex: 2, fontSize: { xs: "0.6rem", md: "0.75rem" } }}
           />
         )}
         {discountPercent && (
@@ -99,7 +99,7 @@ export default function ProductCard({
             label={`-${discountPercent}%`}
             color="error"
             size="small"
-            sx={{ position: "absolute", top: 10, right: 10, fontWeight: 700, zIndex: 2 }}
+            sx={{ position: "absolute", top: 8, right: 8, fontWeight: 700, zIndex: 2, fontSize: { xs: "0.6rem", md: "0.75rem" } }}
           />
         )}
         <IconButton
@@ -107,8 +107,8 @@ export default function ProductCard({
           size="small"
           sx={{
             position: "absolute",
-            bottom: 6,
-            right: 10,
+            bottom: 4,
+            right: 8,
             bgcolor: "#fff",
             borderRadius: "50%",
             zIndex: 2,
@@ -124,12 +124,11 @@ export default function ProductCard({
         </IconButton>
       </Box>
 
-      <CardContent sx={{ flexGrow: 1, px: isFull ? 2 : 1.2, pt: 1.2, pb: 0.8 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.3, display: "block" }}>
+      <CardContent sx={{ flexGrow: 1, px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pt: 0.8, pb: 0.4 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.2, display: "block", fontSize: { xs: "0.65rem", md: "0.75rem" } }}>
           {product?.brand}
         </Typography>
         <Typography
-          variant={isFull ? "h6" : "subtitle1"}
           fontWeight={700}
           gutterBottom
           sx={{
@@ -139,11 +138,12 @@ export default function ProductCard({
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
             lineHeight: 1.2,
+            fontSize: { xs: "0.8rem", md: "0.95rem" },
           }}
         >
           {product?.name}
         </Typography>
-        <Stack direction="row" alignItems="center" spacing={0.6} sx={{ mb: 0.8 }}>
+        <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
           <Rating
             value={product?.rating || 4.5}
             precision={0.1}
@@ -151,30 +151,31 @@ export default function ProductCard({
             size="small"
             icon={<Star fontSize="inherit" htmlColor="#6dd5ed" />}
             emptyIcon={<Star fontSize="inherit" htmlColor="#e0e0e0" />}
+            sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}
           />
-          <Typography variant="caption">
+          <Typography variant="caption" sx={{ fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
             {(product?.rating?.toFixed?.(1)) || "4.5"}
           </Typography>
         </Stack>
-        <Stack direction="row" alignItems="center" spacing={0.8}>
-          <Typography variant={isFull ? "h6" : "subtitle1"} color="primary" fontWeight={700}>
+        <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
+          <Typography color="primary" fontWeight={700} sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}>
             {product?.discountPrice || product?.price ? formatPrice(product.discountPrice || product.price) : "—"}
           </Typography>
           {product?.discountPrice && (
-            <Typography variant="caption" color="text.secondary" sx={{ textDecoration: "line-through" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ textDecoration: "line-through", fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
               {formatPrice(product.price)}
             </Typography>
           )}
         </Stack>
 
         {(product?.specs?.storage || product?.specs?.ram) && (
-          <Stack direction="column" spacing={0.4} sx={{ mt: 0.7 }}>
+          <Stack direction="column" spacing={0.3} sx={{ mt: 0.5 }}>
             {product.specs?.storage && (
               <Chip
                 label={`Storage: ${product.specs.storage}`}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: "0.68rem" }}
+                sx={{ height: 20, fontSize: { xs: "0.58rem", md: "0.68rem" } }}
               />
             )}
             {product.specs?.ram && (
@@ -182,14 +183,14 @@ export default function ProductCard({
                 label={`RAM: ${product.specs.ram}`}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: "0.68rem" }}
+                sx={{ height: 20, fontSize: { xs: "0.58rem", md: "0.68rem" } }}
               />
             )}
           </Stack>
         )}
       </CardContent>
 
-      <Box sx={{ px: isFull ? 2 : 1.2, pb: isFull ? 1.6 : 1.2, pt: 0.6 }}>
+      <Box sx={{ px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pb: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, pt: 0.4 }}>
         {showWhatsApp && (
           <Button
             variant="contained"
@@ -201,9 +202,9 @@ export default function ProductCard({
               textTransform: "none",
               bgcolor: "success.main",
               "&:hover": { bgcolor: "success.dark" },
-              mb: 0.6,
-              py: isFull ? 1.1 : 0.9,
-              fontSize: isFull ? "1rem" : "0.92rem",
+              mb: 0.4,
+              py: { xs: 0.6, md: 0.9 },
+              fontSize: { xs: "0.72rem", md: "0.92rem" },
             }}
             onClick={(e) => {
               e.stopPropagation();
@@ -223,8 +224,8 @@ export default function ProductCard({
               color: "primary.main",
               borderColor: "#6dd5ed",
               textTransform: "none",
-              fontSize: isFull ? "1rem" : "0.95rem",
-              py: isFull ? 1 : 0.85,
+              fontSize: { xs: "0.72rem", md: "0.95rem" },
+              py: { xs: 0.5, md: 0.85 },
               transition: "all 0.19s cubic-bezier(.4,2,.4,1)",
               "&:hover": {
                 background: "linear-gradient(96deg,#6dd5ed 10%,#1e3c72 90%)",

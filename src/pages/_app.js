@@ -6,9 +6,8 @@ import { useMemo } from "react";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import AppLayout from "@/layouts/AppLayout";
-import AdminLayout from "@/layouts/AdminLayout";
 
 const clientSideEmotionCache = createCache({ key: "css", prepend: true });
 
@@ -17,15 +16,17 @@ export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const isAdmin = router?.pathname?.startsWith("/admin");
 
-  const Layout = isAdmin ? AdminLayout : AppLayout;
-
   return (
     <CacheProvider value={clientSideEmotionCache}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Layout>
+        {isAdmin ? (
           <Component {...pageProps} />
-        </Layout>
+        ) : (
+          <AppLayout>
+            <Component {...pageProps} />
+          </AppLayout>
+        )}
       </ThemeProvider>
     </CacheProvider>
   );

@@ -16,22 +16,24 @@ export default function ProductGrid({
   isWishlisted,
   sx = {},
 }) {
-  const gridStyles = {
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "repeat(2, minmax(0, 1fr))",
-      sm: "repeat(2, minmax(0, 1fr))",
-      md: "repeat(3, minmax(0, 1fr))",
-      lg: "repeat(4, minmax(0, 1fr))",
-    },
-    gap: { xs: 1.5, md: 2.5 },
-    width: "100%",
-    ...sx,
-  };
-
   if (loading) {
     return (
-      <Box sx={gridStyles}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(2, 1fr)",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+            lg: "repeat(4, 1fr)",
+          },
+          gap: { xs: 1, sm: 1.5, md: 2.5 },
+          width: "100%",
+          px: { xs: 1, sm: 1.5, md: 0 },
+          boxSizing: "border-box",
+          ...sx,
+        }}
+      >
         {Array.from({ length: skeletonCount }).map((_, idx) => (
           <ProductCardSkeleton key={`skeleton-${idx}`} size={size} />
         ))}
@@ -40,7 +42,22 @@ export default function ProductGrid({
   }
 
   return (
-    <Box sx={gridStyles}>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "repeat(2, 1fr)",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+          lg: "repeat(4, 1fr)",
+        },
+        gap: { xs: 1, sm: 1.5, md: 2.5 },
+        width: "100%",
+        px: { xs: 1, sm: 1.5, md: 0 },
+        boxSizing: "border-box",
+        ...sx,
+      }}
+    >
       {items.map((product, idx) => (
         <ProductCard
           key={product._id || product.id || idx}
