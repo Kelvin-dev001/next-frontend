@@ -62,16 +62,37 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         />
       </Head>
 
+      {/* 1. Promo Cards */}
       <PromoCardsSection />
-      <SafaricomCorner sections={sections} />
-      <ShopByBrandSection brands={brands} />
-      <ShopByCategorySection categories={categories} />
-      <FeaturedProductsSection products={featured} />
-      <PocketFriendlySection />
+
+      {/* 2. Deal of the Day / Flash Sale / Limited Offer */}
       <DealsSection />
-      <NewArrivalsSection products={newArrivals} title="Hot Selling Smartphones in Kenya" />
+
+      {/* 3. Hot Selling Smartphones in Kenya */}
+      <NewArrivalsSection products={newArrivals} title="Hot Selling Gadgets in Kenya" />
+
+      {/* 4. Featured Products */}
+      <FeaturedProductsSection products={featured} />
+
+      {/* 5. Shop by Brand */}
+      <ShopByBrandSection brands={brands} />
+
+      {/* 6. Shop by Category */}
+      <ShopByCategorySection categories={categories} />
+
+      {/* 7. Safaricom Corner */}
+      <SafaricomCorner sections={sections} />
+
+      {/* 8. Pocket Friendly Picks */}
+      <PocketFriendlySection />
+
+      {/* 9. Reviews */}
       <ReviewsSection reviews={recentReviews} isHomepage />
+
+      {/* 10. WhatsApp CTA */}
       <WhatsAppCTASection />
+
+      {/* 11. AI Bot */}
       <ProductAdvisorBot />
     </>
   );
