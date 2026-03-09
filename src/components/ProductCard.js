@@ -12,7 +12,7 @@ const formatPrice = (price) =>
   new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(price);
 
 const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning", FEATURED: "primary" };
-const WHATSAPP_NUMBER = "254711111602";
+const WHATSAPP_NUMBER = "254117000900";
 
 export default function ProductCard({
   product,

@@ -3,7 +3,7 @@ import { Box, Typography, Button, Stack, useTheme, useMediaQuery, Slide, Tooltip
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 
-const whatsappNumber = "254711111602";
+const whatsappNumber = "254117000900";
 const whatsappLink = `https://wa.me/${whatsappNumber}?text=Hello+Snaap+Connections%2C+I+need+help+with...`;
 
 export default function WhatsAppCTASection() {
