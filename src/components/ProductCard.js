@@ -4,7 +4,7 @@ import {
   Card, CardContent, Typography, Box, Button, Stack, Chip, IconButton, Rating
 } from "@mui/material";
 import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 import { waLink } from "@/constants/business";
@@ -26,7 +26,7 @@ export default function ProductCard({
   imagePriority = false,
   ...props
 }) {
-  const router = useRouter();
+  const productHref = `/products/${product?._id || product?.id || ""}`;
 
   const discountPercent =
     product?.discountPrice && product?.price
@@ -41,6 +41,7 @@ export default function ProductCard({
   const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
 
   const isFull = size === "full";
+  const hasRealRating = typeof product?.rating === "number" && product.rating > 0;
 
   return (
     <Card
@@ -63,8 +64,17 @@ export default function ProductCard({
       }}
       elevation={0}
       {...props}
-      onClick={() => router.push(`/products/${product?._id || product?.id || ""}`)}
     >
+      {/* Stretched, crawlable link covering the whole card (P1-1). aria-hidden + tabIndex=-1
+          so the visible title link below is the single accessible / keyboard-focusable link. */}
+      <Box
+        component={Link}
+        href={productHref}
+        aria-hidden="true"
+        tabIndex={-1}
+        sx={{ position: "absolute", inset: 0, zIndex: 1 }}
+      />
+
       <Box sx={{ position: "relative", pt: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, px: { xs: 0.8, md: isFull ? 1.8 : 1.2 } }}>
         <Box
           sx={{
@@ -129,34 +139,42 @@ export default function ProductCard({
           {product?.brand}
         </Typography>
         <Typography
+          component={Link}
+          href={productHref}
           fontWeight={700}
           gutterBottom
           sx={{
             color: "#1e3c72",
+            textDecoration: "none",
+            position: "relative",
+            zIndex: 2,
             display: "-webkit-box",
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
             lineHeight: 1.2,
             fontSize: { xs: "0.8rem", md: "0.95rem" },
+            "&:hover": { textDecoration: "underline" },
           }}
         >
           {product?.name}
         </Typography>
-        <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
-          <Rating
-            value={product?.rating || 4.5}
-            precision={0.1}
-            readOnly
-            size="small"
-            icon={<Star fontSize="inherit" htmlColor="#6dd5ed" />}
-            emptyIcon={<Star fontSize="inherit" htmlColor="#e0e0e0" />}
-            sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}
-          />
-          <Typography variant="caption" sx={{ fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
-            {(product?.rating?.toFixed?.(1)) || "4.5"}
-          </Typography>
-        </Stack>
+        {hasRealRating && (
+          <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
+            <Rating
+              value={product.rating}
+              precision={0.1}
+              readOnly
+              size="small"
+              icon={<Star fontSize="inherit" htmlColor="#6dd5ed" />}
+              emptyIcon={<Star fontSize="inherit" htmlColor="#e0e0e0" />}
+              sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}
+            />
+            <Typography variant="caption" sx={{ fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
+              {product.rating.toFixed(1)}
+            </Typography>
+          </Stack>
+        )}
         <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
           <Typography color="primary" fontWeight={700} sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}>
             {product?.discountPrice || product?.price ? formatPrice(product.discountPrice || product.price) : "—"}
@@ -190,7 +208,7 @@ export default function ProductCard({
         )}
       </CardContent>
 
-      <Box sx={{ px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pb: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, pt: 0.4 }}>
+      <Box sx={{ position: "relative", zIndex: 2, px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pb: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, pt: 0.4 }}>
         {showWhatsApp && (
           <Button
             variant="contained"
@@ -216,6 +234,8 @@ export default function ProductCard({
         )}
         {showViewBtn && (
           <Button
+            component={Link}
+            href={productHref}
             variant="outlined"
             fullWidth
             sx={{
@@ -234,10 +254,6 @@ export default function ProductCard({
                 boxShadow: "0 2px 24px #1e3c72cc",
                 transform: "scale(1.03)",
               },
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/products/${product?._id || product?.id || ""}`);
             }}
           >
             View
