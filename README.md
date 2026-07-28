@@ -1,40 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Snaap Connections — storefront (`next-frontend`)
 
-## Getting Started
+Production storefront for **Snaap Connections**, an online smartphone and
+accessories retailer based in Mombasa, Kenya. Deployed to
+<https://www.snaapconnections.co.ke> via Vercel. **WhatsApp is the only checkout.**
 
-First, run the development server:
+> Read [`CLAUDE.md`](./CLAUDE.md) in this folder **and** the parent
+> [`../CLAUDE.md`](../CLAUDE.md) before changing anything — they hold the business
+> facts and standing rules that override framework defaults.
+
+## Stack
+
+- **Next.js 16.1.1** — Pages Router (`src/pages`), **JavaScript** (no TypeScript)
+- **Tailwind 4** (`@tailwindcss/postcss`) + **MUI 7** (`@emotion/cache`)
+- axios, react-slick
+- Path alias `@/*` → `./src/*`
+
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev     # next dev
+npm run build   # next build — run before every commit
+npm start       # next start
+npm run lint    # eslint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+There is no test script yet (tracked for P6).
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Environment
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+Names only — **never commit values**. See [`.env.example`](./.env.example).
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+- `NEXT_PUBLIC_API_URL` — base URL of the `snaap-backend` API
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
+```
+src/
+  pages/       index.js, products/, admin/, content pages (contact, faqs, …)
+  components/  storefront UI + components/admin
+  constants/   business.js — single source of truth for business facts
+  lib/api.js   axios client
+  hooks/  layouts/  styles/  utils/
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Conventions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+- Import every business fact (phone, address, hours, delivery, prices) from
+  `@/constants/business`. Never hardcode them.
+- Money: `formatKES` from `@/constants/business` → `KSh 12,999` (no decimals, ever).
+- Every indexable route needs `getStaticProps`/`getServerSideProps` **and** a
+  `<Head>` with a unique title, description and canonical.
+- Every internal navigation is a real `<a href>` via `next/link` — never
+  `router.push()` as the only path.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+See [`CLAUDE.md`](./CLAUDE.md) for the full engagement context, route reality, and
+gotchas.
