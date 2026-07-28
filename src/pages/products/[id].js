@@ -18,6 +18,7 @@ import ErrorAlert from "@/components/ErrorAlert";
 import ReviewSection from "@/components/ReviewsSection";
 import ProductGrid from "@/components/ProductGrid";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
+import { DELIVERY_ZONES, formatKES, waLink } from "@/constants/business";
 
 const FALLBACK_IMAGE = "/fallback.png";
 const SITE_NAME = "Snaap Connections";
@@ -71,15 +72,17 @@ export default function ProductDetailPage({ product, related = [] }) {
 
   const handleTabChange = (_event, newValue) => setTabValue(newValue);
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES" }).format(price);
+  // "KSh 12,999" — no decimals. Was rendering "Ksh 25,500.00".
+  const formatPrice = (price) => formatKES(price);
 
   const handleWhatsAppBuy = () => {
     if (!product) return;
-    const message = `I'm interested in: ${product.name}\nPrice: ${formatPrice(
+    const message = `I'm interested in: ${product.name}${
+      product.sku ? ` (SKU ${product.sku})` : ""
+    }\nPrice: ${formatPrice(
       product.discountPrice || product.price
     )}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
-    window.open(`https://wa.me/254117000900?text=${encodeURIComponent(message)}`, "_blank");
+    window.open(waLink(message), "_blank");
   };
 
   const images =
@@ -396,9 +399,29 @@ export default function ProductDetailPage({ product, related = [] }) {
               }}
             >
               {[
-                { icon: <LocalShipping color="primary" />, title: "Free Delivery", sub: "Orders above KES 10,000" },
-                { icon: <AssignmentReturn color="primary" />, title: "7-Day Returns", sub: "No questions asked" },
-                { icon: <VerifiedUser color="primary" />, title: "Warranty", sub: `${product.warrantyPeriod || "1 year"} warranty` },
+                // Was "Free Delivery / Orders above KES 10,000" — we have no free-delivery
+                // threshold at any order value. Real rates come from src/constants/business.js.
+                {
+                  icon: <LocalShipping color="primary" />,
+                  title: "Delivery",
+                  sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos`,
+                },
+                // Was hardcoded "7-Day Returns" while the Product model already carries
+                // returnPolicyDays. Use the data; only show the badge when it exists.
+                ...(product.returnPolicyDays
+                  ? [{
+                      icon: <AssignmentReturn color="primary" />,
+                      title: `${product.returnPolicyDays}-Day Returns`,
+                      sub: "See our returns policy",
+                    }]
+                  : []),
+                ...(product.warrantyPeriod
+                  ? [{
+                      icon: <VerifiedUser color="primary" />,
+                      title: "Warranty",
+                      sub: `${product.warrantyPeriod} warranty`,
+                    }]
+                  : []),
               ].map((badge) => (
                 <Box key={badge.title} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {badge.icon}

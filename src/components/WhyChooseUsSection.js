@@ -16,28 +16,33 @@ const reasons = [
   },
   {
     icon: <LocalShippingIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Fast & Free Delivery",
-    description: "Enjoy same-day delivery in Nairobi and fast, reliable shipping countrywide."
+    title: "Same-Day Delivery at the Coast",
+    description:
+      "KSh 300 across Mombasa, Kilifi and Kwale, delivered the same day. Nairobi and Machakos, KSh 500 to 1,500 within 24 hours."
   },
   {
     icon: <SupportAgentIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Exceptional Support",
-    description: "Our friendly experts are available on WhatsApp, phone & live chat to help you anytime."
+    title: "Talk to a Real Person",
+    description:
+      "Message us on WhatsApp any day between 8:00 AM and 7:00 PM and a member of our team will answer."
   },
   {
     icon: <DiscountIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Unbeatable Deals",
-    description: "Save big with exclusive discounts, flash sales, and trade-in offers."
+    title: "Regular Deals",
+    description:
+      "Flash sales and clearance prices on selected phones and accessories, updated as stock moves."
   },
   {
     icon: <FlashOnIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Easy, Secure Payments",
-    description: "Pay with M-Pesa, card, or cash on delivery, with robust buyer protection."
+    title: "Pay by M-Pesa",
+    description:
+      "Confirm your order on WhatsApp and pay by M-Pesa. Simple, and no card details to hand over."
   },
   {
     icon: <EmojiEventsIcon fontSize="large" sx={{ color: "#1e3c72" }} />,
-    title: "Trusted by Thousands",
-    description: "Thousands of happy customers across Kenya trust us for their mobile needs."
+    title: "A Real Shop You Can Visit",
+    description:
+      "We are on Digo Road, opposite Baroda Mall in Mombasa. Come in, hold the phone, then decide."
   }
 ];
 

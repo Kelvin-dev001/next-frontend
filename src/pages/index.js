@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { Api } from "@/lib/api";
+import { PHONE_E164 } from "@/constants/business";
 
 const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
 
@@ -34,7 +35,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       addressLocality: "Mombasa",
       addressCountry: "KE",
     },
-    telephone: "+254117000900",
+    telephone: PHONE_E164,
   };
 
   return (

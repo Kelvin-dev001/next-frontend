@@ -7,12 +7,12 @@ import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
+import { waLink } from "@/constants/business";
 
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(price);
 
 const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning", FEATURED: "primary" };
-const WHATSAPP_NUMBER = "254117000900";
 
 export default function ProductCard({
   product,
@@ -208,7 +208,7 @@ export default function ProductCard({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
+              window.open(waLink(message), "_blank");
             }}
           >
             Buy on WhatsApp

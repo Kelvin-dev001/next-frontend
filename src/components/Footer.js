@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import { SiTiktok } from "react-icons/si";
 import { Facebook, Instagram, WhatsApp, LocationOn, Email, Phone } from '@mui/icons-material';
+import { PHONE_DISPLAY, PHONE_E164, waLink } from '@/constants/business';
 
 const bluishGradient = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 60%, #6dd5ed 100%)';
 const FOOTER_BRANDING_MIN_HEIGHT = 110;
@@ -42,7 +43,7 @@ const socialLinks = [
   { icon: <Facebook />, href: 'https://www.facebook.com/share/1BF9FWk1w7/', label: 'Facebook' },
   { icon: <SiTiktok />, href: 'https://www.tiktok.com/@snaap_connections?_t=ZM-8yavm2c5wJC&_r=1', label: 'TikTok' },
   { icon: <Instagram />, href: 'https://www.instagram.com/snaap_connections1?igsh=Yzc2dDkyejVqeDZl', label: 'Instagram' },
-  { icon: <WhatsApp />, href: 'https://wa.me/254722800278', label: 'WhatsApp' }
+  { icon: <WhatsApp />, href: waLink(), label: 'WhatsApp' }
 ];
 
 export default function Footer() {
@@ -131,9 +132,9 @@ export default function Footer() {
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
               <Phone sx={{ color: '#6dd5ed' }} />
-              <a href="tel:+254722800278" style={{ color: 'inherit', textDecoration: 'none' }}>
+              <a href={`tel:${PHONE_E164}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                 <Typography variant="body2" sx={{ color: '#e6f2ff', opacity: 0.9 }}>
-                  +254 722800278
+                  {PHONE_DISPLAY}
                 </Typography>
               </a>
             </Stack>
