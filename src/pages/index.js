@@ -1,9 +1,6 @@
-import dynamic from "next/dynamic";
 import Head from "next/head";
 import { Api } from "@/lib/api";
 import { PHONE_E164 } from "@/constants/business";
-
-const ProductAdvisorBot = dynamic(() => import("@/components/ProductAdvisorBot"), { ssr: false });
 
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
@@ -92,9 +89,6 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
       {/* 10. WhatsApp CTA */}
       <WhatsAppCTASection />
-
-      {/* 11. AI Bot */}
-      <ProductAdvisorBot />
     </>
   );
 }

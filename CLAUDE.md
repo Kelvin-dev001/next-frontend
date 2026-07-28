@@ -23,7 +23,7 @@ Env: `NEXT_PUBLIC_API_URL` (names only — never commit values). See `.env.examp
 
 ```
 src/
-  pages/          index.js, products/index.js, products/[id].js, admin/*, api/product-bot.js
+  pages/          index.js, products/index.js, products/[id].js, admin/*, content pages
   components/     storefront + components/admin
   constants/      business.js   <- single source of truth, import from here
   lib/api.js      axios client
@@ -54,7 +54,7 @@ The two `products` routes use `getServerSideProps` where `getStaticProps` + `rev
 
 - `next build` cannot run inside a Linux container against this Windows checkout — the SWC binary is platform-specific. Build on Windows.
 - Admin JWT is stored in `localStorage` (`src/lib/api.js`). Known weakness, logged for P6.
-- `src/pages/api/product-bot.js` and `components/ProductAdvisorBot.js` run on DeepSeek. **The subscription has expired — decision is to retire both.**
+- ~~`src/pages/api/product-bot.js` and `components/ProductAdvisorBot.js` ran on DeepSeek.~~ **Retired in P0-12** (subscription expired) — both files deleted, widget removed from `index.js`.
 - `PromoCardsSection.js` hardcodes five promo cards. Four advertise phones not in the catalogue. P3 moves them into the `/homepage-sections` API.
 
 ## Verify before committing
