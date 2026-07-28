@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import {
-  Box, Typography, Button, Container, Pagination, Select, MenuItem,
+  Box, Typography, Button, Container, Pagination, PaginationItem, Select, MenuItem,
   IconButton, useTheme, useMediaQuery, Slider, Divider
 } from "@mui/material";
 import { Tune, Close } from "@mui/icons-material";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { Api } from "@/lib/api";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
@@ -154,6 +155,21 @@ export default function ProductListingPage({
   };
   const handlePageChange = (_e, value) => {
     setFilters((prev) => ({ ...prev, page: value }));
+  };
+  // Build a real, crawlable URL for each pagination item so bots can reach pages 2..N.
+  const buildPageHref = (targetPage) => {
+    const params = new URLSearchParams();
+    if (targetPage > 1) params.set("page", String(targetPage));
+    if (filters.category) params.set("category", filters.category);
+    if (filters.brand) params.set("brand", filters.brand);
+    if (filters.sort && filters.sort !== "random") params.set("sort", filters.sort);
+    if (filters.dealType) params.set("dealType", filters.dealType);
+    if (filters.search) params.set("search", filters.search);
+    if (filters.minPrice) params.set("minPrice", String(filters.minPrice));
+    if (filters.maxPrice && filters.maxPrice !== 500000) params.set("maxPrice", String(filters.maxPrice));
+    if (filters.limit && filters.limit !== 12) params.set("limit", String(filters.limit));
+    const qs = params.toString();
+    return qs ? `/products?${qs}` : "/products";
   };
   const clearFilters = () => {
     setFilters({ page: 1, limit: 12, category: "", brand: "", minPrice: 0, maxPrice: 500000, sort: "random", search: "", dealType: "" });
@@ -309,10 +325,28 @@ export default function ProductListingPage({
                 <Pagination
                   count={Math.ceil(totalProducts / filters.limit)}
                   page={filters.page}
-                  onChange={handlePageChange}
                   color="primary"
                   shape="rounded"
                   size={isMobile ? "small" : "medium"}
+                  renderItem={(item) => {
+                    const crawlable =
+                      item.page &&
+                      !item.disabled &&
+                      ["page", "previous", "next"].includes(item.type);
+                    if (!crawlable) return <PaginationItem {...item} />;
+                    return (
+                      <PaginationItem
+                        component={Link}
+                        href={buildPageHref(item.page)}
+                        {...item}
+                        onClick={(e) => {
+                          // JS users page in place; crawlers and new-tab use the href.
+                          e.preventDefault();
+                          handlePageChange(e, item.page);
+                        }}
+                      />
+                    );
+                  }}
                 />
               </Box>
             )}
