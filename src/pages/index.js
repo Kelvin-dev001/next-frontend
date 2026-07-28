@@ -1,6 +1,15 @@
 import Head from "next/head";
 import { Api } from "@/lib/api";
-import { PHONE_E164 } from "@/constants/business";
+import {
+  BUSINESS_NAME as SITE_NAME,
+  SITE_URL,
+  PHONE_E164,
+  EMAIL,
+  ADDRESS,
+  OPENING_HOURS_SPEC,
+  SAME_AS,
+  SERVED_COUNTIES,
+} from "@/constants/business";
 
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
@@ -13,26 +22,36 @@ import DealsSection from "@/components/DealsSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 
-const SITE_NAME = "Snaap Connections";
-const SITE_URL = "https://www.snaapconnections.co.ke";
 const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
-  const organizationJsonLd = {
+  const storeJsonLd = {
     "@context": "https://schema.org",
-    "@type": "mobilephoneStore",
+    "@type": "MobilePhoneStore",
+    "@id": `${SITE_URL}/#store`,
     name: SITE_NAME,
     url: SITE_URL,
+    image: `${SITE_URL}/snaap-logo.jpeg`,
+    logo: `${SITE_URL}/snaap-logo.jpeg`,
     description: PAGE_DESCRIPTION,
-    areaServed: ["Mombasa", "Kenya"],
+    telephone: PHONE_E164,
+    email: EMAIL,
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Mombasa",
-      addressCountry: "KE",
+      streetAddress: ADDRESS.street,
+      addressLocality: ADDRESS.locality,
+      addressRegion: ADDRESS.region,
+      addressCountry: ADDRESS.country,
     },
-    telephone: PHONE_E164,
+    areaServed: [...SERVED_COUNTIES, "Kenya"],
+    openingHoursSpecification: OPENING_HOURS_SPEC,
+    currenciesAccepted: "KES",
+    paymentAccepted: "M-Pesa",
+    sameAs: SAME_AS,
+    // No `geo`: the Google Business Profile pin is unverified and a wrong pin is
+    // worse than none (constants/business.js GEO = null).
   };
 
   return (
@@ -56,7 +75,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(storeJsonLd) }}
         />
       </Head>
 
