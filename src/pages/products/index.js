@@ -32,6 +32,10 @@ export default function ProductListingPage({
   const categoryFromQuery = useMemo(() => (router.query.category ? String(router.query.category) : ""), [router.query.category]);
   const sortFromQuery = useMemo(() => (router.query.sort ? String(router.query.sort) : ""), [router.query.sort]);
   const dealTypeFromQuery = useMemo(() => (router.query.dealType ? String(router.query.dealType) : ""), [router.query.dealType]);
+  const pageFromQuery = useMemo(() => {
+    const p = Number(router.query.page);
+    return Number.isFinite(p) && p > 0 ? p : 1;
+  }, [router.query.page]);
   const minPriceFromQuery = useMemo(
     () => (router.query.minPrice ? Number(router.query.minPrice) : 0),
     [router.query.minPrice]
@@ -82,7 +86,7 @@ export default function ProductListingPage({
       minPrice: Number.isFinite(minPriceFromQuery) ? minPriceFromQuery : 0,
       maxPrice: Number.isFinite(maxPriceFromQuery) ? maxPriceFromQuery : 500000,
       dealType: dealTypeFromQuery,
-      page: 1,
+      page: pageFromQuery,
     }));
   }, [
     router.isReady,
@@ -92,6 +96,7 @@ export default function ProductListingPage({
     minPriceFromQuery,
     maxPriceFromQuery,
     dealTypeFromQuery,
+    pageFromQuery,
   ]);
 
   useEffect(() => {

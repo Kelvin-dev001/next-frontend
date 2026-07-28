@@ -236,6 +236,7 @@ export default function ProductCard({
           <Button
             component={Link}
             href={productHref}
+            aria-label={`View ${product?.name || "product"}`}
             variant="outlined"
             fullWidth
             sx={{
