@@ -3,6 +3,7 @@ import "@/styles/globals.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useMemo } from "react";
+import Head from "next/head";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
@@ -21,7 +22,13 @@ export default function MyApp({ Component, pageProps }) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {isAdmin ? (
-          <Component {...pageProps} />
+          <>
+            {/* Admin is private and client-only — keep all /admin/* out of the index (P1-4). */}
+            <Head>
+              <meta name="robots" content="noindex,nofollow" />
+            </Head>
+            <Component {...pageProps} />
+          </>
         ) : (
           <AppLayout>
             <Component {...pageProps} />
