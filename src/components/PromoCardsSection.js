@@ -142,8 +142,8 @@ function PromoCard({ card, priority = false }) {
             size="small"
           />
           <Typography
-            variant={card.type === "announcement" ? "h1" : "h2"}
-            component={card.type === "announcement" ? "h1" : "h2"}
+            variant="h2"
+            component="h2"
             sx={{
               fontWeight: 800,
               fontSize: {
