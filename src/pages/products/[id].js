@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import {
   Box, Typography, Button, Card, CardContent, CardMedia,
   Chip, Container, Divider, Tabs, Tab, List, ListItem,
-  ListItemText, IconButton, Rating, useTheme,
+  ListItemText, IconButton, useTheme,
   useMediaQuery, Breadcrumbs
 } from "@mui/material";
 import {
@@ -24,7 +24,7 @@ const FALLBACK_IMAGE = "/fallback.png";
 const SITE_NAME = "Snaap Connections";
 const SITE_URL = "https://www.snaapconnections.co.ke";
 
-export default function ProductDetailPage({ product, related = [] }) {
+export default function ProductDetailPage({ product, related = [], priceValidUntil = null }) {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -93,10 +93,39 @@ export default function ProductDetailPage({ product, related = [] }) {
     FALLBACK_IMAGE;
 
   const seoTitle = `${product?.name} | Buy in Mombasa, Kenya | ${SITE_NAME}`;
-  const seoDescription =
-    product?.shortDescription ||
-    `Buy ${product?.name} in Mombasa with fast nationwide delivery across Kenya.`;
+  // P1-9: build the meta description from live structured fields (specs + real
+  // price via formatKES) so it can never drift from a stale free-text blurb.
+  const specBits = [product?.specs?.storage, product?.specs?.ram && `${product.specs.ram} RAM`]
+    .filter(Boolean)
+    .join(", ");
+  const livePrice = formatKES(product?.discountPrice || product?.price);
+  const seoDescription = product
+    ? `Buy the ${product.name}${specBits ? ` (${specBits})` : ""} at ${livePrice} from Snaap Connections, Mombasa. Fast delivery across Kenya.`
+    : `Buy smartphones and accessories in Mombasa with fast nationwide delivery across Kenya.`;
   const seoImage = getOptimizedCloudinaryUrl(images[0], { width: 900 }) || FALLBACK_IMAGE;
+
+  // P1-6: real delivery rates from the single source of truth become schema
+  // shippingDetails (no invented figures; mirrors constants/business.js).
+  const shippingDetails = DELIVERY_ZONES.map((z) => ({
+    "@type": "OfferShippingDetails",
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      currency: "KES",
+      ...(z.priceKES != null
+        ? { value: z.priceKES }
+        : { minValue: z.priceKESMin, maxValue: z.priceKESMax }),
+    },
+    shippingDestination: {
+      "@type": "DefinedRegion",
+      addressCountry: "KE",
+      addressRegion: z.counties,
+    },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+      transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: z.transitDays, unitCode: "DAY" },
+    },
+  }));
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -105,13 +134,42 @@ export default function ProductDetailPage({ product, related = [] }) {
     image: [seoImage],
     description: product?.shortDescription || product?.fullDescription || seoDescription,
     brand: { "@type": "Brand", name: product?.brand || SITE_NAME },
+    ...(product?.sku ? { sku: product.sku } : {}),
+    ...(product?.category ? { category: product.category } : {}),
     offers: {
       "@type": "Offer",
       priceCurrency: "KES",
       price: product?.discountPrice || product?.price || undefined,
+      ...(priceValidUntil ? { priceValidUntil } : {}),
+      itemCondition: "https://schema.org/NewCondition",
       availability: product?.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       url: `${SITE_URL}/products/${product?._id}`,
+      seller: { "@type": "MobilePhoneStore", "@id": `${SITE_URL}/#store`, name: SITE_NAME },
+      shippingDetails,
     },
+  };
+
+  // P1-6: BreadcrumbList mirroring the visible breadcrumbs (Home > Category > Product).
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      ...(product?.category
+        ? [{
+            "@type": "ListItem",
+            position: 2,
+            name: product.category,
+            item: `${SITE_URL}/products?category=${encodeURIComponent(product.category)}`,
+          }]
+        : []),
+      {
+        "@type": "ListItem",
+        position: product?.category ? 3 : 2,
+        name: product?.name,
+        item: `${SITE_URL}/products/${product?._id}`,
+      },
+    ],
   };
 
   return (
@@ -139,6 +197,10 @@ export default function ProductDetailPage({ product, related = [] }) {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
           />
         </Head>
 
@@ -236,12 +298,6 @@ export default function ProductDetailPage({ product, related = [] }) {
             >
               {product.name}
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <Rating value={4.5} precision={0.1} readOnly size={isMobile ? "small" : "medium"} sx={{ mr: 1 }} />
-              <Typography variant="body2" color="text.secondary">
-                4.5 (24 reviews)
-              </Typography>
-            </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
               <Typography
                 variant="h4"
@@ -528,6 +584,11 @@ export default function ProductDetailPage({ product, related = [] }) {
 }
 
 export async function getServerSideProps({ params }) {
+  // Rolling ~1-year Offer validity (date-only, so SSR and client render identically).
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+
   try {
     const res = await Api.get(`/products/${params.id}`);
     const product = res.data?.product || null;
@@ -544,8 +605,8 @@ export async function getServerSideProps({ params }) {
       }
     }
 
-    return { props: { product, related } };
+    return { props: { product, related, priceValidUntil } };
   } catch (e) {
-    return { props: { product: null, related: [] } };
+    return { props: { product: null, related: [], priceValidUntil: null } };
   }
 }
