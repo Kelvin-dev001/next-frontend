@@ -20,7 +20,7 @@ import { Api } from "@/lib/api";
 
 const menuSections = [
   { label: "All Products", icon: <StorefrontIcon />, link: "/products" },
-  { label: "Deals", icon: <LocalOfferIcon />, link: "/products?dealType=deal" },
+  { label: "Deals", icon: <LocalOfferIcon />, link: "/#deals" },
   { label: "New Arrivals", icon: <StarIcon />, link: "/products?sort=newest" },
   { label: "Best Sellers", icon: <StarIcon />, link: "/products?sort=popular" },
   { label: "Pocket Friendly", icon: <LocalOfferIcon />, link: "/products?sort=price-low&maxPrice=15000" },

@@ -85,7 +85,7 @@ export default function DealsSection() {
   if (!loading && !hasAnyDeals) return null;
 
   return (
-    <Box sx={{ py: { xs: 4, md: 8 }, bgcolor: "background.default" }}>
+    <Box id="deals" sx={{ py: { xs: 4, md: 8 }, bgcolor: "background.default" }}>
       {dealTypes.map(({ key, label, color }) => {
         const items = deals[key] || [];
         if (!items.length) return null;
