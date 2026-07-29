@@ -18,10 +18,24 @@ const PAGE_TITLE = "Shop Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Browse smartphones, accessories, and top deals in Mombasa with nationwide delivery across Kenya.";
 
+// P1-11: only surface a facet in the <h1> / index it when the value maps to a
+// real brand or category, so /products?brand=<anything> can't inject arbitrary
+// text into an indexable heading or spawn junk indexable URLs.
+const resolveKnownName = (value, list) => {
+  const v = String(value ?? "").trim();
+  if (!v) return null;
+  const match = (list || []).find(
+    (item) => String(item?.name ?? "").toLowerCase() === v.toLowerCase()
+  );
+  return match ? match.name : null;
+};
+
 export default function ProductListingPage({
   initialProducts = [],
   initialTotal = 0,
   initialFilters = {},
+  serverHeading = "All Products",
+  serverIndexable = true,
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -53,6 +67,7 @@ export default function ProductListingPage({
   const [brands, setBrands] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [clientFacetsReady, setClientFacetsReady] = useState(false);
 
   const [filters, setFilters] = useState({
     page: initialFilters.page || 1,
@@ -65,6 +80,26 @@ export default function ProductListingPage({
     search: initialFilters.search || "",
     dealType: initialFilters.dealType || "",
   });
+
+  // P1-11: resolve the facet against the *known* brand/category lists. Until the
+  // client lists load, fall back to the server-computed values so the first paint
+  // matches SSR (no hydration mismatch).
+  const heading = useMemo(() => {
+    if (!clientFacetsReady) return serverHeading;
+    return (
+      resolveKnownName(filters.category, categories) ||
+      resolveKnownName(filters.brand, brands) ||
+      "All Products"
+    );
+  }, [clientFacetsReady, serverHeading, filters.category, filters.brand, categories, brands]);
+
+  const indexable = useMemo(() => {
+    if (!clientFacetsReady) return serverIndexable;
+    const brandJunk = String(filters.brand || "").trim() && !resolveKnownName(filters.brand, brands);
+    const categoryJunk =
+      String(filters.category || "").trim() && !resolveKnownName(filters.category, categories);
+    return !brandJunk && !categoryJunk;
+  }, [clientFacetsReady, serverIndexable, filters.brand, filters.category, brands, categories]);
 
   const listingJsonLd = {
     "@context": "https://schema.org",
@@ -111,6 +146,9 @@ export default function ProductListingPage({
       } catch {
         setCategories([]);
         setBrands([]);
+      } finally {
+        // Facet lists resolved (or failed) — client can now sanitise the heading (P1-11).
+        setClientFacetsReady(true);
       }
     };
     fetchInitialData();
@@ -204,7 +242,7 @@ export default function ProductListingPage({
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <meta name="robots" content="index,follow" />
+        <meta name="robots" content={indexable ? "index,follow" : "noindex,follow"} />
         <link rel="canonical" href={`${SITE_URL}/products`} />
         <meta property="og:title" content={PAGE_TITLE} />
         <meta property="og:description" content={PAGE_DESCRIPTION} />
@@ -232,7 +270,7 @@ export default function ProductListingPage({
           }}
         >
           <Typography variant="h5" component="h1" sx={{ fontWeight: 600, fontSize: { xs: "1.1rem", md: "1.5rem" } }}>
-            {filters.category || filters.brand || "All Products"}
+            {heading}
             <Typography variant="body2" color="text.secondary" component="span" sx={{ ml: 1 }}>
               ({totalProducts} products)
             </Typography>
@@ -406,29 +444,48 @@ export async function getServerSideProps({ query }) {
     search = "", dealType = "",
   } = query;
 
+  const initialFilters = {
+    page: Number(page), limit: Number(limit), category, brand,
+    minPrice: Number(minPrice), maxPrice: Number(maxPrice), sort, search, dealType,
+  };
+
   try {
-    const response = await Api.get("/products", {
-      params: { page, limit, category, brand, minPrice, maxPrice, sort, search, dealType },
-    });
+    // Products + real brand/category lists in parallel, so sanitising the SSR
+    // heading/robots (P1-11) adds no serial latency. A brands/categories hiccup
+    // degrades gracefully instead of blanking the product grid.
+    const [response, brandsRes, categoriesRes] = await Promise.all([
+      Api.get("/products", {
+        params: { page, limit, category, brand, minPrice, maxPrice, sort, search, dealType },
+      }),
+      Api.get("/brands").catch(() => ({ data: {} })),
+      Api.get("/categories").catch(() => ({ data: {} })),
+    ]);
+
+    const brands = brandsRes.data?.brands || brandsRes.data || [];
+    const categories = categoriesRes.data?.categories || categoriesRes.data || [];
+    const resolvedBrand = resolveKnownName(brand, brands);
+    const resolvedCategory = resolveKnownName(category, categories);
+    const brandJunk = Boolean(String(brand).trim()) && !resolvedBrand;
+    const categoryJunk = Boolean(String(category).trim()) && !resolvedCategory;
+
     return {
       props: {
         initialProducts: response.data?.products || [],
         initialTotal: response.data?.total || response.data?.count || 0,
-        initialFilters: {
-          page: Number(page), limit: Number(limit), category, brand,
-          minPrice: Number(minPrice), maxPrice: Number(maxPrice), sort, search, dealType,
-        },
+        initialFilters,
+        serverHeading: resolvedCategory || resolvedBrand || "All Products",
+        serverIndexable: !brandJunk && !categoryJunk,
       },
     };
   } catch {
+    // Product API unreachable: don't index an unvalidated facet URL.
     return {
       props: {
         initialProducts: [],
         initialTotal: 0,
-        initialFilters: {
-          page: Number(page), limit: Number(limit), category, brand,
-          minPrice: Number(minPrice), maxPrice: Number(maxPrice), sort, search, dealType,
-        },
+        initialFilters,
+        serverHeading: "All Products",
+        serverIndexable: !(String(brand).trim() || String(category).trim()),
       },
     };
   }
