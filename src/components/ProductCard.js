@@ -1,18 +1,19 @@
-"use client";
 import React from "react";
-import {
-  Card, CardContent, Typography, Box, Button, Stack, Chip, IconButton, Rating
-} from "@mui/material";
-import { Favorite, FavoriteBorder, WhatsApp, Star } from "@mui/icons-material";
 import Link from "next/link";
 import Image from "next/image";
+import { FaHeart, FaRegHeart, FaWhatsapp, FaStar } from "react-icons/fa";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
-import { waLink } from "@/constants/business";
+import { waLink, formatKES } from "@/constants/business";
+import Button from "@/components/ui/Button";
+import Chip from "@/components/ui/Chip";
 
-const formatPrice = (price) =>
-  new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", maximumFractionDigits: 0 }).format(price);
-
-const BADGE_COLOR = { HOT: "error", NEW: "success", TRENDING: "info", SALE: "warning", FEATURED: "primary" };
+const BADGE_BG = {
+  HOT: "bg-red-600",
+  NEW: "bg-green-600",
+  TRENDING: "bg-sky-500",
+  SALE: "bg-amber-500",
+  FEATURED: "bg-[#1e3c72]",
+};
 
 export default function ProductCard({
   product,
@@ -22,9 +23,7 @@ export default function ProductCard({
   showViewBtn = true,
   badge,
   size = "compact",
-  sx = {},
   imagePriority = false,
-  ...props
 }) {
   const productHref = `/products/${product?._id || product?.id || ""}`;
 
@@ -40,53 +39,24 @@ export default function ProductCard({
 
   const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
 
-  const isFull = size === "full";
   const hasRealRating = typeof product?.rating === "number" && product.rating > 0;
+  const price = product?.discountPrice || product?.price;
 
   return (
-    <Card
-      sx={{
-        width: "100%",
-        minWidth: 0,
-        borderRadius: { xs: "14px", md: isFull ? "22px" : "18px" },
-        background: "#fff",
-        color: "primary.main",
-        boxShadow: "0 6px 24px rgba(30,60,114,0.1)",
-        transition: "transform 0.25s cubic-bezier(.4,2,.4,1), box-shadow 0.25s",
-        cursor: "pointer",
-        position: "relative",
-        overflow: "hidden",
-        border: "none",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        ...sx,
-      }}
-      elevation={0}
-      {...props}
-    >
-      {/* Stretched, crawlable link covering the whole card (P1-1). aria-hidden + tabIndex=-1
-          so the visible title link below is the single accessible / keyboard-focusable link. */}
-      <Box
-        component={Link}
+    <div className="relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-[#1e3c72] shadow-[0_6px_24px_rgba(30,60,114,0.1)] md:rounded-[18px]">
+      {/* Stretched, crawlable link over the whole card (P1-1). aria-hidden + tabIndex=-1
+          so the visible title link below is the single accessible / focusable link. */}
+      <Link
         href={productHref}
         prefetch={false}
         aria-hidden="true"
         tabIndex={-1}
-        sx={{ position: "absolute", inset: 0, zIndex: 1 }}
+        className="absolute inset-0 z-[1]"
       />
 
-      <Box sx={{ position: "relative", pt: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, px: { xs: 0.8, md: isFull ? 1.8 : 1.2 } }}>
-        <Box
-          sx={{
-            position: "relative",
-            width: "100%",
-            aspectRatio: "4 / 5",
-            borderRadius: { xs: "10px", md: isFull ? "16px" : "14px" },
-            overflow: "hidden",
-            bgcolor: "#f4f6f8",
-          }}
-        >
+      {/* Image */}
+      <div className="relative px-[0.8rem] pt-[0.8rem] md:px-[1.2rem] md:pt-[1.2rem]">
+        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[10px] bg-[#f4f6f8] md:rounded-[14px]">
           <Image
             src={imgUrl}
             alt={product?.name || "Product"}
@@ -95,143 +65,93 @@ export default function ProductCard({
             style={{ objectFit: "contain" }}
             priority={imagePriority}
           />
-        </Box>
+        </div>
 
         {badge && (
-          <Chip
-            label={badge}
-            color={BADGE_COLOR[badge] || "info"}
-            size="small"
-            sx={{ position: "absolute", top: 8, left: 8, fontWeight: 700, zIndex: 2, fontSize: { xs: "0.6rem", md: "0.75rem" } }}
-          />
+          <Chip className={`absolute left-2 top-2 z-[2] px-2 py-0.5 text-[0.6rem] text-white md:text-[0.75rem] ${BADGE_BG[badge] || "bg-sky-500"}`}>
+            {badge}
+          </Chip>
         )}
         {discountPercent && (
-          <Chip
-            label={`-${discountPercent}%`}
-            color="error"
-            size="small"
-            sx={{ position: "absolute", top: 8, right: 8, fontWeight: 700, zIndex: 2, fontSize: { xs: "0.6rem", md: "0.75rem" } }}
-          />
+          <Chip className="absolute right-2 top-2 z-[2] bg-red-600 px-2 py-0.5 text-[0.6rem] text-white md:text-[0.75rem]">
+            -{discountPercent}%
+          </Chip>
         )}
-        <IconButton
+
+        <button
           aria-label="add to wishlist"
-          size="small"
-          sx={{
-            position: "absolute",
-            bottom: 4,
-            right: 8,
-            bgcolor: "#fff",
-            borderRadius: "50%",
-            zIndex: 2,
-            boxShadow: "0 2px 8px #2221",
-            "&:hover": { bgcolor: "primary.light" },
-          }}
           onClick={(e) => {
             e.stopPropagation();
             if (onWishlistToggle) onWishlistToggle(product?._id || product?.id);
           }}
+          className="absolute bottom-1 right-2 z-[2] grid h-8 w-8 place-items-center rounded-full bg-white shadow-[0_2px_8px_#2221] hover:bg-[#6dd5ed]/30"
         >
-          {isWishlisted ? <Favorite color="error" /> : <FavoriteBorder />}
-        </IconButton>
-      </Box>
+          {isWishlisted ? <FaHeart className="text-red-500" /> : <FaRegHeart className="text-gray-500" />}
+        </button>
+      </div>
 
-      <CardContent sx={{ flexGrow: 1, px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pt: 0.8, pb: 0.4 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ mb: 0.2, display: "block", fontSize: { xs: "0.65rem", md: "0.75rem" } }}>
-          {product?.brand}
-        </Typography>
-        <Typography
-          component={Link}
+      {/* Content */}
+      <div className="flex-grow px-[0.8rem] pb-[0.4rem] pt-[0.8rem] md:px-[1.2rem]">
+        <span className="mb-0.5 block text-[0.65rem] text-gray-500 md:text-[0.75rem]">{product?.brand}</span>
+
+        <Link
           href={productHref}
           prefetch={false}
-          fontWeight={700}
-          gutterBottom
-          sx={{
-            color: "#1e3c72",
-            textDecoration: "none",
-            position: "relative",
-            zIndex: 2,
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            lineHeight: 1.2,
-            fontSize: { xs: "0.8rem", md: "0.95rem" },
-            "&:hover": { textDecoration: "underline" },
-          }}
+          className="relative z-[2] mb-1 block font-bold leading-tight text-[#1e3c72] no-underline line-clamp-2 text-[0.8rem] hover:underline md:text-[0.95rem]"
         >
           {product?.name}
-        </Typography>
+        </Link>
+
         {hasRealRating && (
-          <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
-            <Rating
-              value={product.rating}
-              precision={0.1}
-              readOnly
-              size="small"
-              icon={<Star fontSize="inherit" htmlColor="#6dd5ed" />}
-              emptyIcon={<Star fontSize="inherit" htmlColor="#e0e0e0" />}
-              sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}
-            />
-            <Typography variant="caption" sx={{ fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
-              {product.rating.toFixed(1)}
-            </Typography>
-          </Stack>
+          <div className="mb-1 flex items-center gap-1">
+            <span className="flex">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <FaStar key={i} className={i < Math.round(product.rating) ? "text-[#6dd5ed]" : "text-gray-300"} />
+              ))}
+            </span>
+            <span className="text-[0.6rem] md:text-[0.75rem]">{product.rating.toFixed(1)}</span>
+          </div>
         )}
-        <Stack direction="row" alignItems="center" spacing={0.5} flexWrap="wrap">
-          <Typography color="primary" fontWeight={700} sx={{ fontSize: { xs: "0.85rem", md: "1rem" } }}>
-            {product?.discountPrice || product?.price ? formatPrice(product.discountPrice || product.price) : "—"}
-          </Typography>
+
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="font-bold text-[#1e3c72] text-[0.85rem] md:text-[1rem]">
+            {price ? formatKES(price) : "—"}
+          </span>
           {product?.discountPrice && (
-            <Typography variant="caption" color="text.secondary" sx={{ textDecoration: "line-through", fontSize: { xs: "0.6rem", md: "0.75rem" } }}>
-              {formatPrice(product.price)}
-            </Typography>
+            <span className="text-[0.6rem] text-gray-500 line-through md:text-[0.75rem]">
+              {formatKES(product.price)}
+            </span>
           )}
-        </Stack>
+        </div>
 
         {(product?.specs?.storage || product?.specs?.ram) && (
-          <Stack direction="column" spacing={0.3} sx={{ mt: 0.5 }}>
+          <div className="mt-1.5 flex flex-col items-start gap-1">
             {product.specs?.storage && (
-              <Chip
-                label={`Storage: ${product.specs.storage}`}
-                size="small"
-                variant="outlined"
-                sx={{ height: 20, fontSize: { xs: "0.58rem", md: "0.68rem" } }}
-              />
+              <Chip className="h-5 border border-gray-300 px-2 text-[0.58rem] md:text-[0.68rem]">
+                Storage: {product.specs.storage}
+              </Chip>
             )}
             {product.specs?.ram && (
-              <Chip
-                label={`RAM: ${product.specs.ram}`}
-                size="small"
-                variant="outlined"
-                sx={{ height: 20, fontSize: { xs: "0.58rem", md: "0.68rem" } }}
-              />
+              <Chip className="h-5 border border-gray-300 px-2 text-[0.58rem] md:text-[0.68rem]">
+                RAM: {product.specs.ram}
+              </Chip>
             )}
-          </Stack>
+          </div>
         )}
-      </CardContent>
+      </div>
 
-      <Box sx={{ position: "relative", zIndex: 2, px: { xs: 0.8, md: isFull ? 2 : 1.2 }, pb: { xs: 0.8, md: isFull ? 1.6 : 1.2 }, pt: 0.4 }}>
+      {/* Actions */}
+      <div className="relative z-[2] px-[0.8rem] pb-[0.8rem] pt-1 md:px-[1.2rem] md:pb-[1.2rem]">
         {showWhatsApp && (
           <Button
-            variant="contained"
-            fullWidth
-            startIcon={<WhatsApp />}
-            sx={{
-              borderRadius: "50px",
-              fontWeight: 600,
-              textTransform: "none",
-              bgcolor: "success.main",
-              "&:hover": { bgcolor: "success.dark" },
-              mb: 0.4,
-              py: { xs: 0.6, md: 0.9 },
-              fontSize: { xs: "0.72rem", md: "0.92rem" },
-            }}
+            variant="whatsapp"
+            className="mb-1"
             onClick={(e) => {
               e.stopPropagation();
               window.open(waLink(message), "_blank");
             }}
           >
-            Buy on WhatsApp
+            <FaWhatsapp /> Buy on WhatsApp
           </Button>
         )}
         {showViewBtn && (
@@ -239,31 +159,13 @@ export default function ProductCard({
             component={Link}
             href={productHref}
             prefetch={false}
+            variant="view"
             aria-label={`View ${product?.name || "product"}`}
-            variant="outlined"
-            fullWidth
-            sx={{
-              borderRadius: "50px",
-              fontWeight: 700,
-              color: "primary.main",
-              borderColor: "#6dd5ed",
-              textTransform: "none",
-              fontSize: { xs: "0.72rem", md: "0.95rem" },
-              py: { xs: 0.5, md: 0.85 },
-              transition: "all 0.19s cubic-bezier(.4,2,.4,1)",
-              "&:hover": {
-                background: "linear-gradient(96deg,#6dd5ed 10%,#1e3c72 90%)",
-                color: "#fff",
-                borderColor: "transparent",
-                boxShadow: "0 2px 24px #1e3c72cc",
-                transform: "scale(1.03)",
-              },
-            }}
           >
             View
           </Button>
         )}
-      </Box>
-    </Card>
+      </div>
+    </div>
   );
 }
