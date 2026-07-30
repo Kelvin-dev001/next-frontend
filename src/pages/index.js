@@ -55,6 +55,22 @@ export default function Home({ featured, newArrivals, brands, categories, recent
     // worse than none (constants/business.js GEO = null).
   };
 
+  // P2-SEO3: WebSite schema + SearchAction (enables the sitelinks searchbox).
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_URL}/products?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <>
       <Head>
@@ -77,6 +93,10 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(storeJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
       </Head>
 

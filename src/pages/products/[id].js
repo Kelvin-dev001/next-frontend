@@ -278,7 +278,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                 >
                   <img
                     src={getOptimizedCloudinaryUrl(image, { width: 100 }) || FALLBACK_IMAGE}
-                    alt={`Thumbnail ${index + 1}`}
+                    alt={`${product.name} — view ${index + 1}`}
                     width={70}
                     height={70}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}

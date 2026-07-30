@@ -55,6 +55,17 @@ const faqs = [
   },
 ];
 
+// P2-SEO3: FAQPage schema built from the same Q&As rendered below (Google requires them to match).
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+
 export default function FaqsPage() {
   return (
     <>
@@ -67,6 +78,7 @@ export default function FaqsPage() {
         <meta property="og:description" content={DESCRIPTION} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={`${SITE_URL}${PATH}`} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       </Head>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
