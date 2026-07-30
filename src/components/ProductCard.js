@@ -70,6 +70,7 @@ export default function ProductCard({
       <Box
         component={Link}
         href={productHref}
+        prefetch={false}
         aria-hidden="true"
         tabIndex={-1}
         sx={{ position: "absolute", inset: 0, zIndex: 1 }}
@@ -141,6 +142,7 @@ export default function ProductCard({
         <Typography
           component={Link}
           href={productHref}
+          prefetch={false}
           fontWeight={700}
           gutterBottom
           sx={{
@@ -236,6 +238,7 @@ export default function ProductCard({
           <Button
             component={Link}
             href={productHref}
+            prefetch={false}
             aria-label={`View ${product?.name || "product"}`}
             variant="outlined"
             fullWidth

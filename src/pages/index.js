@@ -147,7 +147,7 @@ export async function getStaticProps() {
   try {
     const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes] = await Promise.all([
       Api.get("/products", { params: { featured: true, limit: 16 } }),
-      Api.get("/products", { params: { limit: 120 } }),
+      Api.get("/products", { params: { limit: 48 } }), // P2-P2: was 120 to show 48
       Api.get("/categories"),
       Api.get("/brands"),
       Api.get("/reviews/recent"),

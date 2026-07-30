@@ -1,7 +1,6 @@
 "use client";
 import "@/styles/globals.css";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+// (slick-carousel CSS removed — react-slick is unused; this dead CSS shipped on every page. P2-P1)
 import { useMemo } from "react";
 import Head from "next/head";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
