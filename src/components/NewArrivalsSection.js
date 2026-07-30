@@ -1,28 +1,15 @@
-"use client";
 import React from "react";
-import { Box, Typography } from "@mui/material";
 import ProductGrid from "@/components/ProductGrid";
 
 export default function NewArrivalsSection({ products = [], title = "New Smartphones in Kenya" }) {
   if (!products.length) return null;
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
-      <Typography
-        variant="h4"
-        align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.0, fontFamily: "'Montserrat', 'Roboto', sans-serif", fontSize: { xs: "1.45rem", md: "1.8rem" } }}
-      >
+    <section className="py-6 md:py-10">
+      <h2 className="mb-4 text-center font-bold tracking-wide text-[#1e3c72] text-[1.45rem] md:text-[1.8rem]">
         {title}
-      </Typography>
-
-      <ProductGrid
-        items={products}
-        eagerCount={6}
-        size="compact"
-        showWhatsApp
-        showViewBtn
-      />
-    </Box>
+      </h2>
+      <ProductGrid items={products} eagerCount={6} size="compact" showWhatsApp showViewBtn />
+    </section>
   );
 }

@@ -1,6 +1,4 @@
-"use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Card, CardActionArea, Container, Chip } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
 
@@ -12,15 +10,9 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
     if (!shouldFetch) return;
     let active = true;
     Api.get("/categories")
-      .then((res) => {
-        if (!active) return;
-        const arr = res.data?.categories || res.data || [];
-        setCategories(arr);
-      })
+      .then((res) => { if (!active) return; setCategories(res.data?.categories || res.data || []); })
       .catch(() => setCategories([]));
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [shouldFetch]);
 
   const list = useMemo(
@@ -29,91 +21,29 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
   );
 
   return (
-    <Box component="section" aria-label="Shop by category" sx={{ py: { xs: 5, md: 8 }, bgcolor: "background.default" }}>
-      <Container maxWidth="xl">
-        <Typography
-          variant="h3"
-          align="center"
-          sx={{ fontWeight: 800, mb: 3, color: "primary.main", letterSpacing: 0.4, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
-        >
+    <section aria-label="Shop by category" className="py-5 md:py-8">
+      <div className="mx-auto max-w-screen-2xl px-4">
+        <h2 className="mb-6 text-center font-extrabold tracking-wide text-[#1e3c72] text-[1.45rem] md:text-[1.8rem]">
           Shop by Category
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(2, minmax(0, 1fr))",
-              sm: "repeat(3, minmax(0, 1fr))",
-              md: "repeat(4, minmax(0, 1fr))",
-              lg: "repeat(6, minmax(0, 1fr))",
-            },
-            gap: { xs: 1.6, md: 2 },
-          }}
-        >
+        </h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {list.map((cat, idx) => (
-            <Card
+            <Link
               key={cat._id || idx}
-              elevation={0}
-              sx={{
-                borderRadius: 2.5,
-                bgcolor: "#fff",
-                boxShadow: "0 5px 18px rgba(30, 60, 114, 0.08)",
-                border: "1px solid rgba(15, 23, 42, 0.05)",
-              }}
+              href={`/products?category=${encodeURIComponent(cat.name || "")}`}
+              prefetch={false}
+              className="flex min-h-[125px] flex-col items-center gap-2 rounded-[10px] border border-black/5 bg-white p-4 text-center shadow-[0_5px_18px_rgba(30,60,114,0.08)] transition hover:shadow-md"
             >
-              <CardActionArea
-                component={Link}
-                href={`/products?category=${encodeURIComponent(cat.name || "")}`}
-                sx={{
-                  p: 1.6,
-                  textAlign: "center",
-                  minHeight: 125,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 1.5,
-                    bgcolor: "#f8fafc",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                  }}
-                >
-                  <img
-                    src={cat.icon || "/category-placeholder.png"}
-                    alt={`${cat.name} category`}
-                    width={40}
-                    height={40}
-                    style={{ objectFit: "contain" }}
-                    loading="lazy"
-                  />
-                </Box>
-                <Typography variant="caption" fontWeight={700} sx={{ color: "primary.dark" }}>
-                  {cat.name || "Loading"}
-                </Typography>
-                <Chip
-                  label="Explore"
-                  size="small"
-                  sx={{
-                    bgcolor: "#1e3c72",
-                    color: "#fff",
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                    fontSize: "0.68rem",
-                  }}
-                />
-              </CardActionArea>
-            </Card>
+              <span className="grid h-[52px] w-[52px] place-items-center rounded-md bg-[#f8fafc] p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={cat.icon || "/category-placeholder.png"} alt={`${cat.name} category`} className="h-10 w-10 object-contain" />
+              </span>
+              <span className="text-xs font-bold text-[#152c56]">{cat.name || "Loading"}</span>
+              <span className="rounded-full bg-[#1e3c72] px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">Explore</span>
+            </Link>
           ))}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

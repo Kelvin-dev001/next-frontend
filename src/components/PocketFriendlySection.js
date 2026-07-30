@@ -1,6 +1,4 @@
-"use client";
 import React, { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
 import { Api } from "@/lib/api";
 import ProductGrid from "@/components/ProductGrid";
 
@@ -21,22 +19,11 @@ export default function PocketFriendlySection() {
   if (!products.length) return null;
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.paper" }}>
-      <Typography
-        variant="h4"
-        align="center"
-        sx={{ fontWeight: 700, mb: 4, color: "primary.main", letterSpacing: 1.0, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
-      >
+    <section className="py-6 md:py-10">
+      <h2 className="mb-4 text-center font-bold tracking-wide text-[#1e3c72] text-[1.45rem] md:text-[1.8rem]">
         Pocket Friendly Picks
-      </Typography>
-
-      <ProductGrid
-        items={products.slice(0, 8)}
-        eagerCount={4}
-        size="compact"
-        showWhatsApp
-        showViewBtn
-      />
-    </Box>
+      </h2>
+      <ProductGrid items={products.slice(0, 8)} eagerCount={4} size="compact" showWhatsApp showViewBtn />
+    </section>
   );
 }
