@@ -43,7 +43,7 @@ export default function ProductCard({
   const price = product?.discountPrice || product?.price;
 
   return (
-    <div className="relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-[#1e3c72] shadow-[0_6px_24px_rgba(30,60,114,0.1)] md:rounded-[18px]">
+    <div className="group relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-[#1e3c72] shadow-[0_6px_24px_rgba(30,60,114,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(30,60,114,0.2)] focus-within:ring-2 focus-within:ring-[#6dd5ed] md:rounded-[18px]">
       {/* Stretched, crawlable link over the whole card (P1-1). aria-hidden + tabIndex=-1
           so the visible title link below is the single accessible / focusable link. */}
       <Link
@@ -63,6 +63,7 @@ export default function ProductCard({
             fill
             sizes="(max-width: 600px) 48vw, (max-width: 900px) 32vw, 25vw"
             style={{ objectFit: "contain" }}
+            className="transition-transform duration-500 ease-out group-hover:scale-105"
             priority={imagePriority}
           />
         </div>
@@ -125,7 +126,7 @@ export default function ProductCard({
         </div>
 
         {(product?.specs?.storage || product?.specs?.ram) && (
-          <div className="mt-1.5 flex flex-col items-start gap-1">
+          <div className="mt-1.5 flex flex-wrap items-center gap-1">
             {product.specs?.storage && (
               <Chip className="h-5 border border-gray-300 px-2 text-[0.58rem] md:text-[0.68rem]">
                 Storage: {product.specs.storage}
