@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { Container, Typography, Button, Alert, Stack } from "@mui/material";
-import { WhatsApp } from "@mui/icons-material";
+import { FaWhatsapp } from "react-icons/fa";
 import { SITE_URL, EMAIL, waLink } from "@/constants/business";
 
 const PATH = "/careers";
@@ -22,57 +21,52 @@ export default function CareersPage() {
         <link rel="canonical" href={`${SITE_URL}${PATH}`} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- PLACEHOLDER COPY — NOT APPROVED — DO NOT PUBLISH -->" }} />
 
-        <Alert severity="warning" sx={{ mb: 3 }}>
+        <div role="alert" className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Placeholder content — not approved for publication. This page is <strong>noindex</strong>{" "}
           until openings are confirmed.
-        </Alert>
+        </div>
 
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={2}>
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Careers
-        </Typography>
+        </h1>
 
-        <Typography variant="body1" color="text.secondary" mb={3}>
+        <p className="mb-6 text-gray-500">
           We&apos;re not advertising specific roles right now. If you&apos;d like to be considered
           for a future opening, email{" "}
-          <a href={`mailto:${EMAIL}?subject=Expression%20of%20interest`} style={{ fontWeight: 600, color: "inherit" }}>
+          <a href={`mailto:${EMAIL}?subject=Expression%20of%20interest`} className="font-semibold text-inherit">
             {EMAIL}
           </a>{" "}
           or send us a message on WhatsApp.
-        </Typography>
+        </p>
 
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- END PLACEHOLDER COPY -->" }} />
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4 }}>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<WhatsApp />}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+          <a
             href={waLink("Hi Snaap Connections, I'm interested in working with you.")}
             target="_blank"
             rel="noopener"
-            sx={{ textTransform: "none", fontWeight: 700 }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
           >
-            Message us on WhatsApp
-          </Button>
-          <Button
-            component="a"
+            <FaWhatsapp className="text-lg" /> Message us on WhatsApp
+          </a>
+          <a
             href={`mailto:${EMAIL}?subject=Expression%20of%20interest`}
-            variant="outlined"
-            sx={{ textTransform: "none", fontWeight: 700 }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#1e3c72] px-5 py-2.5 font-bold text-[#1e3c72] no-underline transition hover:bg-[#1e3c72]/10"
           >
             Email us
-          </Button>
-        </Stack>
+          </a>
+        </div>
 
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>
+        <p className="text-sm text-gray-500">
+          <Link href="/products" className="font-semibold">Browse all products</Link>
           {"  ·  "}
-          <Link href="/contact" style={{ fontWeight: 600 }}>Contact us</Link>
-        </Typography>
-      </Container>
+          <Link href="/contact" className="font-semibold">Contact us</Link>
+        </p>
+      </div>
     </>
   );
 }

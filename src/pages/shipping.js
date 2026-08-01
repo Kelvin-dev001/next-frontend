@@ -1,10 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import {
-  Container, Typography, Button, Paper,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-} from "@mui/material";
-import { WhatsApp } from "@mui/icons-material";
+import { FaWhatsapp } from "react-icons/fa";
 import { SITE_URL, DELIVERY_ZONES, waLink } from "@/constants/business";
 
 const PATH = "/shipping";
@@ -26,62 +22,59 @@ export default function ShippingPage() {
         <meta property="og:url" content={`${SITE_URL}${PATH}`} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={1}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
+        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Shipping &amp; Delivery
-        </Typography>
-        <Typography variant="body1" color="text.secondary" mb={4}>
+        </h1>
+        <p className="mb-8 text-gray-500">
           We deliver to five counties. The rates and times below are fixed — the price you see is
           the price you pay. There is no free-delivery threshold and no hidden courier fee.
-        </Typography>
+        </p>
 
-        <TableContainer component={Paper} variant="outlined" sx={{ mb: 3, borderRadius: 3 }}>
-          <Table aria-label="Delivery rates and times by county">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Counties</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Delivery cost</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Delivery time</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+        <div className="mb-6 overflow-x-auto rounded-3xl border border-gray-200">
+          <table className="w-full text-left" aria-label="Delivery rates and times by county">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 font-bold">Counties</th>
+                <th className="px-4 py-3 font-bold">Delivery cost</th>
+                <th className="px-4 py-3 font-bold">Delivery time</th>
+              </tr>
+            </thead>
+            <tbody>
               {DELIVERY_ZONES.map((zone) => (
-                <TableRow key={zone.id}>
-                  <TableCell>{zone.counties.join(", ")}</TableCell>
-                  <TableCell>{zone.priceDisplay}</TableCell>
-                  <TableCell>{zone.time}</TableCell>
-                </TableRow>
+                <tr key={zone.id} className="border-b border-gray-100 last:border-0">
+                  <td className="px-4 py-3">{zone.counties.join(", ")}</td>
+                  <td className="px-4 py-3">{zone.priceDisplay}</td>
+                  <td className="px-4 py-3">{zone.time}</td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            </tbody>
+          </table>
+        </div>
 
-        <Typography variant="body2" color="text.secondary" mb={4}>
+        <p className="mb-8 text-sm text-gray-500">
           These five counties are the complete list of areas we currently deliver to. Orders are
           placed and confirmed on WhatsApp, where we agree the delivery details with you before
           dispatch.
-        </Typography>
+        </p>
 
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<WhatsApp />}
+        <a
           href={waLink("Hi Snaap Connections, I'd like to ask about delivery to my area.")}
           target="_blank"
           rel="noopener"
-          sx={{ mb: 4, textTransform: "none", fontWeight: 700 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
         >
-          Ask about delivery on WhatsApp
-        </Button>
+          <FaWhatsapp className="text-lg" /> Ask about delivery on WhatsApp
+        </a>
 
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>
+        <p className="text-sm text-gray-500">
+          <Link href="/products" className="font-semibold">Browse all products</Link>
           {"  ·  "}
-          <Link href="/faqs" style={{ fontWeight: 600 }}>FAQs</Link>
+          <Link href="/faqs" className="font-semibold">FAQs</Link>
           {"  ·  "}
-          <Link href="/contact" style={{ fontWeight: 600 }}>Contact us</Link>
-        </Typography>
-      </Container>
+          <Link href="/contact" className="font-semibold">Contact us</Link>
+        </p>
+      </div>
     </>
   );
 }

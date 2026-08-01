@@ -1,11 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import {
-  Container, Typography, Button,
-  Accordion, AccordionSummary, AccordionDetails,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { WhatsApp } from "@mui/icons-material";
+import { FaWhatsapp, FaChevronDown } from "react-icons/fa";
 import { SITE_URL, ADDRESS, HOURS_DISPLAY, DELIVERY_ZONES, waLink } from "@/constants/business";
 
 const PATH = "/faqs";
@@ -81,45 +76,41 @@ export default function FaqsPage() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={1}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
+        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Frequently Asked Questions
-        </Typography>
-        <Typography variant="body1" color="text.secondary" mb={4}>
+        </h1>
+        <p className="mb-8 text-gray-500">
           Short, honest answers. If yours isn&apos;t here, ask us on WhatsApp.
-        </Typography>
+        </p>
 
         {faqs.map((item, idx) => (
-          <Accordion key={idx} disableGutters sx={{ mb: 1.5, borderRadius: 2, "&:before": { display: "none" } }} variant="outlined">
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography fontWeight={600}>{item.q}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography color="text.secondary">{item.a}</Typography>
-            </AccordionDetails>
-          </Accordion>
+          <details key={idx} className="group mb-3 rounded-lg border border-gray-200">
+            <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 font-semibold marker:content-none">
+              {item.q}
+              <FaChevronDown className="flex-shrink-0 text-gray-400 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="px-4 pb-4 text-gray-500">{item.a}</div>
+          </details>
         ))}
 
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<WhatsApp />}
+        <a
           href={waLink("Hi Snaap Connections, I have a question.")}
           target="_blank"
           rel="noopener"
-          sx={{ mt: 4, mb: 3, textTransform: "none", fontWeight: 700 }}
+          className="mb-3 mt-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
         >
-          Ask us on WhatsApp
-        </Button>
+          <FaWhatsapp className="text-lg" /> Ask us on WhatsApp
+        </a>
 
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>
+        <p className="text-sm text-gray-500">
+          <Link href="/products" className="font-semibold">Browse all products</Link>
           {"  ·  "}
-          <Link href="/shipping" style={{ fontWeight: 600 }}>Delivery information</Link>
+          <Link href="/shipping" className="font-semibold">Delivery information</Link>
           {"  ·  "}
-          <Link href="/contact" style={{ fontWeight: 600 }}>Contact us</Link>
-        </Typography>
-      </Container>
+          <Link href="/contact" className="font-semibold">Contact us</Link>
+        </p>
+      </div>
     </>
   );
 }
