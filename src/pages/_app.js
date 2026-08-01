@@ -1,6 +1,10 @@
 "use client";
 import "@/styles/globals.css";
-// (slick-carousel CSS removed — react-slick is unused; this dead CSS shipped on every page. P2-P1)
+// react-slick IS used by ReviewsSection (homepage + product page). P2-P1 wrongly
+// removed this as "dead" — that degraded the reviews carousel. Restored. The P4
+// Tailwind migration drops react-slick from ReviewsSection, after which this goes.
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import { useMemo } from "react";
 import Head from "next/head";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
