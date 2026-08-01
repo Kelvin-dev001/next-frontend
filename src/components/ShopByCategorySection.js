@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Api } from "@/lib/api";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 export default function ShopByCategorySection({ categories: categoriesProp = [] }) {
   const [categories, setCategories] = useState(categoriesProp);
@@ -23,9 +24,7 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
   return (
     <section aria-label="Shop by category" className="py-5 md:py-8">
       <div className="mx-auto max-w-screen-2xl px-4">
-        <h2 className="mb-6 text-center font-extrabold tracking-wide text-[#1e3c72] text-[1.45rem] md:text-[1.8rem]">
-          Shop by Category
-        </h2>
+        <SectionHeading>Shop by Category</SectionHeading>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {list.map((cat, idx) => (
             <Link

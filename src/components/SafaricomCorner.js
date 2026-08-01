@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { FaBroadcastTower, FaMoneyBillWave, FaFileInvoiceDollar, FaPhone, FaSms, FaThLarge } from "react-icons/fa";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const iconMap = {
   iot: <FaBroadcastTower className="text-2xl" />,
@@ -18,9 +19,7 @@ export default function SafaricomCorner({ sections = [] }) {
   return (
     <section aria-label="Safaricom Corner" className="py-6 md:py-9">
       <div className="mx-auto max-w-screen-2xl px-4">
-        <h2 className="mb-3 text-center font-extrabold tracking-wide text-[#1e3c72] text-[1.45rem] md:text-[1.8rem]">
-          {section.title}
-        </h2>
+        <SectionHeading className="mb-3">{section.title}</SectionHeading>
         {section.subtitle && (
           <p className="mx-auto mb-8 max-w-[720px] text-center text-gray-500">{section.subtitle}</p>
         )}
