@@ -1,39 +1,36 @@
-"use client";
 import "@/styles/globals.css";
-// (slick-carousel CSS removed — react-slick is unused; this dead CSS shipped on every page. P2-P1)
-import { useMemo } from "react";
 import Head from "next/head";
-import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import createCache from "@emotion/cache";
-import { CacheProvider } from "@emotion/react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import AppLayout from "@/layouts/AppLayout";
 
-const clientSideEmotionCache = createCache({ key: "css", prepend: true });
+// The storefront is Tailwind-only. MUI + emotion load exclusively for /admin, via
+// this dynamic (ssr:false) boundary — so none of it ships in the customer bundle.
+// react-slick was dropped from ReviewsSection in P4, so no slick CSS here either.
+const AdminProviders = dynamic(() => import("@/components/AdminProviders"), { ssr: false });
 
 export default function MyApp({ Component, pageProps }) {
-  const theme = useMemo(() => createTheme({ palette: { mode: "light" } }), []);
   const router = useRouter();
   const isAdmin = router?.pathname?.startsWith("/admin");
 
+  if (isAdmin) {
+    return (
+      <>
+        {/* Admin is private and client-only — keep all /admin/* out of the index (P1-4).
+            Kept outside AdminProviders so the noindex tag still server-renders. */}
+        <Head>
+          <meta name="robots" content="noindex,nofollow" />
+        </Head>
+        <AdminProviders>
+          <Component {...pageProps} />
+        </AdminProviders>
+      </>
+    );
+  }
+
   return (
-    <CacheProvider value={clientSideEmotionCache}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {isAdmin ? (
-          <>
-            {/* Admin is private and client-only — keep all /admin/* out of the index (P1-4). */}
-            <Head>
-              <meta name="robots" content="noindex,nofollow" />
-            </Head>
-            <Component {...pageProps} />
-          </>
-        ) : (
-          <AppLayout>
-            <Component {...pageProps} />
-          </AppLayout>
-        )}
-      </ThemeProvider>
-    </CacheProvider>
+    <AppLayout>
+      <Component {...pageProps} />
+    </AppLayout>
   );
 }
