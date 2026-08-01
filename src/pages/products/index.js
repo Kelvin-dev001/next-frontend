@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
-import {
-  Box, Typography, Button, Container, Pagination, PaginationItem, Select, MenuItem,
-  IconButton, useTheme, useMediaQuery, Slider, Divider
-} from "@mui/material";
-import { Tune, Close } from "@mui/icons-material";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { FaSlidersH, FaTimes } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import ProductGrid from "@/components/ProductGrid";
+import Button from "@/components/ui/Button";
 
 const PRODUCTS_PER_PAGE_OPTIONS = [12, 24, 48, 96, 200, 500, 1000];
 const SITE_NAME = "Snaap Connections";
@@ -19,16 +16,28 @@ const PAGE_DESCRIPTION =
   "Browse smartphones, accessories, and top deals in Mombasa with nationwide delivery across Kenya.";
 
 // P1-11: only surface a facet in the <h1> / index it when the value maps to a
-// real brand or category, so /products?brand=<anything> can't inject arbitrary
-// text into an indexable heading or spawn junk indexable URLs.
+// real brand or category.
 const resolveKnownName = (value, list) => {
   const v = String(value ?? "").trim();
   if (!v) return null;
-  const match = (list || []).find(
-    (item) => String(item?.name ?? "").toLowerCase() === v.toLowerCase()
-  );
+  const match = (list || []).find((item) => String(item?.name ?? "").toLowerCase() === v.toLowerCase());
   return match ? match.name : null;
 };
+
+// Windowed page list with ellipses (crawlable links preserved for each shown page).
+function buildPageItems(current, total) {
+  const raw = [...new Set([1, 2, total - 1, total, current - 1, current, current + 1])]
+    .filter((p) => p >= 1 && p <= total)
+    .sort((a, b) => a - b);
+  const items = [];
+  let prev = 0;
+  for (const p of raw) {
+    if (p - prev > 1) items.push("…");
+    items.push(p);
+    prev = p;
+  }
+  return items;
+}
 
 export default function ProductListingPage({
   initialProducts = [],
@@ -37,8 +46,6 @@ export default function ProductListingPage({
   serverHeading = "All Products",
   serverIndexable = true,
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const router = useRouter();
   const skipFirstFetch = useRef(true);
 
@@ -50,14 +57,8 @@ export default function ProductListingPage({
     const p = Number(router.query.page);
     return Number.isFinite(p) && p > 0 ? p : 1;
   }, [router.query.page]);
-  const minPriceFromQuery = useMemo(
-    () => (router.query.minPrice ? Number(router.query.minPrice) : 0),
-    [router.query.minPrice]
-  );
-  const maxPriceFromQuery = useMemo(
-    () => (router.query.maxPrice ? Number(router.query.maxPrice) : 500000),
-    [router.query.maxPrice]
-  );
+  const minPriceFromQuery = useMemo(() => (router.query.minPrice ? Number(router.query.minPrice) : 0), [router.query.minPrice]);
+  const maxPriceFromQuery = useMemo(() => (router.query.maxPrice ? Number(router.query.maxPrice) : 500000), [router.query.maxPrice]);
 
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(false);
@@ -81,23 +82,16 @@ export default function ProductListingPage({
     dealType: initialFilters.dealType || "",
   });
 
-  // P1-11: resolve the facet against the *known* brand/category lists. Until the
-  // client lists load, fall back to the server-computed values so the first paint
-  // matches SSR (no hydration mismatch).
+  // P1-11: resolve facet against known lists; fall back to server values before the client lists load.
   const heading = useMemo(() => {
     if (!clientFacetsReady) return serverHeading;
-    return (
-      resolveKnownName(filters.category, categories) ||
-      resolveKnownName(filters.brand, brands) ||
-      "All Products"
-    );
+    return resolveKnownName(filters.category, categories) || resolveKnownName(filters.brand, brands) || "All Products";
   }, [clientFacetsReady, serverHeading, filters.category, filters.brand, categories, brands]);
 
   const indexable = useMemo(() => {
     if (!clientFacetsReady) return serverIndexable;
     const brandJunk = String(filters.brand || "").trim() && !resolveKnownName(filters.brand, brands);
-    const categoryJunk =
-      String(filters.category || "").trim() && !resolveKnownName(filters.category, categories);
+    const categoryJunk = String(filters.category || "").trim() && !resolveKnownName(filters.category, categories);
     return !brandJunk && !categoryJunk;
   }, [clientFacetsReady, serverIndexable, filters.brand, filters.category, brands, categories]);
 
@@ -123,31 +117,18 @@ export default function ProductListingPage({
       dealType: dealTypeFromQuery,
       page: pageFromQuery,
     }));
-  }, [
-    router.isReady,
-    categoryFromQuery,
-    brandFromQuery,
-    sortFromQuery,
-    minPriceFromQuery,
-    maxPriceFromQuery,
-    dealTypeFromQuery,
-    pageFromQuery,
-  ]);
+  }, [router.isReady, categoryFromQuery, brandFromQuery, sortFromQuery, minPriceFromQuery, maxPriceFromQuery, dealTypeFromQuery, pageFromQuery]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [categoriesRes, brandsRes] = await Promise.all([
-          Api.get("/categories"),
-          Api.get("/brands"),
-        ]);
+        const [categoriesRes, brandsRes] = await Promise.all([Api.get("/categories"), Api.get("/brands")]);
         setCategories(categoriesRes.data?.categories || categoriesRes.data || []);
         setBrands(brandsRes.data?.brands || brandsRes.data || []);
       } catch {
         setCategories([]);
         setBrands([]);
       } finally {
-        // Facet lists resolved (or failed) — client can now sanitise the heading (P1-11).
         setClientFacetsReady(true);
       }
     };
@@ -165,15 +146,8 @@ export default function ProductListingPage({
         setError(null);
         const response = await Api.get("/products", {
           params: {
-            page: filters.page,
-            limit: filters.limit,
-            category: filters.category,
-            brand: filters.brand,
-            minPrice: filters.minPrice,
-            maxPrice: filters.maxPrice,
-            search: filters.search,
-            sort: filters.sort,
-            dealType: filters.dealType,
+            page: filters.page, limit: filters.limit, category: filters.category, brand: filters.brand,
+            minPrice: filters.minPrice, maxPrice: filters.maxPrice, search: filters.search, sort: filters.sort, dealType: filters.dealType,
           },
         });
         setProducts(response.data?.products || []);
@@ -187,19 +161,11 @@ export default function ProductListingPage({
     fetchProducts();
   }, [filters]);
 
-  const handlePriceChange = (_event, newValue) => {
-    setFilters((prev) => ({ ...prev, minPrice: newValue[0], maxPrice: newValue[1], page: 1 }));
-  };
-  const handleSortChange = (e) => {
-    setFilters((prev) => ({ ...prev, sort: e.target.value, page: 1 }));
-  };
-  const handleProductsPerPageChange = (e) => {
-    setFilters((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }));
-  };
-  const handlePageChange = (_e, value) => {
-    setFilters((prev) => ({ ...prev, page: value }));
-  };
-  // Build a real, crawlable URL for each pagination item so bots can reach pages 2..N.
+  const handleSortChange = (e) => setFilters((prev) => ({ ...prev, sort: e.target.value, page: 1 }));
+  const handleProductsPerPageChange = (e) => setFilters((prev) => ({ ...prev, limit: Number(e.target.value), page: 1 }));
+  const handlePageChange = (_e, value) => setFilters((prev) => ({ ...prev, page: value }));
+
+  // Real, crawlable URL for each pagination item (P1-1).
   const buildPageHref = (targetPage) => {
     const params = new URLSearchParams();
     if (targetPage > 1) params.set("page", String(targetPage));
@@ -219,26 +185,26 @@ export default function ProductListingPage({
     router.replace("/products", undefined, { shallow: true });
   };
   const toggleWishlist = (productId) => {
-    setWishlist((prev) => prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]);
+    setWishlist((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]));
   };
-  const handleSearchSelect = (productId) => { router.push(`/products/${productId}`); };
+  const handleSearchSelect = (productId) => router.push(`/products/${productId}`);
 
-  const sliderValue = [
-    Number.isFinite(filters.minPrice) ? filters.minPrice : 0,
-    Number.isFinite(filters.maxPrice) ? filters.maxPrice : 500000,
-  ];
+  const totalPages = Math.ceil(totalProducts / filters.limit);
+  const pageItems = totalPages > 1 ? buildPageItems(filters.page, totalPages) : [];
+
+  const selectCls = "rounded border border-gray-300 bg-white px-2 py-1 text-[0.75rem] md:text-[0.875rem]";
 
   if (error) {
     return (
-      <Box sx={{ py: 4, px: 2 }}>
-        <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
-        <Button variant="contained" onClick={() => setError(null)}>Retry</Button>
-      </Box>
+      <div className="px-4 py-8">
+        <p className="mb-2 text-red-600">{error}</p>
+        <Button variant="solid" fullWidth={false} onClick={() => setError(null)}>Retry</Button>
+      </div>
     );
   }
 
   return (
-    <Box sx={{ width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
       <Head>
         <title>{PAGE_TITLE}</title>
         <meta name="description" content={PAGE_DESCRIPTION} />
@@ -256,101 +222,51 @@ export default function ProductListingPage({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd) }} />
       </Head>
 
-      <Container maxWidth="xl" disableGutters sx={{ px: { xs: 0, md: 3 }, py: { xs: 1, md: 3 } }}>
-        {/* Mobile: top bar with title + controls */}
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-            px: { xs: 1.5, md: 0 },
-            gap: 1,
-          }}
-        >
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 600, fontSize: { xs: "1.1rem", md: "1.5rem" } }}>
+      <div className="mx-auto max-w-screen-2xl px-0 py-1 md:px-6 md:py-3">
+        {/* Top bar: title + controls */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 px-1.5 md:px-0">
+          <h1 className="font-semibold text-[1.1rem] md:text-[1.5rem]">
             {heading}
-            <Typography variant="body2" color="text.secondary" component="span" sx={{ ml: 1 }}>
-              ({totalProducts} products)
-            </Typography>
-          </Typography>
+            <span className="ml-1 text-sm font-normal text-gray-500">({totalProducts} products)</span>
+          </h1>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Select value={filters.limit} onChange={handleProductsPerPageChange} size="small" sx={{ minWidth: { xs: 80, md: 120 }, fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
-              {PRODUCTS_PER_PAGE_OPTIONS.map((option) => (
-                <MenuItem key={option} value={option}>{option} / page</MenuItem>
-              ))}
-            </Select>
-            <Select value={filters.sort} onChange={handleSortChange} size="small" sx={{ minWidth: { xs: 90, md: 180 }, fontSize: { xs: "0.75rem", md: "0.875rem" } }}>
-              <MenuItem value="random">Random</MenuItem>
-              <MenuItem value="newest">Newest</MenuItem>
-              <MenuItem value="price-low">Price: Low → High</MenuItem>
-              <MenuItem value="price-high">Price: High → Low</MenuItem>
-              <MenuItem value="popular">Most Popular</MenuItem>
-            </Select>
-            {isMobile && (
-              <IconButton onClick={() => setShowFilters(true)} size="small">
-                <Tune />
-              </IconButton>
-            )}
-          </Box>
-        </Box>
+          <div className="flex items-center gap-2">
+            <select value={filters.limit} onChange={handleProductsPerPageChange} className={selectCls} aria-label="Products per page">
+              {PRODUCTS_PER_PAGE_OPTIONS.map((o) => (<option key={o} value={o}>{o} / page</option>))}
+            </select>
+            <select value={filters.sort} onChange={handleSortChange} className={selectCls} aria-label="Sort">
+              <option value="random">Random</option>
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: Low → High</option>
+              <option value="price-high">Price: High → Low</option>
+              <option value="popular">Most Popular</option>
+            </select>
+            <button onClick={() => setShowFilters(true)} className="grid place-items-center rounded border border-gray-300 p-1.5 md:hidden" aria-label="Open filters">
+              <FaSlidersH />
+            </button>
+          </div>
+        </div>
 
-        <Box sx={{ display: "flex", gap: 3 }}>
-          {/* SIDEBAR: desktop only (static) OR mobile (overlay) */}
-          {!isMobile && (
-            <Box sx={{ width: "260px", flexShrink: 0 }}>
-              <SidebarFilters
-                filters={filters}
-                setFilters={setFilters}
-                categories={categories}
-                brands={brands}
-                sliderValue={sliderValue}
-                handlePriceChange={handlePriceChange}
-                handleSearchSelect={handleSearchSelect}
-                clearFilters={clearFilters}
-              />
-            </Box>
-          )}
+        <div className="flex gap-6">
+          {/* Desktop sidebar */}
+          <aside className="hidden w-[260px] flex-shrink-0 md:block">
+            <SidebarFilters filters={filters} setFilters={setFilters} categories={categories} brands={brands} handleSearchSelect={handleSearchSelect} clearFilters={clearFilters} />
+          </aside>
 
           {/* Mobile filter overlay */}
-          {isMobile && showFilters && (
-            <Box
-              sx={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100vw",
-                height: "100vh",
-                bgcolor: "background.paper",
-                zIndex: 1300,
-                p: 2,
-                overflowY: "auto",
-              }}
-            >
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                <Typography variant="h6">Filters</Typography>
-                <IconButton onClick={() => setShowFilters(false)}><Close /></IconButton>
-              </Box>
-              <SidebarFilters
-                filters={filters}
-                setFilters={setFilters}
-                categories={categories}
-                brands={brands}
-                sliderValue={sliderValue}
-                handlePriceChange={handlePriceChange}
-                handleSearchSelect={handleSearchSelect}
-                clearFilters={clearFilters}
-              />
-              <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={() => setShowFilters(false)}>
-                Show Results
-              </Button>
-            </Box>
+          {showFilters && (
+            <div className="fixed inset-0 z-[1300] overflow-y-auto bg-white p-4 md:hidden">
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-lg font-semibold">Filters</p>
+                <button onClick={() => setShowFilters(false)} aria-label="Close filters"><FaTimes /></button>
+              </div>
+              <SidebarFilters filters={filters} setFilters={setFilters} categories={categories} brands={brands} handleSearchSelect={handleSearchSelect} clearFilters={clearFilters} />
+              <Button variant="solid" onClick={() => setShowFilters(false)} className="mt-2">Show Results</Button>
+            </div>
           )}
 
-          {/* PRODUCT GRID: takes full remaining width */}
-          <Box sx={{ flex: 1, minWidth: 0, width: "100%" }}>
+          {/* Product grid + pagination */}
+          <div className="w-full min-w-0 flex-1">
             <ProductGrid
               items={products}
               loading={loading}
@@ -363,76 +279,77 @@ export default function ProductListingPage({
               isWishlisted={(p) => wishlist.includes(p._id)}
             />
 
-            {Math.ceil(totalProducts / filters.limit) > 1 && (
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 4, mb: 2 }}>
-                <Pagination
-                  count={Math.ceil(totalProducts / filters.limit)}
-                  page={filters.page}
-                  color="primary"
-                  shape="rounded"
-                  size={isMobile ? "small" : "medium"}
-                  renderItem={(item) => {
-                    const crawlable =
-                      item.page &&
-                      !item.disabled &&
-                      ["page", "previous", "next"].includes(item.type);
-                    if (!crawlable) return <PaginationItem {...item} />;
-                    return (
-                      <PaginationItem
-                        component={Link}
-                        href={buildPageHref(item.page)}
-                        {...item}
-                        onClick={(e) => {
-                          // JS users page in place; crawlers and new-tab use the href.
-                          e.preventDefault();
-                          handlePageChange(e, item.page);
-                        }}
-                      />
-                    );
-                  }}
-                />
-              </Box>
+            {totalPages > 1 && (
+              <nav className="mb-2 mt-8 flex flex-wrap justify-center gap-1" aria-label="Pagination">
+                {filters.page > 1 && (
+                  <Link href={buildPageHref(filters.page - 1)} onClick={(e) => { e.preventDefault(); handlePageChange(e, filters.page - 1); }} className="min-w-9 rounded border border-gray-300 px-3 py-1 text-center text-sm hover:bg-gray-100" aria-label="Previous page">‹</Link>
+                )}
+                {pageItems.map((item, i) =>
+                  item === "…" ? (
+                    <span key={`e${i}`} className="px-2 py-1 text-gray-400">…</span>
+                  ) : (
+                    <Link
+                      key={item}
+                      href={buildPageHref(item)}
+                      onClick={(e) => { e.preventDefault(); handlePageChange(e, item); }}
+                      aria-current={item === filters.page ? "page" : undefined}
+                      className={`min-w-9 rounded px-3 py-1 text-center text-sm ${item === filters.page ? "bg-[#1e3c72] text-white" : "border border-gray-300 hover:bg-gray-100"}`}
+                    >
+                      {item}
+                    </Link>
+                  )
+                )}
+                {filters.page < totalPages && (
+                  <Link href={buildPageHref(filters.page + 1)} onClick={(e) => { e.preventDefault(); handlePageChange(e, filters.page + 1); }} className="min-w-9 rounded border border-gray-300 px-3 py-1 text-center text-sm hover:bg-gray-100" aria-label="Next page">›</Link>
+                )}
+              </nav>
             )}
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function SidebarFilters({ filters, setFilters, categories, brands, sliderValue, handlePriceChange, handleSearchSelect, clearFilters }) {
+function SidebarFilters({ filters, setFilters, categories, brands, handleSearchSelect, clearFilters }) {
+  const setPrice = (key, val) =>
+    setFilters((f) => ({ ...f, [key]: Number(val) || (key === "maxPrice" ? 500000 : 0), page: 1 }));
+  const inputCls = "w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-[#1e3c72]";
+
   return (
     <>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>Search</Typography>
-        <AutoCompleteSearch onSelect={handleSearchSelect} placeholder="Search products..." sx={{ mb: 2 }} />
-      </Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>Price Range (KES)</Typography>
-        <Box sx={{ px: 2 }}>
-          <Slider value={sliderValue} onChange={handlePriceChange} valueLabelDisplay="auto" min={0} max={500000} step={1000} valueLabelFormat={(val) => `KES ${val.toLocaleString()}`} />
-        </Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", px: 2 }}>
-          <Typography variant="body2">{sliderValue[0].toLocaleString()}</Typography>
-          <Typography variant="body2">{sliderValue[1].toLocaleString()}</Typography>
-        </Box>
-      </Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>Categories</Typography>
-        <Select name="category" value={filters.category} onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value, page: 1 }))} fullWidth displayEmpty size="small" sx={{ mb: 2 }}>
-          <MenuItem value="">All Categories</MenuItem>
-          {categories.map((cat) => (<MenuItem key={cat._id || cat.name} value={cat.name}>{cat.name}</MenuItem>))}
-        </Select>
-      </Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>Brands</Typography>
-        <Select name="brand" value={filters.brand} onChange={(e) => setFilters((f) => ({ ...f, brand: e.target.value, page: 1 }))} fullWidth displayEmpty size="small" sx={{ mb: 2 }}>
-          <MenuItem value="">All Brands</MenuItem>
-          {brands.map((brand) => (<MenuItem key={brand._id || brand.name} value={brand.name}>{brand.name}</MenuItem>))}
-        </Select>
-      </Box>
-      <Button variant="outlined" fullWidth onClick={clearFilters} sx={{ mb: 2 }}>Clear All Filters</Button>
-      <Divider sx={{ my: 2 }} />
+      <div className="mb-6">
+        <p className="mb-1 font-semibold">Search</p>
+        <AutoCompleteSearch onSelect={handleSearchSelect} placeholder="Search products..." />
+      </div>
+
+      <div className="mb-6">
+        <p className="mb-1 font-semibold">Price Range (KES)</p>
+        <div className="flex items-center gap-2">
+          <input type="number" min={0} placeholder="Min" value={filters.minPrice || ""} onChange={(e) => setPrice("minPrice", e.target.value)} className={inputCls} aria-label="Minimum price" />
+          <span className="text-gray-400">–</span>
+          <input type="number" min={0} placeholder="Max" value={filters.maxPrice === 500000 ? "" : filters.maxPrice} onChange={(e) => setPrice("maxPrice", e.target.value)} className={inputCls} aria-label="Maximum price" />
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <p className="mb-1 font-semibold">Categories</p>
+        <select value={filters.category} onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value, page: 1 }))} className={inputCls}>
+          <option value="">All Categories</option>
+          {categories.map((cat) => (<option key={cat._id || cat.name} value={cat.name}>{cat.name}</option>))}
+        </select>
+      </div>
+
+      <div className="mb-6">
+        <p className="mb-1 font-semibold">Brands</p>
+        <select value={filters.brand} onChange={(e) => setFilters((f) => ({ ...f, brand: e.target.value, page: 1 }))} className={inputCls}>
+          <option value="">All Brands</option>
+          {brands.map((brand) => (<option key={brand._id || brand.name} value={brand.name}>{brand.name}</option>))}
+        </select>
+      </div>
+
+      <Button variant="outline" onClick={clearFilters} className="mb-2">Clear All Filters</Button>
+      <hr className="my-2 border-gray-200" />
     </>
   );
 }
@@ -450,13 +367,8 @@ export async function getServerSideProps({ query }) {
   };
 
   try {
-    // Products + real brand/category lists in parallel, so sanitising the SSR
-    // heading/robots (P1-11) adds no serial latency. A brands/categories hiccup
-    // degrades gracefully instead of blanking the product grid.
     const [response, brandsRes, categoriesRes] = await Promise.all([
-      Api.get("/products", {
-        params: { page, limit, category, brand, minPrice, maxPrice, sort, search, dealType },
-      }),
+      Api.get("/products", { params: { page, limit, category, brand, minPrice, maxPrice, sort, search, dealType } }),
       Api.get("/brands").catch(() => ({ data: {} })),
       Api.get("/categories").catch(() => ({ data: {} })),
     ]);
@@ -478,7 +390,6 @@ export async function getServerSideProps({ query }) {
       },
     };
   } catch {
-    // Product API unreachable: don't index an unvalidated facet URL.
     return {
       props: {
         initialProducts: [],

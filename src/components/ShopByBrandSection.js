@@ -1,8 +1,7 @@
-"use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Card, CardActionArea, Avatar, Container, Chip } from "@mui/material";
 import Link from "next/link";
 import { Api } from "@/lib/api";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 export default function ShopByBrandSection({ brands: brandsProp = [] }) {
   const [brands, setBrands] = useState(brandsProp);
@@ -12,15 +11,9 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
     if (!shouldFetch) return;
     let active = true;
     Api.get("/brands")
-      .then((res) => {
-        if (!active) return;
-        const arr = res.data?.brands || res.data || [];
-        setBrands(arr);
-      })
+      .then((res) => { if (!active) return; setBrands(res.data?.brands || res.data || []); })
       .catch(() => setBrands([]));
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [shouldFetch]);
 
   const list = useMemo(
@@ -29,76 +22,25 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
   );
 
   return (
-    <Box component="section" aria-label="Shop by top brands" sx={{ py: { xs: 5, md: 8 }, bgcolor: "background.default" }}>
-      <Container maxWidth="xl">
-        <Typography
-          variant="h3"
-          align="center"
-          sx={{ fontWeight: 800, mb: 3, color: "primary.main", letterSpacing: 0.4, fontSize: { xs: "1.45rem", md: "1.8rem" } }}
-        >
-          Shop by Top Brands
-        </Typography>
-
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(2, minmax(0, 1fr))",
-              sm: "repeat(3, minmax(0, 1fr))",
-              md: "repeat(4, minmax(0, 1fr))",
-              lg: "repeat(6, minmax(0, 1fr))",
-            },
-            gap: { xs: 1.6, md: 2 },
-          }}
-        >
+    <section aria-label="Shop by top brands" className="py-5 md:py-8">
+      <div className="mx-auto max-w-screen-2xl px-4">
+        <SectionHeading>Shop by Top Brands</SectionHeading>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {list.map((brand, idx) => (
-            <Card
+            <Link
               key={brand._id || idx}
-              elevation={0}
-              sx={{
-                borderRadius: 2.5,
-                bgcolor: "#fff",
-                boxShadow: "0 5px 18px rgba(30, 60, 114, 0.08)",
-                border: "1px solid rgba(15, 23, 42, 0.05)",
-              }}
+              href={`/products?brand=${encodeURIComponent(brand.name || "")}`}
+              prefetch={false}
+              className="flex min-h-[120px] flex-col items-center gap-2 rounded-[10px] border border-black/5 bg-white p-4 text-center shadow-[0_5px_18px_rgba(30,60,114,0.08)] transition hover:shadow-md"
             >
-              <CardActionArea
-                component={Link}
-                href={`/products?brand=${encodeURIComponent(brand.name || "")}`}
-                sx={{
-                  p: 1.6,
-                  textAlign: "center",
-                  minHeight: 120,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                }}
-              >
-                <Avatar
-                  src={brand.logo || "/brand-placeholder.png"}
-                  alt={`${brand.name} logo`}
-                  variant="rounded"
-                  sx={{ width: 46, height: 46, bgcolor: "#f8fafc" }}
-                />
-                <Typography variant="caption" fontWeight={700} sx={{ color: "primary.dark" }}>
-                  {brand.name || "Loading"}
-                </Typography>
-                <Chip
-                  label="Shop now"
-                  size="small"
-                  sx={{
-                    bgcolor: "#1e3c72",
-                    color: "#fff",
-                    fontWeight: 700,
-                    letterSpacing: 0.3,
-                    fontSize: "0.68rem",
-                  }}
-                />
-              </CardActionArea>
-            </Card>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={brand.logo || "/brand-placeholder.png"} alt={`${brand.name} logo`} className="h-12 w-12 rounded bg-[#f8fafc] object-contain" />
+              <span className="text-xs font-bold text-[#152c56]">{brand.name || "Loading"}</span>
+              <span className="rounded-full bg-[#1e3c72] px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">Shop now</span>
+            </Link>
           ))}
-        </Box>
-      </Container>
-    </Box>
+        </div>
+      </div>
+    </section>
   );
 }

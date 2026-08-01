@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { Container, Typography, Button, Alert, Stack } from "@mui/material";
-import { WhatsApp } from "@mui/icons-material";
+import { FaWhatsapp } from "react-icons/fa";
 import { SITE_URL, BUSINESS_NAME, waLink } from "@/constants/business";
 
 const PATH = "/our-story";
@@ -23,54 +22,49 @@ export default function OurStoryPage() {
         <link rel="canonical" href={`${SITE_URL}${PATH}`} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- PLACEHOLDER COPY — NOT APPROVED — DO NOT PUBLISH -->" }} />
 
-        <Alert severity="warning" sx={{ mb: 3 }}>
+        <div role="alert" className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Placeholder content — not approved for publication. This page is <strong>noindex</strong>{" "}
           until an approved brand story is supplied.
-        </Alert>
+        </div>
 
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={2}>
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Our Story
-        </Typography>
+        </h1>
 
-        <Typography variant="body1" color="text.secondary" mb={3}>
+        <p className="mb-6 text-gray-500">
           The full {BUSINESS_NAME} story is coming soon. The short version, and everything we can
           state for certain today: we&apos;re a smartphone and accessories shop based in Mombasa,
           serving customers across Kenya, with WhatsApp as our checkout.
-        </Typography>
+        </p>
 
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- END PLACEHOLDER COPY -->" }} />
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 4 }}>
-          <Button
-            component={Link}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+          <Link
             href="/about"
-            variant="contained"
-            sx={{ textTransform: "none", fontWeight: 700 }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1e3c72] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#152c56]"
           >
             About Snaap Connections
-          </Button>
-          <Button
-            variant="outlined"
-            color="success"
-            startIcon={<WhatsApp />}
+          </Link>
+          <a
             href={waLink("Hi Snaap Connections, I'd like to know more about you.")}
             target="_blank"
             rel="noopener"
-            sx={{ textTransform: "none", fontWeight: 700 }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#2e7d32] px-5 py-2.5 font-bold text-[#2e7d32] no-underline transition hover:bg-[#2e7d32]/10"
           >
-            Talk to us on WhatsApp
-          </Button>
-        </Stack>
+            <FaWhatsapp className="text-lg" /> Talk to us on WhatsApp
+          </a>
+        </div>
 
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>
+        <p className="text-sm text-gray-500">
+          <Link href="/products" className="font-semibold">Browse all products</Link>
           {"  ·  "}
-          <Link href="/contact" style={{ fontWeight: 600 }}>Contact us</Link>
-        </Typography>
-      </Container>
+          <Link href="/contact" className="font-semibold">Contact us</Link>
+        </p>
+      </div>
     </>
   );
 }

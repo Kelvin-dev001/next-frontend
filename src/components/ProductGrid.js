@@ -1,8 +1,10 @@
-"use client";
 import React from "react";
-import { Box } from "@mui/material";
 import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+
+// 2 cols mobile → 3 (md) → 4 (lg). MUI spacing(1)=8px, so gap 1/1.5/2.5 → gap-2/3/5.
+const GRID =
+  "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-5 w-full px-2 sm:px-3 md:px-0 box-border";
 
 export default function ProductGrid({
   items = [],
@@ -14,50 +16,19 @@ export default function ProductGrid({
   showViewBtn = true,
   onWishlistToggle,
   isWishlisted,
-  sx = {},
 }) {
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "repeat(2, 1fr)",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)",
-            lg: "repeat(4, 1fr)",
-          },
-          gap: { xs: 1, sm: 1.5, md: 2.5 },
-          width: "100%",
-          px: { xs: 1, sm: 1.5, md: 0 },
-          boxSizing: "border-box",
-          ...sx,
-        }}
-      >
+      <div className={GRID}>
         {Array.from({ length: skeletonCount }).map((_, idx) => (
           <ProductCardSkeleton key={`skeleton-${idx}`} size={size} />
         ))}
-      </Box>
+      </div>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "repeat(2, 1fr)",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(3, 1fr)",
-          lg: "repeat(4, 1fr)",
-        },
-        gap: { xs: 1, sm: 1.5, md: 2.5 },
-        width: "100%",
-        px: { xs: 1, sm: 1.5, md: 0 },
-        boxSizing: "border-box",
-        ...sx,
-      }}
-    >
+    <div className={GRID}>
       {items.map((product, idx) => (
         <ProductCard
           key={product._id || product.id || idx}
@@ -70,6 +41,6 @@ export default function ProductGrid({
           imagePriority={idx < eagerCount}
         />
       ))}
-    </Box>
+    </div>
   );
 }

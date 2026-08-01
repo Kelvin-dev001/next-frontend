@@ -1,45 +1,54 @@
-"use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { FaStar, FaRegStar } from "react-icons/fa";
 import { Api } from "@/lib/api";
-import {
-  Box, Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Rating, Alert, Link as MuiLink, Stack
-} from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
-import Slider from "react-slick";
 import ReviewFilter from "./ReviewFilter";
 import ReviewCard from "./ReviewCard";
 
 const ReviewSummary = ({ reviews }) => {
   const total = reviews.length;
-  const counts = [5, 4, 3, 2, 1].map(
-    (star) => reviews.filter((r) => Math.round(r.rating) === star).length
-  );
+  const counts = [5, 4, 3, 2, 1].map((star) => reviews.filter((r) => Math.round(r.rating) === star).length);
   return (
-    <Box className="bg-gray-50 p-4 rounded shadow-md mb-6" sx={{ mb: 4 }}>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Review Summary</Typography>
+    <div className="mb-6 rounded bg-gray-50 p-4 shadow-md">
+      <h3 className="mb-2 text-lg font-semibold">Review Summary</h3>
       {counts.map((count, idx) => {
         const star = 5 - idx;
         const percent = total ? (count / total) * 100 : 0;
         return (
-          <Box key={star} sx={{ mb: 1 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Stack direction="row" alignItems="center">
-                {[...Array(star)].map((_, i) => (
-                  <StarIcon key={i} fontSize="small" htmlColor="#FFD600" sx={{ mr: 0.2 }} />
-                ))}
-              </Stack>
-              <Typography variant="body2" sx={{ minWidth: 22 }}>{count}</Typography>
-            </Stack>
-            <Box sx={{ width: "100%", bgcolor: "#e0e0e0", borderRadius: 1, height: 6, mt: 0.5 }}>
-              <Box sx={{ width: `${percent}%`, bgcolor: "primary.main", height: 6, borderRadius: 1, transition: "width 0.5s" }} />
-            </Box>
-          </Box>
+          <div key={star} className="mb-1">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center text-[#FFD600]">
+                {[...Array(star)].map((_, i) => <FaStar key={i} className="mr-0.5 text-sm" />)}
+              </span>
+              <span className="min-w-[22px] text-right text-sm">{count}</span>
+            </div>
+            <div className="mt-0.5 h-1.5 w-full rounded bg-gray-200">
+              <div className="h-1.5 rounded bg-[#1e3c72] transition-all duration-500" style={{ width: `${percent}%` }} />
+            </div>
+          </div>
         );
       })}
-    </Box>
+    </div>
   );
 };
+
+function RatingInput({ value, onChange }) {
+  return (
+    <div className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          aria-label={`${star} star${star > 1 ? "s" : ""}`}
+          className="text-2xl text-[#FFD600]"
+        >
+          {value >= star ? <FaStar /> : <FaRegStar />}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
   const [name, setName] = useState("");
@@ -49,6 +58,8 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [lastSubmitted, setLastSubmitted] = useState(null);
+
+  if (!open) return null;
 
   const handleSubmit = async () => {
     setError("");
@@ -73,27 +84,36 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
     setSubmitting(false);
   };
 
+  const field = "w-full border-b border-gray-300 bg-transparent px-1 py-2 outline-none focus:border-[#1e3c72]";
+
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Write a Review</DialogTitle>
-      <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <TextField label="Name" fullWidth variant="standard" value={name} onChange={(e) => setName(e.target.value)} sx={{ mb: 2 }} />
-        <TextField label="WhatsApp (optional)" fullWidth variant="standard" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} sx={{ mb: 2 }} />
-        <Typography sx={{ mt: 2, mb: 1 }}>Rating</Typography>
-        <Rating value={rating} onChange={(_, val) => setRating(val)} precision={1} />
-        <TextField label="Comment" fullWidth multiline minRows={3} variant="standard" value={comment} onChange={(e) => setComment(e.target.value)} sx={{ mt: 2 }} />
-        <Typography variant="caption" sx={{ mt: 2, display: "block" }}>
+    <div className="fixed inset-0 z-[1300] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={handleClose} aria-hidden="true" />
+      <div className="relative z-[1] w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <h3 className="mb-4 text-xl font-bold">Write a Review</h3>
+        {error && <div className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+        <input className={`${field} mb-3`} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <input className={`${field} mb-3`} placeholder="WhatsApp (optional)" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+        <p className="mb-1 mt-2">Rating</p>
+        <RatingInput value={rating} onChange={setRating} />
+        <textarea className={`${field} mt-3`} rows={3} placeholder="Comment" value={comment} onChange={(e) => setComment(e.target.value)} />
+        <p className="mt-2 block text-xs text-gray-500">
           Submitted reviews are subject to admin approval before they appear publicly.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={submitting}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={submitting || !name || !comment || !rating}>
-          {submitting ? "Submitting..." : "Submit"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </p>
+        <div className="mt-4 flex justify-end gap-2">
+          <button onClick={handleClose} disabled={submitting} className="rounded px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !name || !comment || !rating}
+            className="rounded bg-[#1e3c72] px-4 py-2 font-semibold text-white hover:bg-[#152c56] disabled:opacity-50"
+          >
+            {submitting ? "Submitting..." : "Submit"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -128,83 +148,76 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
     ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(2)
     : "—";
 
-  const sliderSettings = {
-    dots: true,
-    infinite: filtered.length > 3,
-    speed: 700,
-    slidesToShow: 3,
-    slidesToScroll: 3,
-    responsive: [
-      { breakpoint: 900, settings: { slidesToShow: 2, slidesToScroll: 2 } },
-      { breakpoint: 600, settings: { slidesToShow: 1, slidesToScroll: 1 } },
-    ],
-  };
-
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: "background.default" }}>
-      <Typography variant="h4" align="center" sx={{ fontWeight: 700, mb: 1.5, color: "primary.main" }}>
-        What Customers Say
-      </Typography>
-      <ReviewSummary reviews={reviews} />
-      <Box sx={{ textAlign: "center", mb: 3 }}>
-        <Typography variant="subtitle1" color="text.secondary">
-          <b>{reviews.length}</b> review{reviews.length !== 1 && "s"} · Average Rating: <b>{avgRating}</b>/5
-        </Typography>
-        {productId && !isHomepage && (
-          <Button variant="contained" color="primary" sx={{ mt: 1 }} onClick={() => setShowForm(true)}>
-            Write a Review
-          </Button>
-        )}
-      </Box>
+    <section className="py-6 md:py-10">
+      <div className="mx-auto max-w-[1090px] px-4">
+        <h2 className="mb-1.5 text-center text-2xl font-bold text-[#1e3c72]">What Customers Say</h2>
+        <ReviewSummary reviews={reviews} />
 
-      <ReviewFilter
-        filterStars={filterStars}
-        sortOrder={sortOrder}
-        setFilterStars={setFilterStars}
-        setSortOrder={setSortOrder}
-      />
+        <div className="mb-3 text-center">
+          <p className="text-gray-500">
+            <b>{reviews.length}</b> review{reviews.length !== 1 && "s"} · Average Rating: <b>{avgRating}</b>/5
+          </p>
+          {productId && !isHomepage && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-2 rounded bg-[#1e3c72] px-4 py-2 font-semibold text-white hover:bg-[#152c56]"
+            >
+              Write a Review
+            </button>
+          )}
+        </div>
 
-      {filtered.length === 0 ? (
-        <Typography align="center" color="text.secondary" sx={{ mt: 6, mb: 10 }}>
-          No reviews yet.{" "}
-          <MuiLink href="/products" underline="hover" color="primary">
-            Be the first to review — Shop Now!
-          </MuiLink>
-        </Typography>
-      ) : (
-        <Box sx={{ maxWidth: 1090, mx: "auto" }}>
-          <Slider {...sliderSettings}>
-            {filtered.map((review, i) => (
-              <Box key={review._id || review.id || i} sx={{ px: 1 }}>
-                <ReviewCard review={review} />
-              </Box>
-            ))}
-          </Slider>
-        </Box>
-      )}
-
-      {productId && !isHomepage && (
-        <ReviewForm
-          open={showForm}
-          handleClose={() => setShowForm(false)}
-          productId={productId}
-          onSubmitSuccess={() => setRefreshFlag((f) => !f)}
+        <ReviewFilter
+          filterStars={filterStars}
+          sortOrder={sortOrder}
+          setFilterStars={setFilterStars}
+          setSortOrder={setSortOrder}
         />
-      )}
 
-      {reviews.length > 0 && (
-        <Box sx={{ mt: 6, bgcolor: "#f3fbff", p: 3, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>Top Comments:</Typography>
-          {reviews
-            .filter((r) => r.rating >= 4)
-            .slice(0, 3)
-            .map((r, i) => (
-              <Typography key={i} variant="body2" sx={{ mb: 1.5, fontStyle: "italic" }}>
-                “{r.comment && r.comment.length > 120 ? r.comment.slice(0, 120) + "..." : r.comment}” — <b>{r.name}</b>
-              </Typography>
+        {filtered.length === 0 ? (
+          <p className="mb-10 mt-6 text-center text-gray-500">
+            No reviews yet.{" "}
+            <Link href="/products" className="text-[#1e3c72] underline-offset-2 hover:underline">
+              Be the first to review — Shop Now!
+            </Link>
+          </p>
+        ) : (
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
+            {filtered.map((review, i) => (
+              <div
+                key={review._id || review.id || i}
+                className="w-[85%] shrink-0 snap-start sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)]"
+              >
+                <ReviewCard review={review} />
+              </div>
             ))}
-        </Box>
-      )}
-    </Box>
+          </div>
+        )}
+
+        {productId && !isHomepage && (
+          <ReviewForm
+            open={showForm}
+            handleClose={() => setShowForm(false)}
+            productId={productId}
+            onSubmitSuccess={() => setRefreshFlag((f) => !f)}
+          />
+        )}
+
+        {reviews.length > 0 && (
+          <div className="mt-6 rounded-2xl bg-[#f3fbff] p-4">
+            <h3 className="mb-2 text-lg font-semibold">Top Comments:</h3>
+            {reviews
+              .filter((r) => r.rating >= 4)
+              .slice(0, 3)
+              .map((r, i) => (
+                <p key={i} className="mb-1.5 text-sm italic">
+                  “{r.comment && r.comment.length > 120 ? r.comment.slice(0, 120) + "..." : r.comment}” — <b>{r.name}</b>
+                </p>
+              ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

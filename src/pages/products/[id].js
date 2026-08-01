@@ -3,20 +3,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  Box, Typography, Button, Card, CardContent, CardMedia,
-  Chip, Container, Divider, Tabs, Tab, List, ListItem,
-  ListItemText, IconButton, useTheme,
-  useMediaQuery, Breadcrumbs
-} from "@mui/material";
-import {
-  Favorite, FavoriteBorder, Star,
-  WhatsApp, Share, LocalShipping,
-  AssignmentReturn, VerifiedUser
-} from "@mui/icons-material";
+  FaWhatsapp, FaShareAlt, FaHeart, FaRegHeart,
+  FaTruck, FaUndoAlt, FaShieldAlt,
+} from "react-icons/fa";
 import { Api } from "@/lib/api";
-import ErrorAlert from "@/components/ErrorAlert";
 import ReviewSection from "@/components/ReviewsSection";
 import ProductGrid from "@/components/ProductGrid";
+import Chip from "@/components/ui/Chip";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 import { DELIVERY_ZONES, formatKES, waLink } from "@/constants/business";
 
@@ -26,100 +19,68 @@ const SITE_URL = "https://www.snaapconnections.co.ke";
 
 export default function ProductDetailPage({ product, related = [], priceValidUntil = null }) {
   const router = useRouter();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [wishlist, setWishlist] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const [error, setError] = useState(null);
-
-  if (product === null) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <ErrorAlert error="Product not found" onClose={() => router.push("/products")} />
-      </Container>
-    );
-  }
+  const [, setError] = useState(null);
 
   useEffect(() => {
     setError(null);
   }, [product?._id]);
 
+  // Null check AFTER all hooks (keeps hook order stable across renders).
+  if (product === null) {
+    return (
+      <div className="mx-auto max-w-[1200px] px-4 py-8">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-red-800">
+          Product not found.{" "}
+          <Link href="/products" className="font-semibold underline">Browse all products</Link>.
+        </div>
+      </div>
+    );
+  }
+
   const toggleWishlist = (productId) => {
     setWishlist((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
   };
-
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (value > 0 && value <= (product?.inStock ? 10 : 0)) {
-      setQuantity(value);
-    }
+    if (value > 0 && value <= (product?.inStock ? 10 : 0)) setQuantity(value);
   };
-
-  const incrementQuantity = () => {
-    if (quantity < (product?.inStock ? 10 : 0)) setQuantity(quantity + 1);
-  };
-
-  const decrementQuantity = () => {
-    if (quantity > 1) setQuantity(quantity - 1);
-  };
-
-  const handleTabChange = (_event, newValue) => setTabValue(newValue);
-
-  // "KSh 12,999" — no decimals. Was rendering "Ksh 25,500.00".
+  const incrementQuantity = () => { if (quantity < (product?.inStock ? 10 : 0)) setQuantity(quantity + 1); };
+  const decrementQuantity = () => { if (quantity > 1) setQuantity(quantity - 1); };
   const formatPrice = (price) => formatKES(price);
 
   const handleWhatsAppBuy = () => {
-    if (!product) return;
-    const message = `I'm interested in: ${product.name}${
-      product.sku ? ` (SKU ${product.sku})` : ""
-    }\nPrice: ${formatPrice(
-      product.discountPrice || product.price
-    )}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
+    const message = `I'm interested in: ${product.name}${product.sku ? ` (SKU ${product.sku})` : ""}\nPrice: ${formatPrice(product.discountPrice || product.price)}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
     window.open(waLink(message), "_blank");
   };
 
-  const images =
-    product?.images && product.images.length > 0 ? product.images : [FALLBACK_IMAGE];
-
-  const mainImage =
-    getOptimizedCloudinaryUrl(images[selectedImage], { width: isMobile ? 350 : 600 }) ||
-    FALLBACK_IMAGE;
+  const images = product?.images && product.images.length > 0 ? product.images : [FALLBACK_IMAGE];
+  const mainImage = getOptimizedCloudinaryUrl(images[selectedImage], { width: 600 }) || FALLBACK_IMAGE;
 
   const seoTitle = `${product?.name} | Buy in Mombasa, Kenya | ${SITE_NAME}`;
-  // P1-9: build the meta description from live structured fields (specs + real
-  // price via formatKES) so it can never drift from a stale free-text blurb.
-  const specBits = [product?.specs?.storage, product?.specs?.ram && `${product.specs.ram} RAM`]
-    .filter(Boolean)
-    .join(", ");
+  // P1-9: meta description from live structured fields so it can't drift.
+  const specBits = [product?.specs?.storage, product?.specs?.ram && `${product.specs.ram} RAM`].filter(Boolean).join(", ");
   const livePrice = formatKES(product?.discountPrice || product?.price);
   const seoDescription = product
     ? `Buy the ${product.name}${specBits ? ` (${specBits})` : ""} at ${livePrice} from Snaap Connections, Mombasa. Fast delivery across Kenya.`
     : `Buy smartphones and accessories in Mombasa with fast nationwide delivery across Kenya.`;
   const seoImage = getOptimizedCloudinaryUrl(images[0], { width: 900 }) || FALLBACK_IMAGE;
 
-  // P1-6: real delivery rates from the single source of truth become schema
-  // shippingDetails (no invented figures; mirrors constants/business.js).
+  // P1-6: real delivery rates → schema shippingDetails (mirrors constants/business.js).
   const shippingDetails = DELIVERY_ZONES.map((z) => ({
     "@type": "OfferShippingDetails",
     shippingRate: {
       "@type": "MonetaryAmount",
       currency: "KES",
-      ...(z.priceKES != null
-        ? { value: z.priceKES }
-        : { minValue: z.priceKESMin, maxValue: z.priceKESMax }),
+      ...(z.priceKES != null ? { value: z.priceKES } : { minValue: z.priceKESMin, maxValue: z.priceKESMax }),
     },
-    shippingDestination: {
-      "@type": "DefinedRegion",
-      addressCountry: "KE",
-      addressRegion: z.counties,
-    },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: "KE", addressRegion: z.counties },
     deliveryTime: {
       "@type": "ShippingDeliveryTime",
       handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
@@ -149,38 +110,41 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
     },
   };
 
-  // P1-6: BreadcrumbList mirroring the visible breadcrumbs (Home > Category > Product).
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       ...(product?.category
-        ? [{
-            "@type": "ListItem",
-            position: 2,
-            name: product.category,
-            item: `${SITE_URL}/products?category=${encodeURIComponent(product.category)}`,
-          }]
+        ? [{ "@type": "ListItem", position: 2, name: product.category, item: `${SITE_URL}/products?category=${encodeURIComponent(product.category)}` }]
         : []),
-      {
-        "@type": "ListItem",
-        position: product?.category ? 3 : 2,
-        name: product?.name,
-        item: `${SITE_URL}/products/${product?._id}`,
-      },
+      { "@type": "ListItem", position: product?.category ? 3 : 2, name: product?.name, item: `${SITE_URL}/products/${product?._id}` },
     ],
   };
 
+  const infoRows = [
+    { label: "Brand", value: product.brand },
+    { label: "Category", value: product.category },
+    { label: "Warranty", value: product.warrantyPeriod || "1 year" },
+    { label: "Availability", value: product.inStock ? "In stock" : "Out of stock", color: product.inStock ? "text-green-600" : "text-red-600" },
+  ];
+
+  const badges = [
+    { icon: <FaTruck className="text-[#1e3c72] text-lg" />, title: "Delivery", sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos` },
+    ...(product.returnPolicyDays ? [{ icon: <FaUndoAlt className="text-[#1e3c72] text-lg" />, title: `${product.returnPolicyDays}-Day Returns`, sub: "See our returns policy" }] : []),
+    ...(product.warrantyPeriod ? [{ icon: <FaShieldAlt className="text-[#1e3c72] text-lg" />, title: "Warranty", sub: `${product.warrantyPeriod} warranty` }] : []),
+  ];
+
+  const tabs = ["Description", "Specifications", "Reviews"];
+
   return (
-    <Box sx={{ width: "100%", maxWidth: "100vw", overflowX: "hidden" }}>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1.5, md: 3 } }}>
+    <div className="w-full max-w-[100vw] overflow-x-hidden">
+      <div className="mx-auto max-w-[1200px] px-1.5 py-2 md:px-3 md:py-4">
         <Head>
           <title>{seoTitle}</title>
           <meta name="description" content={seoDescription} />
           <meta name="robots" content="index,follow" />
           <link rel="canonical" href={`${SITE_URL}/products/${product?._id}`} />
-
           <meta property="og:title" content={seoTitle} />
           <meta property="og:description" content={seoDescription} />
           <meta property="og:type" content="product" />
@@ -188,406 +152,180 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
           <meta property="og:locale" content="en_KE" />
           <meta property="og:site_name" content={SITE_NAME} />
           <meta property="og:image" content={seoImage} />
-
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content={seoTitle} />
           <meta name="twitter:description" content={seoDescription} />
           <meta name="twitter:image" content={seoImage} />
-
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-          />
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-          />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
         </Head>
 
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2, fontSize: { xs: "0.8rem", md: "0.875rem" } }}>
-          <Link href="/" style={{ color: "inherit" }}>Home</Link>
-          <Link
-            href={`/products?category=${encodeURIComponent(product.category || "")}`}
-            style={{ color: "inherit" }}
-          >
-            {product.category}
-          </Link>
-          <Typography color="text.primary" sx={{ fontSize: "inherit" }}>{product.name}</Typography>
-        </Breadcrumbs>
+        {/* Breadcrumbs */}
+        <nav aria-label="breadcrumb" className="mb-2 flex flex-wrap items-center gap-1.5 text-[0.8rem] text-gray-600 md:text-[0.875rem]">
+          <Link href="/" className="hover:underline">Home</Link>
+          <span aria-hidden>/</span>
+          <Link href={`/products?category=${encodeURIComponent(product.category || "")}`} className="hover:underline">{product.category}</Link>
+          <span aria-hidden>/</span>
+          <span className="text-gray-900">{product.name}</span>
+        </nav>
 
-        {/* Product detail: image + info */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-            gap: { xs: 2, md: 4 },
-          }}
-        >
-          {/* LEFT: Images */}
-          <Box sx={{ position: { md: "sticky" }, top: 16 }}>
-            <Box
-              sx={{
-                position: "relative",
-                width: "100%",
-                aspectRatio: "1 / 1",
-                borderRadius: 2,
-                overflow: "hidden",
-                bgcolor: "#fafafa",
-              }}
-            >
-              <CardMedia
-                component="img"
-                src={mainImage}
-                alt={`${product.name} - main`}
-                loading="eager"
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1,
-                mt: 1.5,
-                overflowX: "auto",
-                py: 0.5,
-              }}
-            >
+        {/* Image + info */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
+          {/* LEFT: images */}
+          <div className="md:sticky md:top-4">
+            <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-[#fafafa]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={mainImage} alt={`${product.name} - main`} loading="eager" className="h-full w-full object-contain" />
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto py-1">
               {images.map((image, index) => (
-                <Box
+                <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  sx={{
-                    width: { xs: 56, md: 70 },
-                    height: { xs: 56, md: 70 },
-                    borderRadius: 1,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    border:
-                      selectedImage === index
-                        ? `2px solid ${theme.palette.primary.main}`
-                        : "1px solid #eee",
-                    opacity: selectedImage === index ? 1 : 0.7,
-                    transition: "all 0.3s",
-                    flexShrink: 0,
-                    "&:hover": { opacity: 1 },
-                  }}
+                  className={`h-14 w-14 flex-shrink-0 overflow-hidden rounded transition md:h-[70px] md:w-[70px] ${
+                    selectedImage === index ? "border-2 border-[#1e3c72] opacity-100" : "border border-gray-200 opacity-70 hover:opacity-100"
+                  }`}
                 >
-                  <img
-                    src={getOptimizedCloudinaryUrl(image, { width: 100 }) || FALLBACK_IMAGE}
-                    alt={`${product.name} — view ${index + 1}`}
-                    width={70}
-                    height={70}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    loading="lazy"
-                  />
-                </Box>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={getOptimizedCloudinaryUrl(image, { width: 100 }) || FALLBACK_IMAGE} alt={`${product.name} — view ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                </button>
               ))}
-            </Box>
-          </Box>
+            </div>
+          </div>
 
-          {/* RIGHT: Product info */}
-          <Box>
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{ fontWeight: 700, mb: 1, fontSize: { xs: "1.4rem", md: "2rem" } }}
-            >
-              {product.name}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
-              <Typography
-                variant="h4"
-                color="primary"
-                sx={{ fontWeight: 700, fontSize: { xs: "1.3rem", md: "1.8rem" } }}
-              >
-                {formatPrice(product.discountPrice || product.price)}
-              </Typography>
+          {/* RIGHT: info */}
+          <div>
+            <h1 className="mb-1 font-bold text-[1.4rem] md:text-[2rem]">{product.name}</h1>
+
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="font-bold text-[#1e3c72] text-[1.3rem] md:text-[1.8rem]">{formatPrice(product.discountPrice || product.price)}</span>
               {product.discountPrice && (
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ textDecoration: "line-through", fontSize: { xs: "0.85rem", md: "1rem" } }}
-                >
-                  {formatPrice(product.price)}
-                </Typography>
+                <span className="text-gray-500 line-through text-[0.85rem] md:text-base">{formatPrice(product.price)}</span>
               )}
               {product.discountPrice && (
-                <Chip
-                  label={`Save ${formatPrice(product.price - product.discountPrice)}`}
-                  color="error"
-                  size="small"
-                  sx={{ fontWeight: 600 }}
-                />
+                <Chip className="bg-red-600 px-2 py-0.5 text-[0.7rem] font-semibold text-white">Save {formatPrice(product.price - product.discountPrice)}</Chip>
               )}
-            </Box>
+            </div>
 
-            <Typography variant="body1" paragraph sx={{ fontSize: { xs: "0.9rem", md: "1rem" } }}>
-              {product.shortDescription}
-            </Typography>
+            <p className="mb-4 text-[0.9rem] md:text-base">{product.shortDescription}</p>
 
-            <List dense sx={{ mb: 1 }}>
-              {[
-                { label: "Brand", value: product.brand },
-                { label: "Category", value: product.category },
-                { label: "Warranty", value: product.warrantyPeriod || "1 year" },
-                {
-                  label: "Availability",
-                  value: product.inStock ? "In stock" : "Out of stock",
-                  color: product.inStock ? "success.main" : "error.main",
-                },
-              ].map((item) => (
-                <ListItem key={item.label} disablePadding sx={{ py: 0.3 }}>
-                  <ListItemText
-                    primary={item.label}
-                    secondary={item.value}
-                    primaryTypographyProps={{ fontSize: { xs: "0.8rem", md: "0.875rem" } }}
-                    secondaryTypographyProps={{
-                      fontWeight: 600,
-                      fontSize: { xs: "0.8rem", md: "0.875rem" },
-                      color: item.color || "text.primary",
-                    }}
-                  />
-                </ListItem>
+            <dl className="mb-1">
+              {infoRows.map((row) => (
+                <div key={row.label} className="flex flex-col py-0.5">
+                  <dt className="text-[0.8rem] text-gray-500 md:text-[0.875rem]">{row.label}</dt>
+                  <dd className={`text-[0.8rem] font-semibold md:text-[0.875rem] ${row.color || "text-gray-900"}`}>{row.value}</dd>
+                </div>
               ))}
-            </List>
+            </dl>
 
-            <Divider sx={{ my: 2 }} />
+            <hr className="my-4 border-gray-200" />
 
-            {/* Quantity + Buy */}
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontSize: { xs: "0.9rem", md: "1rem" } }}>
-              Quantity
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  border: "1px solid #ddd",
-                  borderRadius: 1,
-                  overflow: "hidden",
-                }}
-              >
-                <Button
-                  variant="text"
-                  onClick={decrementQuantity}
-                  disabled={quantity <= 1}
-                  sx={{ minWidth: "36px", px: 0.5 }}
-                >
-                  -
-                </Button>
-                <input
-                  type="number"
-                  value={quantity}
-                  min={1}
-                  max={product.inStock ? 10 : 0}
-                  onChange={handleQuantityChange}
-                  style={{
-                    width: 44,
-                    textAlign: "center",
-                    border: "none",
-                    outline: "none",
-                    fontSize: "0.95rem",
-                  }}
-                />
-                <Button
-                  variant="text"
-                  onClick={incrementQuantity}
-                  disabled={quantity >= (product.inStock ? 10 : 0)}
-                  sx={{ minWidth: "36px", px: 0.5 }}
-                >
-                  +
-                </Button>
-              </Box>
-              <Typography variant="body2" color="text.secondary">
-                {product.inStock ? "In stock" : "Out of stock"}
-              </Typography>
-            </Box>
+            {/* Quantity + buy */}
+            <p className="mb-1 font-semibold text-[0.9rem] md:text-base">Quantity</p>
+            <div className="mb-2 flex items-center gap-4">
+              <div className="flex overflow-hidden rounded border border-gray-300">
+                <button onClick={decrementQuantity} disabled={quantity <= 1} className="min-w-9 px-2 py-1 disabled:opacity-40">−</button>
+                <input type="number" value={quantity} min={1} max={product.inStock ? 10 : 0} onChange={handleQuantityChange} className="w-11 border-0 text-center text-[0.95rem] outline-none" />
+                <button onClick={incrementQuantity} disabled={quantity >= (product.inStock ? 10 : 0)} className="min-w-9 px-2 py-1 disabled:opacity-40">+</button>
+              </div>
+              <span className="text-[0.85rem] text-gray-500">{product.inStock ? "In stock" : "Out of stock"}</span>
+            </div>
 
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<WhatsApp />}
-              fullWidth
-              sx={{
-                borderRadius: "50px",
-                py: { xs: 1.2, md: 1.5 },
-                fontWeight: 600,
-                fontSize: { xs: "0.95rem", md: "1.1rem" },
-              }}
-              disabled={!product.inStock}
+            <button
               onClick={handleWhatsAppBuy}
+              disabled={!product.inStock}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#2e7d32] py-3 font-semibold text-white transition hover:bg-[#1b5e20] disabled:opacity-50 text-[0.95rem] md:py-3.5 md:text-[1.1rem]"
             >
-              Buy on WhatsApp
-            </Button>
+              <FaWhatsapp /> Buy on WhatsApp
+            </button>
 
-            <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-              <IconButton
-                aria-label="add to wishlist"
-                onClick={() => toggleWishlist(product._id)}
-                sx={{ border: "1px solid #ddd", borderRadius: "50%" }}
-              >
-                {wishlist.includes(product._id) ? <Favorite color="error" /> : <FavoriteBorder />}
-              </IconButton>
-              <IconButton
+            <div className="mt-3 flex gap-2">
+              <button aria-label="add to wishlist" onClick={() => toggleWishlist(product._id)} className="grid h-10 w-10 place-items-center rounded-full border border-gray-300">
+                {wishlist.includes(product._id) ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+              </button>
+              <button
                 aria-label="share"
-                sx={{ border: "1px solid #ddd", borderRadius: "50%" }}
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert("Product link copied!");
-                }}
+                onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Product link copied!"); }}
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-300"
               >
-                <Share />
-              </IconButton>
-            </Box>
+                <FaShareAlt />
+              </button>
+            </div>
 
-            <Divider sx={{ my: 2 }} />
+            <hr className="my-4 border-gray-200" />
 
             {/* Trust badges */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-                gap: 2,
-                mb: 2,
-              }}
-            >
-              {[
-                // Was "Free Delivery / Orders above KES 10,000" — we have no free-delivery
-                // threshold at any order value. Real rates come from src/constants/business.js.
-                {
-                  icon: <LocalShipping color="primary" />,
-                  title: "Delivery",
-                  sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos`,
-                },
-                // Was hardcoded "7-Day Returns" while the Product model already carries
-                // returnPolicyDays. Use the data; only show the badge when it exists.
-                ...(product.returnPolicyDays
-                  ? [{
-                      icon: <AssignmentReturn color="primary" />,
-                      title: `${product.returnPolicyDays}-Day Returns`,
-                      sub: "See our returns policy",
-                    }]
-                  : []),
-                ...(product.warrantyPeriod
-                  ? [{
-                      icon: <VerifiedUser color="primary" />,
-                      title: "Warranty",
-                      sub: `${product.warrantyPeriod} warranty`,
-                    }]
-                  : []),
-              ].map((badge) => (
-                <Box key={badge.title} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <div className="mb-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {badges.map((badge) => (
+                <div key={badge.title} className="flex items-center gap-2">
                   {badge.icon}
-                  <Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: "0.78rem", md: "0.875rem" } }}>
-                      {badge.title}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: "0.68rem", md: "0.75rem" } }}>
-                      {badge.sub}
-                    </Typography>
-                  </Box>
-                </Box>
+                  <div>
+                    <p className="font-semibold text-[0.78rem] md:text-[0.875rem]">{badge.title}</p>
+                    <p className="text-gray-500 text-[0.68rem] md:text-[0.75rem]">{badge.sub}</p>
+                  </div>
+                </div>
               ))}
-            </Box>
-          </Box>
-        </Box>
+            </div>
+          </div>
+        </div>
 
-        {/* Tabs: Description / Specs / Reviews */}
-        <Box sx={{ mt: { xs: 4, md: 6 } }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            variant="fullWidth"
-            sx={{
-              mb: 2,
-              "& .MuiTabs-indicator": { height: 3 },
-              "& .MuiTab-root": { fontSize: { xs: "0.78rem", md: "0.875rem" } },
-            }}
-          >
-            <Tab label="Description" />
-            <Tab label="Specifications" />
-            <Tab label="Reviews" />
-          </Tabs>
+        {/* Tabs */}
+        <div className="mt-8 md:mt-12">
+          <div className="mb-4 flex border-b border-gray-200">
+            {tabs.map((label, i) => (
+              <button
+                key={label}
+                onClick={() => setTabValue(i)}
+                className={`-mb-px flex-1 border-b-[3px] py-2 font-medium text-[0.78rem] md:text-[0.875rem] ${
+                  tabValue === i ? "border-[#1e3c72] text-[#1e3c72]" : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-          <Box sx={{ p: { xs: 1.5, md: 3 }, bgcolor: "background.paper", borderRadius: 2 }}>
+          <div className="rounded-lg bg-white p-3 md:p-6">
             {tabValue === 0 && (
-              <Typography variant="body1" whiteSpace="pre-line" sx={{ fontSize: { xs: "0.88rem", md: "1rem" } }}>
-                {product.fullDescription || "No description available"}
-              </Typography>
+              <p className="whitespace-pre-line text-[0.88rem] md:text-base">{product.fullDescription || "No description available"}</p>
             )}
             {tabValue === 1 && (
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 1,
-                }}
-              >
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                 {product.specs &&
                   Object.entries(product.specs)
                     .filter(([, value]) => value)
                     .map(([key, value]) => (
-                      <Box
-                        key={key}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          py: 1.2,
-                          borderBottom: "1px solid #eee",
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          {key.replace(/^[a-z]/, (char) => char.toUpperCase())}
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {value}
-                        </Typography>
-                      </Box>
+                      <div key={key} className="flex justify-between border-b border-gray-100 py-2.5">
+                        <span className="text-[0.875rem] text-gray-500">{key.replace(/^[a-z]/, (c) => c.toUpperCase())}</span>
+                        <span className="text-[0.875rem] font-medium">{value}</span>
+                      </div>
                     ))}
-              </Box>
+              </div>
             )}
             {tabValue === 2 && (
-              <Box>
-                <Typography variant="h6" sx={{ mb: 2, fontSize: { xs: "1rem", md: "1.25rem" } }}>
-                  Customer Reviews
-                </Typography>
+              <div>
+                <h2 className="mb-4 font-semibold text-base md:text-xl">Customer Reviews</h2>
                 <ReviewSection productId={product._id} />
-              </Box>
+              </div>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
 
-        {/* Related products — uses ProductGrid for consistent 2‑col mobile */}
+        {/* Related */}
         {related.length > 0 && (
-          <Box sx={{ mt: { xs: 4, md: 8 } }}>
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, mb: 2, fontSize: { xs: "1.1rem", md: "1.5rem" } }}
-            >
-              You may also like
-            </Typography>
-            <ProductGrid
-              items={related}
-              eagerCount={4}
-              size="compact"
-              showWhatsApp
-              showViewBtn
-            />
-          </Box>
+          <div className="mt-8 md:mt-16">
+            <h2 className="mb-4 font-semibold text-[1.1rem] md:text-[1.5rem]">You may also like</h2>
+            <ProductGrid items={related} eagerCount={4} size="compact" showWhatsApp showViewBtn />
+          </div>
         )}
-      </Container>
-    </Box>
+      </div>
+    </div>
   );
 }
 
 export async function getServerSideProps({ params }) {
   // Rolling ~1-year Offer validity (date-only, so SSR and client render identically).
-  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split("T")[0];
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   try {
     const res = await Api.get(`/products/${params.id}`);
@@ -596,9 +334,7 @@ export async function getServerSideProps({ params }) {
     let related = [];
     if (product?.category) {
       try {
-        const relRes = await Api.get("/products", {
-          params: { category: product.category, limit: 4 },
-        });
+        const relRes = await Api.get("/products", { params: { category: product.category, limit: 4 } });
         related = (relRes.data?.products || []).filter((p) => p._id !== params.id);
       } catch {
         related = [];

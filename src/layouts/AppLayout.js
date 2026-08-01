@@ -1,29 +1,16 @@
-"use client";
 import React, { Suspense } from "react";
-import { Box } from "@mui/material";
 import Header from "@/components/Header";
 const Footer = React.lazy(() => import("@/components/Footer"));
 
 const AppLayout = ({ children }) => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        width: "100%",
-        maxWidth: "100vw",
-        overflowX: "hidden",
-      }}
-    >
+    <div className="flex min-h-screen w-full max-w-[100vw] flex-col overflow-x-hidden">
       <Header />
-      <Box component="main" sx={{ flex: 1, width: "100%" }}>
-        {children}
-      </Box>
+      <main className="w-full flex-1">{children}</main>
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
-    </Box>
+    </div>
   );
 };
 

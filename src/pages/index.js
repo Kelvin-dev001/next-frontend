@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { Box, Container, Typography } from "@mui/material";
+import { FaTruck, FaWhatsapp, FaClock } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import {
   BUSINESS_NAME as SITE_NAME,
@@ -10,6 +10,8 @@ import {
   OPENING_HOURS_SPEC,
   SAME_AS,
   SERVED_COUNTIES,
+  HOURS_DISPLAY,
+  DELIVERY_ZONES,
 } from "@/constants/business";
 
 import PromoCardsSection from "@/components/PromoCardsSection";
@@ -26,6 +28,9 @@ import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
+
+// Same-day-delivery counties, derived from the delivery matrix — never hardcode business facts.
+const SAME_DAY_COUNTIES = (DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || []).join(", ");
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
   const storeJsonLd = {
@@ -101,34 +106,29 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       </Head>
 
       {/* Evergreen page H1 (P1-8) — replaces the stale promo-card <h1>. */}
-      <Box component="section" sx={{ pt: { xs: 2, md: 3 }, pb: { xs: 0, md: 1 } }}>
-        <Container maxWidth="xl">
-          <Typography
-            variant="h1"
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              color: "primary.main",
-              lineHeight: 1.2,
-              fontSize: { xs: "1.5rem", md: "2.1rem" },
-            }}
-          >
+      <section className="pt-2 md:pb-1 md:pt-3">
+        <div className="mx-auto max-w-screen-2xl px-4">
+          <h1 className="font-extrabold leading-tight text-[#1e3c72] text-[1.5rem] md:text-[2.1rem]">
             Buy Smartphones &amp; Accessories in Mombasa, Kenya
-          </Typography>
-          <Typography
-            component="p"
-            sx={{
-              mt: 1,
-              color: "text.secondary",
-              maxWidth: 720,
-              fontSize: { xs: "0.9rem", md: "1.05rem" },
-            }}
-          >
+          </h1>
+          <p className="mt-1 max-w-[720px] text-gray-500 text-[0.9rem] md:text-[1.05rem]">
             The latest phones, tablets, audio and accessories with fast delivery across our five
             served counties. Order on WhatsApp.
-          </Typography>
-        </Container>
-      </Box>
+          </p>
+
+          <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-gray-600 md:text-[0.9rem]">
+            <li className="inline-flex items-center gap-1.5">
+              <FaTruck className="text-[#1e3c72]" aria-hidden="true" /> Same-day delivery in {SAME_DAY_COUNTIES}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <FaWhatsapp className="text-[#2e7d32]" aria-hidden="true" /> Order on WhatsApp
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <FaClock className="text-[#1e3c72]" aria-hidden="true" /> Open {HOURS_DISPLAY}
+            </li>
+          </ul>
+        </div>
+      </section>
 
       {/* 1. Promo Cards */}
       <PromoCardsSection />

@@ -1,11 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import {
-  Container, Typography, Stack, Button, Paper, Divider,
-} from "@mui/material";
-import {
-  LocationOn, Email as EmailIcon, WhatsApp, AccessTime,
-} from "@mui/icons-material";
+import { FaMapMarkerAlt, FaEnvelope, FaWhatsapp, FaClock } from "react-icons/fa";
 import {
   SITE_URL, ADDRESS, EMAIL, PHONE_DISPLAY, HOURS_DISPLAY, waLink,
 } from "@/constants/business";
@@ -29,66 +24,60 @@ export default function ContactPage() {
         <meta property="og:url" content={`${SITE_URL}${PATH}`} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={1}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
+        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Contact Us
-        </Typography>
-        <Typography variant="body1" color="text.secondary" mb={4}>
+        </h1>
+        <p className="mb-8 text-gray-500">
           Questions about a phone, a price or a delivery? Message us on WhatsApp — it&apos;s the
           fastest way to reach us, and it&apos;s how we take every order.
-        </Typography>
+        </p>
 
-        <Button
-          variant="contained"
-          color="success"
-          size="large"
-          startIcon={<WhatsApp />}
+        <a
           href={waLink("Hi Snaap Connections, I have a question.")}
           target="_blank"
           rel="noopener"
-          sx={{ mb: 4, textTransform: "none", fontWeight: 700 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-6 py-3 text-lg font-bold text-white no-underline transition hover:bg-[#256628]"
         >
-          Chat with us on WhatsApp
-        </Button>
+          <FaWhatsapp className="text-xl" /> Chat with us on WhatsApp
+        </a>
 
-        <Paper variant="outlined" sx={{ p: { xs: 3, md: 4 }, mb: 4, borderRadius: 3 }}>
-          <Stack spacing={2.5}>
-            <Stack direction="row" spacing={2} alignItems="flex-start">
-              <LocationOn color="primary" />
-              <Typography>{ADDRESS.full}</Typography>
-            </Stack>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <WhatsApp color="primary" />
-              <Typography>
-                <a href={waLink()} target="_blank" rel="noopener" style={{ color: "inherit", textDecoration: "none" }}>
+        <div className="mb-8 rounded-3xl border border-gray-200 p-6 md:p-8">
+          <div className="flex flex-col gap-5">
+            <div className="flex items-start gap-4">
+              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-[#1e3c72]" />
+              <p>{ADDRESS.full}</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <FaWhatsapp className="flex-shrink-0 text-[#1e3c72]" />
+              <p>
+                <a href={waLink()} target="_blank" rel="noopener" className="text-inherit no-underline">
                   {PHONE_DISPLAY}
                 </a>{" "}
                 — WhatsApp &amp; calls
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <EmailIcon color="primary" />
-              <Typography>
-                <a href={`mailto:${EMAIL}`} style={{ color: "inherit", textDecoration: "none" }}>
-                  {EMAIL}
-                </a>
-              </Typography>
-            </Stack>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <AccessTime color="primary" />
-              <Typography>{HOURS_DISPLAY}</Typography>
-            </Stack>
-          </Stack>
-        </Paper>
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <FaEnvelope className="flex-shrink-0 text-[#1e3c72]" />
+              <p>
+                <a href={`mailto:${EMAIL}`} className="text-inherit no-underline">{EMAIL}</a>
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <FaClock className="flex-shrink-0 text-[#1e3c72]" />
+              <p>{HOURS_DISPLAY}</p>
+            </div>
+          </div>
+        </div>
 
-        <Divider sx={{ my: 3 }} />
-        <Typography variant="body2" color="text.secondary">
+        <hr className="my-6 border-gray-200" />
+        <p className="text-sm text-gray-500">
           Looking for something?{" "}
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>, or read our{" "}
-          <Link href="/shipping" style={{ fontWeight: 600 }}>delivery information</Link> and{" "}
-          <Link href="/faqs" style={{ fontWeight: 600 }}>FAQs</Link>.
-        </Typography>
-      </Container>
+          <Link href="/products" className="font-semibold">Browse all products</Link>, or read our{" "}
+          <Link href="/shipping" className="font-semibold">delivery information</Link> and{" "}
+          <Link href="/faqs" className="font-semibold">FAQs</Link>.
+        </p>
+      </div>
     </>
   );
 }

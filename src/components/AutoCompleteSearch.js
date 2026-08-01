@@ -1,14 +1,12 @@
-"use client";
 import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/router";
+import { FaSearch } from "react-icons/fa";
 import { Api } from "@/lib/api";
-import { Box, InputBase, List, ListItem, ListItemText, Paper, Popper } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { useRouter } from "next/navigation";
 
-export default function AutoCompleteSearch({ onSelect, placeholder = "Search products, brands, categories...", sx = {} }) {
+export default function AutoCompleteSearch({ onSelect, placeholder = "Search products, brands, categories..." }) {
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [open, setOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,49 +30,44 @@ export default function AutoCompleteSearch({ onSelect, placeholder = "Search pro
 
   const handleSelect = (productId) => {
     setSearch("");
-    setAnchorEl(null);
+    setOpen(false);
     onSelect?.(productId);
     if (!onSelect) router.push(`/products/${productId}`);
   };
 
   return (
-    <Box sx={{ position: "relative", ...sx }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          bgcolor: "#f4f6fa",
-          px: 2,
-          py: 1,
-          borderRadius: "40px",
-          boxShadow: "0 1px 8px #6dd5ed22",
-        }}
-      >
-        <SearchIcon color="primary" />
-        <InputBase
+    <div className="relative w-full">
+      <div className="flex items-center gap-2 rounded-full bg-[#f4f6fa] px-4 py-2 shadow-[0_1px_8px_#6dd5ed22]">
+        <FaSearch className="flex-shrink-0 text-[#1e3c72]" />
+        <input
+          type="text"
+          aria-label="search"
           placeholder={placeholder}
-          sx={{ ml: 2, flex: 1, fontSize: "1.07rem" }}
-          inputProps={{ "aria-label": "search" }}
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setAnchorEl(e.currentTarget);
-          }}
-          onFocus={(e) => setAnchorEl(e.currentTarget)}
-          onBlur={() => setTimeout(() => setAnchorEl(null), 150)}
+          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          className="w-full flex-1 bg-transparent text-[1.07rem] outline-none"
         />
-      </Box>
-      <Popper open={Boolean(anchorEl) && results.length > 0} anchorEl={anchorEl} placement="bottom-start" style={{ zIndex: 1300 }}>
-        <Paper sx={{ mt: 1, maxHeight: 320, overflowY: "auto", width: 350 }}>
-          <List>
+      </div>
+      {open && results.length > 0 && (
+        <div className="absolute left-0 top-full z-[1300] mt-1 max-h-80 w-full min-w-[280px] overflow-y-auto rounded-lg bg-white shadow-lg ring-1 ring-black/5">
+          <ul>
             {results.map((p) => (
-              <ListItem button key={p._id || p.id} onMouseDown={() => handleSelect(p._id || p.id)}>
-                <ListItemText primary={p.name} secondary={`${p.brand} | ${p.category}`} />
-              </ListItem>
+              <li key={p._id || p.id}>
+                <button
+                  type="button"
+                  onMouseDown={() => handleSelect(p._id || p.id)}
+                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                >
+                  <span className="block text-sm font-medium text-gray-900">{p.name}</span>
+                  <span className="block text-xs text-gray-500">{p.brand} | {p.category}</span>
+                </button>
+              </li>
             ))}
-          </List>
-        </Paper>
-      </Popper>
-    </Box>
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-import { Container, Typography, Button, Alert } from "@mui/material";
-import { WhatsApp } from "@mui/icons-material";
+import { FaWhatsapp } from "react-icons/fa";
 import { SITE_URL, waLink } from "@/constants/business";
 
 const PATH = "/returns";
@@ -23,50 +22,47 @@ export default function ReturnsPage() {
         <link rel="canonical" href={`${SITE_URL}${PATH}`} />
       </Head>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- PLACEHOLDER COPY — NOT APPROVED — DO NOT PUBLISH -->" }} />
 
-        <Alert severity="warning" sx={{ mb: 3 }}>
+        <div role="alert" className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Placeholder content — not approved for publication. This page is <strong>noindex</strong>{" "}
           until a real returns policy is supplied.
-        </Alert>
+        </div>
 
-        <Typography variant="h4" component="h1" fontWeight={800} color="primary.main" mb={2}>
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
           Returns &amp; Exchanges
-        </Typography>
+        </h1>
 
-        <Typography variant="body1" color="text.secondary" mb={2}>
+        <p className="mb-4 text-gray-500">
           Our full returns and exchange policy is being finalised and will appear here once
           approved.
-        </Typography>
-        <Typography variant="body1" color="text.secondary" mb={3}>
+        </p>
+        <p className="mb-6 text-gray-500">
           In the meantime: return terms vary by product and are shown on each product&apos;s page.
           To ask about a return or exchange today, message us on WhatsApp and we&apos;ll help you
           directly.
-        </Typography>
+        </p>
 
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- END PLACEHOLDER COPY -->" }} />
 
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<WhatsApp />}
+        <a
           href={waLink("Hi Snaap Connections, I'd like to ask about a return.")}
           target="_blank"
           rel="noopener"
-          sx={{ mb: 4, textTransform: "none", fontWeight: 700 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
         >
-          Ask about a return on WhatsApp
-        </Button>
+          <FaWhatsapp className="text-lg" /> Ask about a return on WhatsApp
+        </a>
 
-        <Typography variant="body2" color="text.secondary">
-          <Link href="/products" style={{ fontWeight: 600 }}>Browse all products</Link>
+        <p className="text-sm text-gray-500">
+          <Link href="/products" className="font-semibold">Browse all products</Link>
           {"  ·  "}
-          <Link href="/faqs" style={{ fontWeight: 600 }}>FAQs</Link>
+          <Link href="/faqs" className="font-semibold">FAQs</Link>
           {"  ·  "}
-          <Link href="/contact" style={{ fontWeight: 600 }}>Contact us</Link>
-        </Typography>
-      </Container>
+          <Link href="/contact" className="font-semibold">Contact us</Link>
+        </p>
+      </div>
     </>
   );
 }
