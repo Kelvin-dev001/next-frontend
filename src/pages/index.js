@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { FaTruck, FaWhatsapp, FaClock } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import {
   BUSINESS_NAME as SITE_NAME,
@@ -9,6 +10,8 @@ import {
   OPENING_HOURS_SPEC,
   SAME_AS,
   SERVED_COUNTIES,
+  HOURS_DISPLAY,
+  DELIVERY_ZONES,
 } from "@/constants/business";
 
 import PromoCardsSection from "@/components/PromoCardsSection";
@@ -25,6 +28,9 @@ import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
+
+// Same-day-delivery counties, derived from the delivery matrix — never hardcode business facts.
+const SAME_DAY_COUNTIES = (DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || []).join(", ");
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
   const storeJsonLd = {
@@ -109,6 +115,18 @@ export default function Home({ featured, newArrivals, brands, categories, recent
             The latest phones, tablets, audio and accessories with fast delivery across our five
             served counties. Order on WhatsApp.
           </p>
+
+          <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-gray-600 md:text-[0.9rem]">
+            <li className="inline-flex items-center gap-1.5">
+              <FaTruck className="text-[#1e3c72]" aria-hidden="true" /> Same-day delivery in {SAME_DAY_COUNTIES}
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <FaWhatsapp className="text-[#2e7d32]" aria-hidden="true" /> Order on WhatsApp
+            </li>
+            <li className="inline-flex items-center gap-1.5">
+              <FaClock className="text-[#1e3c72]" aria-hidden="true" /> Open {HOURS_DISPLAY}
+            </li>
+          </ul>
         </div>
       </section>
 
