@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4 entry. The old v3 `@tailwind base/components/utilities` directives
+   don't generate preflight + the full utility layer under @tailwindcss/postcss v4. */
+@import "tailwindcss";
 
 *,
 *::before,
