@@ -23,6 +23,11 @@ const STATIC_ROUTES = [
   { path: "/contact", changefreq: "monthly", priority: "0.5" },
   { path: "/shipping", changefreq: "monthly", priority: "0.5" },
   { path: "/faqs", changefreq: "monthly", priority: "0.5" },
+  { path: "/locations/mombasa", changefreq: "monthly", priority: "0.7" },
+  { path: "/locations/kilifi", changefreq: "monthly", priority: "0.6" },
+  { path: "/locations/kwale", changefreq: "monthly", priority: "0.6" },
+  { path: "/locations/nairobi", changefreq: "monthly", priority: "0.6" },
+  { path: "/locations/machakos", changefreq: "monthly", priority: "0.6" },
 ];
 
 const xmlEscape = (value = "") =>

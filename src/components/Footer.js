@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SiTiktok } from "react-icons/si";
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaMapMarkerAlt, FaEnvelope, FaPhoneAlt } from "react-icons/fa";
-import { ADDRESS, PHONE_DISPLAY, PHONE_E164, waLink } from "@/constants/business";
+import { ADDRESS, EMAIL, PHONE_DISPLAY, PHONE_E164, waLink } from "@/constants/business";
 
 const shopLinks = [
   { label: "All Products", href: "/products" },
@@ -32,6 +32,14 @@ const socialLinks = [
   { icon: <SiTiktok />, href: "https://www.tiktok.com/@snaap_connections?_t=ZM-8yavm2c5wJC&_r=1", label: "TikTok" },
   { icon: <FaInstagram />, href: "https://www.instagram.com/snaap_connections1?igsh=Yzc2dDkyejVqeDZl", label: "Instagram" },
   { icon: <FaWhatsapp />, href: waLink(), label: "WhatsApp" },
+];
+
+const locationLinks = [
+  { label: "Mombasa", href: "/locations/mombasa" },
+  { label: "Kilifi", href: "/locations/kilifi" },
+  { label: "Kwale", href: "/locations/kwale" },
+  { label: "Nairobi", href: "/locations/nairobi" },
+  { label: "Machakos", href: "/locations/machakos" },
 ];
 
 export default function Footer() {
@@ -91,13 +99,24 @@ export default function Footer() {
               <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-[#6dd5ed]" />
               <span className="text-sm text-[#e6f2ff]/90">{ADDRESS.full}</span>
             </div>
-            <a href="mailto:info@snaapconnections.com" className="mb-1 flex items-center gap-2 text-sm text-[#e6f2ff]/90 hover:underline">
-              <FaEnvelope className="flex-shrink-0 text-[#6dd5ed]" /> info@snaapconnections.com
+            <a href={`mailto:${EMAIL}`} className="mb-1 flex items-center gap-2 text-sm text-[#e6f2ff]/90 hover:underline">
+              <FaEnvelope className="flex-shrink-0 text-[#6dd5ed]" /> {EMAIL}
             </a>
             <a href={`tel:${PHONE_E164}`} className="mb-1 flex items-center gap-2 text-sm text-[#e6f2ff]/90 hover:underline">
               <FaPhoneAlt className="flex-shrink-0 text-[#6dd5ed]" /> {PHONE_DISPLAY}
             </a>
           </div>
+        </div>
+
+        <div className="mt-6 border-t border-white/15 pt-4">
+          <p className="mb-2 text-sm font-semibold text-[#c4e0fc]">Phone delivery across Kenya</p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/85">
+            {locationLinks.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="hover:text-[#81c2ff]">{l.label}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <hr className="my-4 border-white/25" />
