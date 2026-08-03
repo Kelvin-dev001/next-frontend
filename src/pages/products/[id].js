@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import {
   FaWhatsapp, FaShareAlt, FaHeart, FaRegHeart,
-  FaTruck, FaUndoAlt, FaShieldAlt,
+  FaTruck, FaUndoAlt, FaShieldAlt, FaMoneyBillWave,
 } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import ReviewSection from "@/components/ReviewsSection";
@@ -57,6 +57,11 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
 
   const handleWhatsAppBuy = () => {
     const message = `I'm interested in: ${product.name}${product.sku ? ` (SKU ${product.sku})` : ""}\nPrice: ${formatPrice(product.discountPrice || product.price)}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
+    window.open(waLink(message), "_blank");
+  };
+
+  const handleLipaWhatsApp = () => {
+    const message = `Hi Snaap Connections, I'd like to know about Lipa Mdogo Mdogo for the ${product.name}.`;
     window.open(waLink(message), "_blank");
   };
 
@@ -251,6 +256,26 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                 <FaShareAlt />
               </button>
             </div>
+
+            {product.lipaMdogoMdogoEligible && (
+              <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
+                <p className="flex items-center gap-2 font-semibold text-[#2e7d32] text-[0.9rem]">
+                  <FaMoneyBillWave aria-hidden="true" /> Lipa Mdogo Mdogo available
+                </p>
+                {product.lipaMdogoMdogoSummary && (
+                  <p className="mt-1 text-[0.82rem] text-gray-700">{product.lipaMdogoMdogoSummary}</p>
+                )}
+                <p className="mt-1 text-[0.78rem] text-gray-500">
+                  Terms for this device are in the description below. Message us for the details.
+                </p>
+                <button
+                  onClick={handleLipaWhatsApp}
+                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[0.82rem] font-semibold text-[#2e7d32] ring-1 ring-[#2e7d32] transition hover:bg-[#2e7d32] hover:text-white"
+                >
+                  <FaWhatsapp /> Ask about Lipa Mdogo Mdogo
+                </button>
+              </div>
+            )}
 
             <hr className="my-4 border-gray-200" />
 

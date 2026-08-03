@@ -17,6 +17,7 @@ import {
 
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
+import LipaMdogoMdogoSection from "@/components/LipaMdogoMdogoSection";
 import ShopByBrandSection from "@/components/ShopByBrandSection";
 import ShopByCategorySection from "@/components/ShopByCategorySection";
 import FeaturedProductsSection from "@/components/FeaturedProductsSection";
@@ -33,7 +34,7 @@ const PAGE_DESCRIPTION =
 // Same-day-delivery counties, derived from the delivery matrix — never hardcode business facts.
 const SAME_DAY_COUNTIES = (DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || []).join(", ");
 
-export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
+export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections, lipaProducts = [] }) {
   // Exactly one homepage <h1>: an active announcement card owns it; otherwise the
   // evergreen heading below does. Never both, never neither (P3).
   const showAnnouncement = hasActiveAnnouncement(sections, "promo_cards");
@@ -161,6 +162,9 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       {/* 7. Safaricom Corner */}
       <SafaricomCorner sections={sections} />
 
+      {/* 7b. Lipa Mdogo Mdogo — admin-managed section + products flagged eligible */}
+      <LipaMdogoMdogoSection sections={sections} products={lipaProducts} />
+
       {/* 8. Pocket Friendly Picks */}
       <PocketFriendlySection />
 
@@ -175,13 +179,14 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
 export async function getStaticProps() {
   try {
-    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes] = await Promise.all([
+    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes, lipaRes] = await Promise.all([
       Api.get("/products", { params: { featured: true, limit: 16 } }),
       Api.get("/products", { params: { limit: 48 } }), // P2-P2: was 120 to show 48
       Api.get("/categories"),
       Api.get("/brands"),
       Api.get("/reviews/recent"),
       Api.get("/homepage-sections"),
+      Api.get("/products", { params: { lipaMdogoMdogoEligible: true, limit: 12 } }),
     ]);
 
     const shuffle = (arr = []) => [...arr].sort(() => 0.5 - Math.random());
@@ -196,13 +201,14 @@ export async function getStaticProps() {
         brands: brandsRes.data?.brands || brandsRes.data || [],
         recentReviews: reviewsRes.data?.reviews || [],
         sections: filterActiveSections(sectionsRes.data || []),
+        lipaProducts: lipaRes.data?.products || [],
       },
       revalidate: 60,
     };
   } catch (e) {
     console.error("Home data error", e);
     return {
-      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [] },
+      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [], lipaProducts: [] },
       revalidate: 30,
     };
   }
