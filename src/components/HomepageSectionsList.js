@@ -65,6 +65,8 @@ export default function HomepageSectionsList() {
       payload.append("subtitle", form.subtitle || "");
       payload.append("enabled", String(form.enabled));
       payload.append("order", String(form.order || 0));
+      payload.append("startsAt", form.startsAt || "");
+      payload.append("endsAt", form.endsAt || "");
 
       const items = form.items.map((item) => ({
         title: item.title,
@@ -75,6 +77,16 @@ export default function HomepageSectionsList() {
         ctaLabel: item.ctaLabel,
         ctaLink: item.ctaLink,
         image: item.image || "",
+        type: item.type || "service",
+        ctaType: item.ctaType || "",
+        productId: item.productId || null,
+        badge: item.badge || "",
+        badgeTone: item.badgeTone || "",
+        tone: item.tone || "",
+        alt: item.alt || "",
+        priority: Number(item.priority) || 0,
+        startsAt: item.startsAt || null,
+        endsAt: item.endsAt || null,
       }));
 
       payload.append("items", JSON.stringify(items));
@@ -100,11 +112,13 @@ export default function HomepageSectionsList() {
       fetchSections();
       setSnackbar({ open: true, message: "Section saved!", severity: "success" });
     } catch (err) {
-      setSnackbar({
-        open: true,
-        message: err?.response?.data?.message || "Failed to save section",
-        severity: "error",
-      });
+      const v = err?.response?.data?.validation;
+      let message = err?.response?.data?.message || "Failed to save section";
+      if (v) {
+        const errs = [...(v.sectionErrors || []), ...(v.items || []).flatMap((it) => it.errors || [])];
+        if (errs.length) message = errs.join(" ");
+      }
+      setSnackbar({ open: true, message, severity: "error" });
     }
   };
 
