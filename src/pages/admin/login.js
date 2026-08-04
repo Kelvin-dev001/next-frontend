@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, Paper, CircularProgress, Alert } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { Api, setToken } from "@/lib/api";
+import { Api } from "@/lib/api";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -16,8 +16,7 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const response = await Api.post("/auth/login", { password });
-      if (response.data?.token) setToken(response.data.token);
-      router.replace("/admin");
+      if (response.data?.success) router.replace("/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please check your password.");
     } finally {
