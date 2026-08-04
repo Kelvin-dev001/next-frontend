@@ -1,0 +1,23 @@
+name: Live data checks
+
+# Live data can rot with no code change (a product sells out, a brand gets renamed),
+# so this runs on a schedule as well as on PRs.
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily 06:00 UTC (09:00 Africa/Nairobi)
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  live-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Live data gates
+        run: node scripts/ci/check-live-data.js
+        env:
+          # Optional override; defaults to the public onrender API in the script.
+          LIVE_API_URL: ${{ secrets.LIVE_API_URL }}
