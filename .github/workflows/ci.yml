@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Fast, network-free correctness gates first, so a bad commit fails cheaply.
+      - name: Snaap invariant gates
+        run: node scripts/ci/check-invariants.js
+
+      # Report-only for now: main carries 8 pre-existing lint errors (tracked
+      # separately — incl. a real `Button is not defined` in admin/Orders.js).
+      # Flip to blocking (remove continue-on-error) once those are fixed, so lint
+      # can't regress.
+      - name: Lint (report-only)
+        run: npm run lint
+        continue-on-error: true
+
+      # Build works without NEXT_PUBLIC_API_URL (getStaticProps falls back to empty
+      # data); the secret, if set, exercises the real data path.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
