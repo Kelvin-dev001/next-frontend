@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Api } from "@/lib/api";
 
-const getToken = () => (typeof window !== "undefined" ? localStorage.getItem("jwtToken") : null);
-
+// P6-D: admin gating no longer reads a token from localStorage (there isn't one).
+// The httpOnly cookie is sent automatically (withCredentials); /auth/check verifies
+// it server-side.
 export default function RequireAdmin({ children }) {
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -12,34 +13,21 @@ export default function RequireAdmin({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-
-    async function checkAdmin() {
-      const token = getToken();
-      if (!token) {
-        if (!cancelled) {
-          setIsAdmin(false);
-          setChecking(false);
-          router.replace("/admin/login");
-        }
-        return;
-      }
+    (async () => {
       try {
         const { data } = await Api.get("/auth/check");
-        if (!cancelled) {
-          setIsAdmin(Boolean(data?.isAdmin));
-          setChecking(false);
-          if (!data?.isAdmin) router.replace("/admin/login");
-        }
+        if (cancelled) return;
+        const ok = Boolean(data?.isAdmin);
+        setIsAdmin(ok);
+        setChecking(false);
+        if (!ok) router.replace("/admin/login");
       } catch {
-        if (!cancelled) {
-          setIsAdmin(false);
-          setChecking(false);
-          router.replace("/admin/login");
-        }
+        if (cancelled) return;
+        setIsAdmin(false);
+        setChecking(false);
+        router.replace("/admin/login");
       }
-    }
-
-    checkAdmin();
+    })();
     return () => {
       cancelled = true;
     };

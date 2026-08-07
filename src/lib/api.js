@@ -11,26 +11,20 @@ if (!apiBaseUrl) {
 const ApiClient = axios.create({
   baseURL: apiBaseUrl,
   timeout: 12000,
+  withCredentials: true, // send the httpOnly admin cookie (P6-D)
 });
 
-export const setToken = (token) => {
-  if (!token) return;
-  if (typeof window !== "undefined") localStorage.setItem("jwtToken", token);
-  ApiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
-};
-
+// P6-D: admin auth now rides in an httpOnly cookie the API sets on login, so the
+// token is never in JavaScript — nothing to store or attach here. These remain
+// only to purge any legacy localStorage token left over from before the migration.
+export const setToken = () => {};
 export const removeToken = () => {
-  if (typeof window !== "undefined") localStorage.removeItem("jwtToken");
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("isAdmin");
+  }
   delete ApiClient.defaults.headers.common.Authorization;
 };
-
-ApiClient.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("jwtToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 // helper to accept params object or query string
 const toParams = (input) => {
