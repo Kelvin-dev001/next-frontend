@@ -54,11 +54,41 @@ function htmlPageFiles() {
   });
 }
 
+// Resolve a local import spec (@/… alias or a relative path) to a real file.
+function resolveLocal(spec, fromFile) {
+  let base;
+  if (spec.startsWith("@/")) base = path.join(SRC, spec.slice(2));
+  else if (spec.startsWith(".")) base = path.resolve(path.dirname(fromFile), spec);
+  else return null;
+  const cands = [base, base + ".js", base + ".jsx", path.join(base, "index.js"), path.join(base, "index.jsx")];
+  return cands.find((c) => fs.existsSync(c) && fs.statSync(c).isFile()) || null;
+}
+
+// A page satisfies the <Head> requirement if it renders one directly, OR if it
+// delegates to a local component it actually renders that contains one (e.g.
+// CatalogueLanding wraps /category/[slug] and /brand/[slug]). Follow one level.
+function hasHead(file, txt, depth = 1, seen = new Set()) {
+  if (/from ["']next\/head["']|<Head[ >]/.test(txt)) return true;
+  if (depth <= 0) return false;
+  const importRe = /import\s+([A-Za-z0-9_]+)\s+from\s+["']([^"']+)["']/g;
+  let m;
+  while ((m = importRe.exec(txt))) {
+    const [, name, spec] = m;
+    if (!/^[A-Z]/.test(name)) continue;                       // components are Capitalized
+    if (!new RegExp("<" + name + "[ />\\n]").test(txt)) continue; // must actually be rendered
+    const resolved = resolveLocal(spec, file);
+    if (!resolved || seen.has(resolved)) continue;
+    seen.add(resolved);
+    if (hasHead(resolved, fs.readFileSync(resolved, "utf8"), depth - 1, seen)) return true;
+  }
+  return false;
+}
+
 // 2) SSR coverage.
 for (const f of htmlPageFiles()) {
   const txt = fs.readFileSync(f, "utf8");
   if (!/getStaticProps|getServerSideProps/.test(txt)) fail(`SSR: ${rel(f)} has no getStaticProps/getServerSideProps`);
-  if (!/from ["']next\/head["']|<Head[ >]/.test(txt)) fail(`SSR: ${rel(f)} has no <Head>`);
+  if (!hasHead(f, txt)) fail(`SSR: ${rel(f)} has no <Head>`);
 }
 
 // 3) PLACEHOLDER COPY must be noindex.
