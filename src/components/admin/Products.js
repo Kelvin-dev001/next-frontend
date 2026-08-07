@@ -53,6 +53,8 @@ const emptyProduct = {
   releaseDate: "",
   warrantyPeriod: "",
   returnPolicyDays: 30,
+  lipaMdogoMdogoEligible: false,
+  lipaMdogoMdogoSummary: "",
   isActive: true,
 };
 
@@ -190,6 +192,8 @@ export default function Products() {
     if (currentProduct.releaseDate) formData.append("releaseDate", currentProduct.releaseDate);
     if (currentProduct.warrantyPeriod) formData.append("warrantyPeriod", currentProduct.warrantyPeriod);
     if (currentProduct.returnPolicyDays) formData.append("returnPolicyDays", currentProduct.returnPolicyDays);
+    formData.append("lipaMdogoMdogoEligible", currentProduct.lipaMdogoMdogoEligible ? "true" : "false");
+    formData.append("lipaMdogoMdogoSummary", currentProduct.lipaMdogoMdogoSummary || "");
     formData.append("dealType", currentProduct.dealType || "");
     formData.append("dealExpiry", currentProduct.dealExpiry || "");
 
@@ -423,6 +427,8 @@ export default function Products() {
               <TextField fullWidth label="Video URL" name="videoUrl" value={currentProduct?.videoUrl || ""} onChange={handleInputChange} margin="normal" />
               <TextField fullWidth label="Warranty Period" name="warrantyPeriod" value={currentProduct?.warrantyPeriod || ""} onChange={handleInputChange} margin="normal" />
               <TextField fullWidth label="Return Policy Days" name="returnPolicyDays" type="number" value={currentProduct?.returnPolicyDays || 30} onChange={handleInputChange} margin="normal" />
+              <FormControlLabel control={<Checkbox name="lipaMdogoMdogoEligible" checked={currentProduct?.lipaMdogoMdogoEligible || false} onChange={handleInputChange} />} label="Lipa Mdogo Mdogo eligible" sx={{ mt: 1 }} />
+              <TextField fullWidth label="Lipa Mdogo Mdogo summary (one line, optional)" name="lipaMdogoMdogoSummary" value={currentProduct?.lipaMdogoMdogoSummary || ""} onChange={handleInputChange} margin="normal" helperText="Headline for THIS device only — full terms go in the description. Never a global figure." />
               <FormControlLabel control={<Checkbox name="isFeatured" checked={currentProduct?.isFeatured || false} onChange={handleInputChange} />} label="Featured" sx={{ mt: 1 }} />
               <FormControlLabel control={<Checkbox name="isNewRelease" checked={currentProduct?.isNewRelease || false} onChange={handleInputChange} />} label="New Release" sx={{ mt: 1 }} />
               <TextField fullWidth label="Release Date" name="releaseDate" type="date" value={currentProduct?.releaseDate ? currentProduct.releaseDate.slice(0, 10) : ""} onChange={handleInputChange} margin="normal" InputLabelProps={{ shrink: true }} />

@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { FaTruck, FaWhatsapp, FaClock } from "react-icons/fa";
 import { Api } from "@/lib/api";
+import { filterActiveSections, hasActiveAnnouncement } from "@/utils/sections";
 import {
   BUSINESS_NAME as SITE_NAME,
   SITE_URL,
@@ -16,6 +17,7 @@ import {
 
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
+import LipaMdogoMdogoSection from "@/components/LipaMdogoMdogoSection";
 import ShopByBrandSection from "@/components/ShopByBrandSection";
 import ShopByCategorySection from "@/components/ShopByCategorySection";
 import FeaturedProductsSection from "@/components/FeaturedProductsSection";
@@ -32,7 +34,11 @@ const PAGE_DESCRIPTION =
 // Same-day-delivery counties, derived from the delivery matrix — never hardcode business facts.
 const SAME_DAY_COUNTIES = (DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || []).join(", ");
 
-export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections }) {
+export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections, lipaProducts = [] }) {
+  // Exactly one homepage <h1>: an active announcement card owns it; otherwise the
+  // evergreen heading below does. Never both, never neither (P3).
+  const showAnnouncement = hasActiveAnnouncement(sections, "promo_cards");
+
   const storeJsonLd = {
     "@context": "https://schema.org",
     "@type": "MobilePhoneStore",
@@ -105,16 +111,21 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         />
       </Head>
 
-      {/* Evergreen page H1 (P1-8) — replaces the stale promo-card <h1>. */}
+      {/* Homepage heading. Exactly one <h1>: the evergreen heading here, UNLESS a
+          scheduled announcement card is live — then that card owns the <h1> (P3). */}
       <section className="pt-2 md:pb-1 md:pt-3">
         <div className="mx-auto max-w-screen-2xl px-4">
-          <h1 className="font-extrabold leading-tight text-[#1e3c72] text-[1.5rem] md:text-[2.1rem]">
-            Buy Smartphones &amp; Accessories in Mombasa, Kenya
-          </h1>
-          <p className="mt-1 max-w-[720px] text-gray-500 text-[0.9rem] md:text-[1.05rem]">
-            The latest phones, tablets, audio and accessories with fast delivery across our five
-            served counties. Order on WhatsApp.
-          </p>
+          {!showAnnouncement && (
+            <>
+              <h1 className="font-extrabold leading-tight text-[#1e3c72] text-[1.5rem] md:text-[2.1rem]">
+                Buy Smartphones &amp; Accessories in Mombasa, Kenya
+              </h1>
+              <p className="mt-1 max-w-[720px] text-gray-500 text-[0.9rem] md:text-[1.05rem]">
+                The latest phones, tablets, audio and accessories with fast delivery across our five
+                served counties. Order on WhatsApp.
+              </p>
+            </>
+          )}
 
           <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-gray-600 md:text-[0.9rem]">
             <li className="inline-flex items-center gap-1.5">
@@ -130,8 +141,8 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         </div>
       </section>
 
-      {/* 1. Promo Cards */}
-      <PromoCardsSection />
+      {/* 1. Promo Cards (admin-managed, server-filtered for scheduling) */}
+      <PromoCardsSection sections={sections} renderAnnouncementHeading={showAnnouncement} />
 
       {/* 2. Deal of the Day / Flash Sale / Limited Offer */}
       <DealsSection />
@@ -151,6 +162,9 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       {/* 7. Safaricom Corner */}
       <SafaricomCorner sections={sections} />
 
+      {/* 7b. Lipa Mdogo Mdogo — admin-managed section + products flagged eligible */}
+      <LipaMdogoMdogoSection sections={sections} products={lipaProducts} />
+
       {/* 8. Pocket Friendly Picks */}
       <PocketFriendlySection />
 
@@ -165,13 +179,14 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
 export async function getStaticProps() {
   try {
-    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes] = await Promise.all([
+    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes, lipaRes] = await Promise.all([
       Api.get("/products", { params: { featured: true, limit: 16 } }),
       Api.get("/products", { params: { limit: 48 } }), // P2-P2: was 120 to show 48
       Api.get("/categories"),
       Api.get("/brands"),
       Api.get("/reviews/recent"),
       Api.get("/homepage-sections"),
+      Api.get("/products", { params: { lipaMdogoMdogoEligible: true, limit: 12 } }),
     ]);
 
     const shuffle = (arr = []) => [...arr].sort(() => 0.5 - Math.random());
@@ -185,14 +200,15 @@ export async function getStaticProps() {
         categories: categoriesRes.data?.categories || categoriesRes.data || [],
         brands: brandsRes.data?.brands || brandsRes.data || [],
         recentReviews: reviewsRes.data?.reviews || [],
-        sections: sectionsRes.data || [],
+        sections: filterActiveSections(sectionsRes.data || []),
+        lipaProducts: lipaRes.data?.products || [],
       },
       revalidate: 60,
     };
   } catch (e) {
     console.error("Home data error", e);
     return {
-      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [] },
+      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [], lipaProducts: [] },
       revalidate: 30,
     };
   }
