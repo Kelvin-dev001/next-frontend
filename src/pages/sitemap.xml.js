@@ -28,6 +28,19 @@ const STATIC_ROUTES = [
   { path: "/locations/kwale", changefreq: "monthly", priority: "0.6" },
   { path: "/locations/nairobi", changefreq: "monthly", priority: "0.6" },
   { path: "/locations/machakos", changefreq: "monthly", priority: "0.6" },
+  // Safaricom Corner service pages (P7)
+  { path: "/safaricom/mpesa", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/sim", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/airtime-data", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/home-fibre", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/mpesa-business", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/paybill", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/pochi-la-biashara", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/business-app", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/business-connectivity", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/devices", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/bulk-payments", changefreq: "monthly", priority: "0.6" },
+  { path: "/safaricom/support", changefreq: "monthly", priority: "0.6" },
 ];
 
 const xmlEscape = (value = "") =>
