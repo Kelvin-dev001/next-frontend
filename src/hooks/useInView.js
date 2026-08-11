@@ -40,6 +40,7 @@ export default function useInView({ once = false, rootMargin = "200px", threshol
     );
 
     observer.observe(node);
+
     return () => observer.disconnect();
   }, [once, rootMargin, threshold]);
 

@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import Header from "@/components/Header";
 import TopInfoMarquee from "@/components/TopInfoMarquee";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 const Footer = React.lazy(() => import("@/components/Footer"));
 
 const AppLayout = ({ children }) => {
@@ -14,6 +15,8 @@ const AppLayout = ({ children }) => {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+      {/* Storefront only — /admin/* bypasses AppLayout entirely in _app.js. */}
+      <FloatingWhatsApp />
     </div>
   );
 };

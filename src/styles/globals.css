@@ -222,6 +222,95 @@ body {
   animation-delay: calc(var(--i, 0) * 35ms);
 }
 
+/* ── Section entrance (P8) ─────────────────────────────────────────────────
+   See components/ui/Reveal.js. Scroll-driven, no JavaScript.
+
+   The hidden start state exists ONLY inside the @supports block, so the
+   fallback for a browser without scroll timelines is a fully visible section.
+   That ordering is the whole point: an earlier IntersectionObserver version
+   could leave sections stuck at opacity 0, and on a shop that means the
+   catalogue vanishes. Nothing here can hide content. */
+@keyframes section-rise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .section-reveal {
+      animation: section-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+
+/* ── Floating WhatsApp button (P8) ─────────────────────────────────────────
+   Scales in once the page has settled, then pulses three times and stops. An
+   endlessly pulsing button is a battery cost and, after the third time, just
+   nagging. */
+@keyframes fab-ring {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+  70% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+/* The entrance is a transition, not a keyframe animation. A running or stalled
+   animation overrides the declared value, and one was observed holding this
+   button at its from-keyframe — leaving the site's only always-visible
+   WhatsApp entry point invisible. A transition always resolves to the declared
+   value, so the worst case is that the movement is skipped, never that the
+   button disappears. */
+.wa-fab {
+  opacity: 0;
+  transform: scale(0.4) translate3d(0, 12px, 0);
+  transition: opacity 420ms ease-out, transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wa-fab[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Attention ring: three pulses, then done. An endlessly pulsing button is a
+   battery cost and, after the third time, just nagging. It lives on a
+   pseudo-element so it can never gate the button's own visibility. */
+.wa-fab[data-visible="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: fab-ring 2.2s ease-out 800ms 3;
+}
+
+/* No JavaScript means data-visible is never set. Show the button anyway. */
+@media (scripting: none) {
+  .wa-fab {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Loading skeletons: a sweep reads as "content is coming" where a flat pulse
+   reads as "something is broken". */
+@keyframes skeleton-sweep {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.skeleton-shimmer {
+  background-color: var(--color-brand-50);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-brand-200) 60%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
 @keyframes chevron-bob {
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(0, 3px, 0); }

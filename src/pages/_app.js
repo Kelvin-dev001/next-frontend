@@ -6,7 +6,9 @@ import AppLayout from "@/layouts/AppLayout";
 
 // The storefront is Tailwind-only. MUI + emotion load exclusively for /admin, via
 // this dynamic (ssr:false) boundary — so none of it ships in the customer bundle.
-// react-slick was dropped from ReviewsSection in P4, so no slick CSS here either.
+// react-slick, slick-carousel and react-fast-marquee were uninstalled in P8: the
+// hero carousel runs on native scroll-snap and the marquees on one CSS keyframe,
+// so the storefront ships no carousel library at all.
 const AdminProviders = dynamic(() => import("@/components/AdminProviders"), { ssr: false });
 
 export default function MyApp({ Component, pageProps }) {
