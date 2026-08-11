@@ -106,6 +106,17 @@ body {
   animation: glyph-nudge 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Scroll container with no visible scrollbar — the hero carousel, which has
+   its own dots and arrows. Scrolling itself stays fully native. */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Marquee (P8) ──────────────────────────────────────────────────────────
    Used by the top info bar, the deals rail, and the two-row category / brand /
    Safaricom loops. One primitive, four consumers — see ui/Marquee.js. */
