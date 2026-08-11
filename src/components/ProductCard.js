@@ -24,6 +24,10 @@ export default function ProductCard({
   badge,
   size = "compact",
   imagePriority = false,
+  // Grid default. Rails render the card at a fixed pixel width, so they pass
+  // their own `sizes` — otherwise a 230px card requests a 25vw rendition.
+  // Payload is a business metric here: every KB costs the customer money.
+  imageSizes = "(max-width: 600px) 48vw, (max-width: 900px) 32vw, 25vw",
 }) {
   const productHref = `/products/${product?._id || product?.id || ""}`;
 
@@ -43,7 +47,7 @@ export default function ProductCard({
   const price = product?.discountPrice || product?.price;
 
   return (
-    <div className="group relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-brand-700 shadow-[0_6px_24px_rgba(7,89,133,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(7,89,133,0.2)] focus-within:ring-2 focus-within:ring-brand-300 md:rounded-[18px]">
+    <div className="group relative flex h-full min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-brand-700 shadow-[0_6px_24px_rgba(7,89,133,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(7,89,133,0.2)] focus-within:ring-2 focus-within:ring-brand-300 md:rounded-[18px]">
       {/* Stretched, crawlable link over the whole card (P1-1). aria-hidden + tabIndex=-1
           so the visible title link below is the single accessible / focusable link. */}
       <Link
@@ -61,7 +65,7 @@ export default function ProductCard({
             src={imgUrl}
             alt={product?.name || "Product"}
             fill
-            sizes="(max-width: 600px) 48vw, (max-width: 900px) 32vw, 25vw"
+            sizes={imageSizes}
             style={{ objectFit: "contain" }}
             className="transition-transform duration-500 ease-out group-hover:scale-105"
             priority={imagePriority}

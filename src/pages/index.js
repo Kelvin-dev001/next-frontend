@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { FaTruck, FaWhatsapp, FaClock } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import { filterActiveSections, hasActiveAnnouncement } from "@/utils/sections";
 import {
@@ -11,8 +10,6 @@ import {
   OPENING_HOURS_SPEC,
   SAME_AS,
   SERVED_COUNTIES,
-  HOURS_DISPLAY,
-  DELIVERY_ZONES,
 } from "@/constants/business";
 
 import PromoCardsSection from "@/components/PromoCardsSection";
@@ -30,9 +27,6 @@ import WhatsAppCTASection from "@/components/WhatsAppCTASection";
 const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
-
-// Same-day-delivery counties, derived from the delivery matrix — never hardcode business facts.
-const SAME_DAY_COUNTIES = (DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || []).join(", ");
 
 export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections, lipaProducts = [] }) {
   // Exactly one homepage <h1>: an active announcement card owns it; otherwise the
@@ -112,7 +106,12 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       </Head>
 
       {/* Homepage heading. Exactly one <h1>: the evergreen heading here, UNLESS a
-          scheduled announcement card is live — then that card owns the <h1> (P3). */}
+          scheduled announcement card is live — then that card owns the <h1> (P3).
+
+          The trust bullets that used to sit here (same-day delivery / order on
+          WhatsApp / opening hours) moved into TopInfoMarquee in P8, which shows
+          the same three facts on every page. Repeating them here would have put
+          the identical sentence twice on one screen. */}
       <section className="pt-2 md:pb-1 md:pt-3">
         <div className="mx-auto max-w-screen-2xl px-4">
           {!showAnnouncement && (
@@ -126,18 +125,6 @@ export default function Home({ featured, newArrivals, brands, categories, recent
               </p>
             </>
           )}
-
-          <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-gray-600 md:text-[0.9rem]">
-            <li className="inline-flex items-center gap-1.5">
-              <FaTruck className="text-brand-700" aria-hidden="true" /> Same-day delivery in {SAME_DAY_COUNTIES}
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <FaWhatsapp className="text-brand-600" aria-hidden="true" /> Order on WhatsApp
-            </li>
-            <li className="inline-flex items-center gap-1.5">
-              <FaClock className="text-brand-700" aria-hidden="true" /> Open {HOURS_DISPLAY}
-            </li>
-          </ul>
         </div>
       </section>
 

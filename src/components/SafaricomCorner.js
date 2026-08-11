@@ -6,6 +6,7 @@ import {
   FaMoneyCheckAlt, FaHeadset,
 } from "react-icons/fa";
 import SectionHeading from "@/components/ui/SectionHeading";
+import TwoRowMarquee from "@/components/ui/TwoRowMarquee";
 
 const iconMap = {
   iot: <FaBroadcastTower className="text-3xl" />,
@@ -39,18 +40,20 @@ export default function SafaricomCorner({ sections = [] }) {
           <p className="mx-auto mb-8 max-w-[720px] text-center text-gray-500">{section.subtitle}</p>
         )}
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 md:gap-6">
-          {section.items.map((item, idx) => {
+        <TwoRowMarquee
+          items={section.items}
+          label="the Safaricom services carousel"
+          itemKey={(item, idx) => `${item.title}-${idx}`}
+          renderItem={(item) => {
             const link = item.ctaLink
               ? item.ctaLink
               : `/products?category=${encodeURIComponent(item.category || "")}&search=${encodeURIComponent(item.search || "")}`;
 
             return (
               <Link
-                key={`${item.title}-${idx}`}
                 href={link}
                 prefetch={false}
-                className="relative flex min-h-[210px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-black/5 bg-white bg-cover bg-center p-5 text-center shadow-[0_5px_18px_rgba(7,89,133,0.08)]"
+                className="relative flex h-[200px] w-[190px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-black/5 bg-white bg-cover bg-center p-5 text-center shadow-[0_5px_18px_rgba(7,89,133,0.08)] transition hover:-translate-y-0.5 hover:shadow-md md:w-[220px]"
                 style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
               >
                 {item.image && <span className="absolute inset-0 bg-black/55" aria-hidden="true" />}
@@ -66,14 +69,14 @@ export default function SafaricomCorner({ sections = [] }) {
                   {item.subtitle && (
                     <span className={`block text-xs ${item.image ? "text-white/80" : "text-gray-500"}`}>{item.subtitle}</span>
                   )}
-                  <span className="mt-1 inline-block rounded-full bg-brand-700 px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">
+                  <span className="mt-1 inline-block rounded-full bg-brand-600 px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">
                     {item.ctaLabel || "View Service"}
                   </span>
                 </span>
               </Link>
             );
-          })}
-        </div>
+          }}
+        />
       </div>
     </section>
   );
