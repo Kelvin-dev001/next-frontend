@@ -14,6 +14,7 @@ import {
 } from "@/constants/business";
 
 import HeroSlider from "@/components/HeroSlider";
+import Reveal from "@/components/ui/Reveal";
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
 import LipaMdogoMdogoSection from "@/components/LipaMdogoMdogoSection";
@@ -145,39 +146,45 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       {/* 1. Promo Cards (admin-managed, server-filtered for scheduling) */}
       <PromoCardsSection sections={sections} renderAnnouncementHeading={showAnnouncement} />
 
+      {/* Everything below the fold lifts into view once, on first scroll past.
+          The hero and promo cards above are deliberately left alone — they must
+          paint immediately. */}
+
       {/* 2. Deal of the Day / Flash Sale / Limited Offer */}
-      <DealsSection />
+      <Reveal><DealsSection /></Reveal>
 
       {/* 3. Hot Selling Smartphones in Kenya */}
-      <NewArrivalsSection products={newArrivals} title="Hot Selling Gadgets in Kenya" />
+      <Reveal><NewArrivalsSection products={newArrivals} title="Hot Selling Gadgets in Kenya" /></Reveal>
 
       {/* 4. Featured Products */}
-      <FeaturedProductsSection products={featured} />
+      <Reveal><FeaturedProductsSection products={featured} /></Reveal>
 
       {/* 5. Shop by Brand */}
-      <ShopByBrandSection brands={brands} />
+      <Reveal><ShopByBrandSection brands={brands} /></Reveal>
 
       {/* 6. Shop by Category */}
-      <ShopByCategorySection categories={categories} />
+      <Reveal><ShopByCategorySection categories={categories} /></Reveal>
 
       {/* 7. Safaricom Corner */}
-      <SafaricomCorner sections={sections} />
+      <Reveal><SafaricomCorner sections={sections} /></Reveal>
 
       {/* 7b. Lipa Mdogo Mdogo — admin-managed section + products flagged eligible */}
-      <LipaMdogoMdogoSection sections={sections} products={lipaProducts} />
+      <Reveal><LipaMdogoMdogoSection sections={sections} products={lipaProducts} /></Reveal>
 
       {/* 8. Pocket Friendly Picks */}
-      <PocketFriendlySection products={pocketFriendly} />
+      <Reveal><PocketFriendlySection products={pocketFriendly} /></Reveal>
 
       {/* 9. Reviews */}
-      <ReviewsSection reviews={recentReviews} isHomepage />
+      <Reveal><ReviewsSection reviews={recentReviews} isHomepage /></Reveal>
 
       {/* 10. Second banner carousel, or the WhatsApp CTA until slides exist */}
-      {hasMidSlides ? (
-        <HeroSlider sections={sections} sectionKey="hero_slider_mid" />
-      ) : (
-        <WhatsAppCTASection />
-      )}
+      <Reveal>
+        {hasMidSlides ? (
+          <HeroSlider sections={sections} sectionKey="hero_slider_mid" />
+        ) : (
+          <WhatsAppCTASection />
+        )}
+      </Reveal>
     </>
   );
 }
