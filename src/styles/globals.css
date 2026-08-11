@@ -2,6 +2,41 @@
    don't generate preflight + the full utility layer under @tailwindcss/postcss v4. */
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Brand palette (P8). Single source of truth for colour — never hardcode a
+   hex in a component again.
+
+   The scale is derived from the logo, which is one flat azure on white.
+   Sampled from public/snaap-logo.jpeg: #0197D4 exactly. The old navy and cyan
+   were inherited from the dead CRA build and are retired — the greps in
+   next-frontend/CLAUDE.md now expect zero hits for them anywhere in src.
+
+   CONTRAST RULE — this is why there are two "primary" shades:
+     white on brand-500 (#0197D4) = 3.29:1  -> FAILS WCAG AA under 18.66px bold
+     white on brand-600 (#0179AB) = 4.89:1  -> passes AA
+     white on brand-700 (#075985) = 7.55:1  -> passes AAA
+   So brand-500 is the identity colour (icons, borders, large fills, gradients)
+   but any surface carrying small white text uses brand-600 or darker.
+   ────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-brand-50: #eff9fe;
+  --color-brand-100: #d7f0fc;
+  --color-brand-200: #b0e3f9;
+  --color-brand-300: #6fd0f2;
+  --color-brand-400: #29b6e8;
+  --color-brand-500: #0197d4;
+  --color-brand-600: #0179ab;
+  --color-brand-700: #075985;
+  --color-brand-800: #0b4a6d;
+  --color-brand-900: #0c3d5a;
+
+  /* WhatsApp brand green. Used ONLY where colour is the sole signal — i.e. the
+     unlabelled floating action button. Labelled buttons say "WhatsApp" in words
+     and use the brand blue instead. */
+  --color-wa: #25d366;
+  --color-wa-dark: #128c7e;
+}
+
 *,
 *::before,
 *::after {
@@ -17,6 +52,75 @@ body {
   overflow-x: hidden;
 }
 
+/* Visible keyboard focus everywhere, in brand colour. */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Button press feedback (P8) ────────────────────────────────────────────
+   Ripple originates from the pointer position, which ui/Button.js sets as
+   --ripple-x / --ripple-y. Purely decorative: it never gates the click
+   handler, because the WhatsApp CTA calls window.open() and popup blockers
+   require that to stay inside the user gesture. */
+@keyframes ripple-out {
+  from {
+    opacity: 0.45;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+.ripple-layer {
+  position: absolute;
+  left: var(--ripple-x, 50%);
+  top: var(--ripple-y, 50%);
+  width: 140%;
+  aspect-ratio: 1;
+  margin-left: -70%;
+  margin-top: -70%;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  animation: ripple-out 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Outlined buttons sit on white, so a white ripple would be invisible. */
+.ripple-layer[data-tone="dark"] {
+  background: color-mix(in srgb, var(--color-brand-500) 55%, transparent);
+}
+
+/* Icon nudge on press — the paper-plane "sent" cue on WhatsApp buttons. */
+@keyframes glyph-nudge {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  35% { transform: translate3d(3px, -3px, 0) rotate(12deg); }
+  70% { transform: translate3d(-1px, 1px, 0) rotate(-4deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+
+.is-pressed svg {
+  animation: glyph-nudge 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .neon-text {
   text-shadow: 0 0 5px #00f, 0 0 10px #00f, 0 0 20px #0ff, 0 0 40px #0ff;
+}
+
+/* ── Motion preference ─────────────────────────────────────────────────────
+   One rule that makes every animation on the site respectful. Components that
+   need to change *behaviour* (marquees, carousel autoplay) also check
+   matchMedia in JS — this only neutralises the visual motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

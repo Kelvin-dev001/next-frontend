@@ -25,7 +25,7 @@ export default function AboutPage() {
       </Head>
 
       <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
-        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           About {BUSINESS_NAME}
         </h1>
 
@@ -54,7 +54,7 @@ export default function AboutPage() {
         <div className="mb-8 flex flex-col gap-4 sm:flex-row">
           <Link
             href="/products"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1e3c72] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#152c56]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-900"
           >
             Browse all products
           </Link>
@@ -62,7 +62,7 @@ export default function AboutPage() {
             href={waLink("Hi Snaap Connections, I'd like to know more.")}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#2e7d32] px-5 py-2.5 font-bold text-[#2e7d32] no-underline transition hover:bg-[#2e7d32]/10"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-600 px-5 py-2.5 font-bold text-brand-600 no-underline transition hover:bg-brand-600/10"
           >
             <FaWhatsapp className="text-lg" /> Talk to us on WhatsApp
           </a>

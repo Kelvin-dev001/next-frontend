@@ -29,7 +29,7 @@ export default function CareersPage() {
           until openings are confirmed.
         </div>
 
-        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           Careers
         </h1>
 
@@ -49,13 +49,13 @@ export default function CareersPage() {
             href={waLink("Hi Snaap Connections, I'm interested in working with you.")}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
           >
             <FaWhatsapp className="text-lg" /> Message us on WhatsApp
           </a>
           <a
             href={`mailto:${EMAIL}?subject=Expression%20of%20interest`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#1e3c72] px-5 py-2.5 font-bold text-[#1e3c72] no-underline transition hover:bg-[#1e3c72]/10"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-700 px-5 py-2.5 font-bold text-brand-700 no-underline transition hover:bg-brand-700/10"
           >
             Email us
           </a>

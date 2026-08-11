@@ -60,7 +60,7 @@ export default function CatalogueLanding({ type, name, slug, copy = null, produc
           <span className="text-gray-900">{name}</span>
         </nav>
 
-        <h1 className="mb-3 text-[1.7rem] font-extrabold leading-tight text-[#1e3c72] md:text-[2.2rem]">
+        <h1 className="mb-3 text-[1.7rem] font-extrabold leading-tight text-brand-700 md:text-[2.2rem]">
           {name}
           <span className="ml-2 align-middle text-sm font-normal text-gray-500">
             ({total} product{total === 1 ? "" : "s"})

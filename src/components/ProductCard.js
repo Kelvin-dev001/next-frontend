@@ -12,7 +12,7 @@ const BADGE_BG = {
   NEW: "bg-green-600",
   TRENDING: "bg-sky-500",
   SALE: "bg-amber-500",
-  FEATURED: "bg-[#1e3c72]",
+  FEATURED: "bg-brand-700",
 };
 
 export default function ProductCard({
@@ -43,7 +43,7 @@ export default function ProductCard({
   const price = product?.discountPrice || product?.price;
 
   return (
-    <div className="group relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-[#1e3c72] shadow-[0_6px_24px_rgba(30,60,114,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(30,60,114,0.2)] focus-within:ring-2 focus-within:ring-[#6dd5ed] md:rounded-[18px]">
+    <div className="group relative flex min-w-0 cursor-pointer flex-col justify-between overflow-hidden rounded-[14px] bg-white text-brand-700 shadow-[0_6px_24px_rgba(7,89,133,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(7,89,133,0.2)] focus-within:ring-2 focus-within:ring-brand-300 md:rounded-[18px]">
       {/* Stretched, crawlable link over the whole card (P1-1). aria-hidden + tabIndex=-1
           so the visible title link below is the single accessible / focusable link. */}
       <Link
@@ -56,7 +56,7 @@ export default function ProductCard({
 
       {/* Image */}
       <div className="relative px-[0.8rem] pt-[0.8rem] md:px-[1.2rem] md:pt-[1.2rem]">
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[10px] bg-[#f4f6f8] md:rounded-[14px]">
+        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[10px] bg-brand-50 md:rounded-[14px]">
           <Image
             src={imgUrl}
             alt={product?.name || "Product"}
@@ -85,7 +85,7 @@ export default function ProductCard({
             e.stopPropagation();
             if (onWishlistToggle) onWishlistToggle(product?._id || product?.id);
           }}
-          className="absolute bottom-1 right-2 z-[2] grid h-8 w-8 place-items-center rounded-full bg-white shadow-[0_2px_8px_#2221] hover:bg-[#6dd5ed]/30"
+          className="absolute bottom-1 right-2 z-[2] grid h-8 w-8 place-items-center rounded-full bg-white shadow-[0_2px_8px_#2221] hover:bg-brand-300/30"
         >
           {isWishlisted ? <FaHeart className="text-red-500" /> : <FaRegHeart className="text-gray-500" />}
         </button>
@@ -98,7 +98,7 @@ export default function ProductCard({
         <Link
           href={productHref}
           prefetch={false}
-          className="relative z-[2] mb-1 block font-bold leading-tight text-[#1e3c72] no-underline line-clamp-2 text-[0.8rem] hover:underline md:text-[0.95rem]"
+          className="relative z-[2] mb-1 block font-bold leading-tight text-brand-700 no-underline line-clamp-2 text-[0.8rem] hover:underline md:text-[0.95rem]"
         >
           {product?.name}
         </Link>
@@ -107,7 +107,7 @@ export default function ProductCard({
           <div className="mb-1 flex items-center gap-1">
             <span className="flex">
               {[0, 1, 2, 3, 4].map((i) => (
-                <FaStar key={i} className={i < Math.round(product.rating) ? "text-[#6dd5ed]" : "text-gray-300"} />
+                <FaStar key={i} className={i < Math.round(product.rating) ? "text-brand-300" : "text-gray-300"} />
               ))}
             </span>
             <span className="text-[0.6rem] md:text-[0.75rem]">{product.rating.toFixed(1)}</span>
@@ -115,7 +115,7 @@ export default function ProductCard({
         )}
 
         <div className="flex flex-wrap items-center gap-1">
-          <span className="font-bold text-[#1e3c72] text-[0.85rem] md:text-[1rem]">
+          <span className="font-bold text-brand-700 text-[0.85rem] md:text-[1rem]">
             {price ? formatKES(price) : "—"}
           </span>
           {product?.discountPrice && (

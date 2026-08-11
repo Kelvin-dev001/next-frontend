@@ -45,8 +45,8 @@ const locationLinks = [
 export default function Footer() {
   return (
     <footer
-      className="border-t-2 border-[#1e3c72] pb-2 pt-8 text-white"
-      style={{ background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 60%, #6dd5ed 100%)" }}
+      className="border-t-2 border-brand-700 pb-2 pt-8 text-white"
+      style={{ background: "linear-gradient(135deg, #075985 0%, #0179ab 60%, #6fd0f2 100%)" }}
     >
       <div className="mx-auto max-w-screen-2xl px-4">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
@@ -68,7 +68,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener"
                   aria-label={label}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/35 hover:text-[#2a5298]"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/35 hover:text-brand-600"
                 >
                   {icon}
                 </a>
@@ -79,11 +79,11 @@ export default function Footer() {
           {/* Link columns */}
           {footerLinks.map((section) => (
             <div key={section.title}>
-              <p className="mb-3 font-bold tracking-wide text-[#c4e0fc]">{section.title}</p>
+              <p className="mb-3 font-bold tracking-wide text-brand-100">{section.title}</p>
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-[0.95rem] font-medium text-white/90 transition hover:text-[#81c2ff]">
+                    <Link href={link.href} className="text-[0.95rem] font-medium text-white/90 transition hover:text-brand-200">
                       {link.label}
                     </Link>
                   </li>
@@ -94,33 +94,33 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="col-span-2 md:col-span-1">
-            <p className="mb-3 font-bold tracking-wide text-[#c4e0fc]">Contact Us</p>
+            <p className="mb-3 font-bold tracking-wide text-brand-100">Contact Us</p>
             <div className="mb-1 flex items-start gap-2">
-              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-[#6dd5ed]" />
-              <span className="text-sm text-[#e6f2ff]/90">{ADDRESS.full}</span>
+              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-brand-300" />
+              <span className="text-sm text-brand-50/90">{ADDRESS.full}</span>
             </div>
-            <a href={`mailto:${EMAIL}`} className="mb-1 flex items-center gap-2 text-sm text-[#e6f2ff]/90 hover:underline">
-              <FaEnvelope className="flex-shrink-0 text-[#6dd5ed]" /> {EMAIL}
+            <a href={`mailto:${EMAIL}`} className="mb-1 flex items-center gap-2 text-sm text-brand-50/90 hover:underline">
+              <FaEnvelope className="flex-shrink-0 text-brand-300" /> {EMAIL}
             </a>
-            <a href={`tel:${PHONE_E164}`} className="mb-1 flex items-center gap-2 text-sm text-[#e6f2ff]/90 hover:underline">
-              <FaPhoneAlt className="flex-shrink-0 text-[#6dd5ed]" /> {PHONE_DISPLAY}
+            <a href={`tel:${PHONE_E164}`} className="mb-1 flex items-center gap-2 text-sm text-brand-50/90 hover:underline">
+              <FaPhoneAlt className="flex-shrink-0 text-brand-300" /> {PHONE_DISPLAY}
             </a>
           </div>
         </div>
 
         <div className="mt-6 border-t border-white/15 pt-4">
-          <p className="mb-2 text-sm font-semibold text-[#c4e0fc]">Phone delivery across Kenya</p>
+          <p className="mb-2 text-sm font-semibold text-brand-100">Phone delivery across Kenya</p>
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/85">
             {locationLinks.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="hover:text-[#81c2ff]">{l.label}</Link>
+                <Link href={l.href} className="hover:text-brand-200">{l.label}</Link>
               </li>
             ))}
           </ul>
         </div>
 
         <hr className="my-4 border-white/25" />
-        <p className="text-center text-sm text-[#e6f2ff]/70">
+        <p className="text-center text-sm text-brand-50/70">
           &copy; {new Date().getFullYear()} Snaap Connections. All rights reserved.
         </p>
       </div>

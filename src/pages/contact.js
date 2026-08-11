@@ -25,7 +25,7 @@ export default function ContactPage() {
       </Head>
 
       <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
-        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           Contact Us
         </h1>
         <p className="mb-8 text-gray-500">
@@ -37,7 +37,7 @@ export default function ContactPage() {
           href={waLink("Hi Snaap Connections, I have a question.")}
           target="_blank"
           rel="noopener"
-          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-6 py-3 text-lg font-bold text-white no-underline transition hover:bg-[#256628]"
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-3 text-lg font-bold text-white no-underline transition hover:bg-brand-700"
         >
           <FaWhatsapp className="text-xl" /> Chat with us on WhatsApp
         </a>
@@ -45,11 +45,11 @@ export default function ContactPage() {
         <div className="mb-8 rounded-3xl border border-gray-200 p-6 md:p-8">
           <div className="flex flex-col gap-5">
             <div className="flex items-start gap-4">
-              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-[#1e3c72]" />
+              <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-brand-700" />
               <p>{ADDRESS.full}</p>
             </div>
             <div className="flex items-center gap-4">
-              <FaWhatsapp className="flex-shrink-0 text-[#1e3c72]" />
+              <FaWhatsapp className="flex-shrink-0 text-brand-700" />
               <p>
                 <a href={waLink()} target="_blank" rel="noopener" className="text-inherit no-underline">
                   {PHONE_DISPLAY}
@@ -58,13 +58,13 @@ export default function ContactPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <FaEnvelope className="flex-shrink-0 text-[#1e3c72]" />
+              <FaEnvelope className="flex-shrink-0 text-brand-700" />
               <p>
                 <a href={`mailto:${EMAIL}`} className="text-inherit no-underline">{EMAIL}</a>
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <FaClock className="flex-shrink-0 text-[#1e3c72]" />
+              <FaClock className="flex-shrink-0 text-brand-700" />
               <p>{HOURS_DISPLAY}</p>
             </div>
           </div>

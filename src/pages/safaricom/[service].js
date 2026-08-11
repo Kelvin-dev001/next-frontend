@@ -5,7 +5,7 @@ import { SAFARICOM_SERVICES, SERVICE_SLUGS, getService } from "@/constants/safar
 import { SITE_URL, BUSINESS_NAME, HOURS_DISPLAY, waLink } from "@/constants/business";
 
 const OG_IMAGE = `${SITE_URL}/snaap-logo.jpeg`;
-const H2 = "mb-2 mt-6 text-[1.2rem] font-bold text-[#1e3c72]";
+const H2 = "mb-2 mt-6 text-[1.2rem] font-bold text-brand-700";
 
 function Block({ block }) {
   if (block.type === "grid") {
@@ -15,7 +15,7 @@ function Block({ block }) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {block.items.map((it) => (
             <div key={it.title} className="rounded-2xl border border-gray-200 p-4">
-              <p className="font-bold text-[#1e3c72]">{it.title}</p>
+              <p className="font-bold text-brand-700">{it.title}</p>
               <p className="mt-1 text-[0.92rem] text-gray-600">{it.body}</p>
             </div>
           ))}
@@ -33,7 +33,7 @@ function Block({ block }) {
             <li key={it.href + it.label}>
               <Link
                 href={it.href}
-                className="inline-flex items-center gap-1 rounded-full bg-[#f5f8ff] px-3 py-1.5 text-[0.85rem] font-semibold text-[#1e3c72] no-underline transition hover:bg-[#e8f0ff]"
+                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-[0.85rem] font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
               >
                 {it.label} <FaChevronRight className="text-[0.7rem]" aria-hidden="true" />
               </Link>
@@ -106,11 +106,11 @@ export default function SafaricomServicePage({ svc }) {
           <span className="text-gray-900">{svc.cardTitle}</span>
         </nav>
 
-        <h1 className="mb-2 text-[1.9rem] font-extrabold leading-tight text-[#1e3c72] md:text-[2.4rem]">
+        <h1 className="mb-2 text-[1.9rem] font-extrabold leading-tight text-brand-700 md:text-[2.4rem]">
           {svc.h1}
         </h1>
         {svc.tagline && (
-          <p className="mb-4 text-[1.05rem] font-semibold text-[#2a5298]">{svc.tagline}</p>
+          <p className="mb-4 text-[1.05rem] font-semibold text-brand-600">{svc.tagline}</p>
         )}
         {(svc.intro || []).map((p, i) => (
           <p key={i} className="mb-3 max-w-[760px] text-gray-600">{p}</p>
@@ -121,7 +121,7 @@ export default function SafaricomServicePage({ svc }) {
           href={waLink(svc.cta.message)}
           target="_blank"
           rel="noopener"
-          className="mb-6 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+          className="mb-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
         >
           <FaWhatsapp className="text-lg" /> {svc.cta.label}
         </a>
@@ -130,15 +130,15 @@ export default function SafaricomServicePage({ svc }) {
         {(svc.blocks || []).map((block, i) => <Block key={i} block={block} />)}
 
         {/* Primary CTA card */}
-        <div className="my-8 rounded-2xl border border-gray-200 bg-[#f5f8ff] p-6">
+        <div className="my-8 rounded-2xl border border-gray-200 bg-brand-50 p-6">
           {svc.cta.heading && (
-            <h2 className="mb-2 text-[1.2rem] font-bold text-[#1e3c72]">{svc.cta.heading}</h2>
+            <h2 className="mb-2 text-[1.2rem] font-bold text-brand-700">{svc.cta.heading}</h2>
           )}
           <a
             href={waLink(svc.cta.message)}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
           >
             <FaWhatsapp className="text-lg" /> {svc.cta.label}
           </a>
@@ -149,13 +149,13 @@ export default function SafaricomServicePage({ svc }) {
 
         {/* Other services */}
         <div className="mb-6">
-          <h2 className="mb-3 text-[1.15rem] font-bold text-[#1e3c72]">Other Safaricom services</h2>
+          <h2 className="mb-3 text-[1.15rem] font-bold text-brand-700">Other Safaricom services</h2>
           <ul className="flex flex-wrap gap-2">
             {others.map((s) => (
               <li key={s}>
                 <Link
                   href={`/safaricom/${s}`}
-                  className="inline-block rounded-full bg-[#f5f8ff] px-3 py-1 text-[0.85rem] font-semibold text-[#1e3c72] no-underline hover:bg-[#e8f0ff]"
+                  className="inline-block rounded-full bg-brand-50 px-3 py-1 text-[0.85rem] font-semibold text-brand-700 no-underline hover:bg-brand-100"
                 >
                   {SAFARICOM_SERVICES[s].cardTitle}
                 </Link>

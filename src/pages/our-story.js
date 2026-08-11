@@ -30,7 +30,7 @@ export default function OurStoryPage() {
           until an approved brand story is supplied.
         </div>
 
-        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           Our Story
         </h1>
 
@@ -45,7 +45,7 @@ export default function OurStoryPage() {
         <div className="mb-8 flex flex-col gap-4 sm:flex-row">
           <Link
             href="/about"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1e3c72] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#152c56]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-900"
           >
             About Snaap Connections
           </Link>
@@ -53,7 +53,7 @@ export default function OurStoryPage() {
             href={waLink("Hi Snaap Connections, I'd like to know more about you.")}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#2e7d32] px-5 py-2.5 font-bold text-[#2e7d32] no-underline transition hover:bg-[#2e7d32]/10"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-brand-600 px-5 py-2.5 font-bold text-brand-600 no-underline transition hover:bg-brand-600/10"
           >
             <FaWhatsapp className="text-lg" /> Talk to us on WhatsApp
           </a>

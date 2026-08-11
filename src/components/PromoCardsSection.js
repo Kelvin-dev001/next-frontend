@@ -10,7 +10,7 @@ import { getSection, splitPromo } from "@/utils/sections";
 const toneStyles = {
   soft: { background: "linear-gradient(180deg, #fff5f7 0%, #ffeef1 100%)", text: "#3a1b2b", chip: "#b4235f" },
   light: { background: "linear-gradient(180deg, #f7f7f7 0%, #f1f1f1 100%)", text: "#1c1c1c", chip: "#b42318" },
-  cool: { background: "linear-gradient(180deg, #e9f3ff 0%, #dcecff 100%)", text: "#123252", chip: "#2e7d32" },
+  cool: { background: "linear-gradient(180deg, #e9f3ff 0%, #dcecff 100%)", text: "#075985", chip: "#0179ab" },
   dark: { background: "linear-gradient(180deg, #0b0b0b 0%, #151515 100%)", text: "#ffffff", chip: "#ef4444" },
   midnight: { background: "linear-gradient(180deg, #0b1533 0%, #101b3c 100%)", text: "#ffffff", chip: "#3b82f6" },
 };

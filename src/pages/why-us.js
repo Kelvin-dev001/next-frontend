@@ -29,7 +29,7 @@ export default function WhyUsPage() {
           until approved copy is supplied.
         </div>
 
-        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-4 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           Why Choose Us
         </h1>
 
@@ -46,7 +46,7 @@ export default function WhyUsPage() {
           href={waLink("Hi Snaap Connections, I have a question.")}
           target="_blank"
           rel="noopener"
-          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
         >
           <FaWhatsapp className="text-lg" /> Talk to us on WhatsApp
         </a>

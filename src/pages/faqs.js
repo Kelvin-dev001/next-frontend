@@ -77,7 +77,7 @@ export default function FaqsPage() {
       </Head>
 
       <div className="mx-auto max-w-[900px] px-4 py-10 md:py-16">
-        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-[#1e3c72]">
+        <h1 className="mb-2 text-[2.125rem] font-extrabold leading-tight text-brand-700">
           Frequently Asked Questions
         </h1>
         <p className="mb-8 text-gray-500">
@@ -98,7 +98,7 @@ export default function FaqsPage() {
           href={waLink("Hi Snaap Connections, I have a question.")}
           target="_blank"
           rel="noopener"
-          className="mb-3 mt-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+          className="mb-3 mt-8 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
         >
           <FaWhatsapp className="text-lg" /> Ask us on WhatsApp
         </a>

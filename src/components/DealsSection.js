@@ -75,7 +75,7 @@ export default function DealsSection() {
         return (
           <div key={key} className="mb-4 md:mb-6 md:px-2">
             <div className="mb-2 flex flex-col items-start gap-1 px-1.5 sm:flex-row sm:items-center sm:justify-between md:px-0">
-              <h2 className="font-bold tracking-wide text-[#152c56] text-[1.1rem] md:text-[1.4rem]">{label}</h2>
+              <h2 className="font-bold tracking-wide text-brand-900 text-[1.1rem] md:text-[1.4rem]">{label}</h2>
               <CountdownTimer expiry={earliestExpiry} />
             </div>
             <ProductGrid items={items} loading={loading} eagerCount={4} size="compact" showWhatsApp showViewBtn />

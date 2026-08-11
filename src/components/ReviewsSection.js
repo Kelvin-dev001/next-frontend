@@ -23,7 +23,7 @@ const ReviewSummary = ({ reviews }) => {
               <span className="min-w-[22px] text-right text-sm">{count}</span>
             </div>
             <div className="mt-0.5 h-1.5 w-full rounded bg-gray-200">
-              <div className="h-1.5 rounded bg-[#1e3c72] transition-all duration-500" style={{ width: `${percent}%` }} />
+              <div className="h-1.5 rounded bg-brand-700 transition-all duration-500" style={{ width: `${percent}%` }} />
             </div>
           </div>
         );
@@ -84,7 +84,7 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
     setSubmitting(false);
   };
 
-  const field = "w-full border-b border-gray-300 bg-transparent px-1 py-2 outline-none focus:border-[#1e3c72]";
+  const field = "w-full border-b border-gray-300 bg-transparent px-1 py-2 outline-none focus:border-brand-700";
 
   return (
     <div className="fixed inset-0 z-[1300] flex items-center justify-center p-4">
@@ -107,7 +107,7 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
           <button
             onClick={handleSubmit}
             disabled={submitting || !name || !comment || !rating}
-            className="rounded bg-[#1e3c72] px-4 py-2 font-semibold text-white hover:bg-[#152c56] disabled:opacity-50"
+            className="rounded bg-brand-700 px-4 py-2 font-semibold text-white hover:bg-brand-900 disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit"}
           </button>
@@ -151,7 +151,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
   return (
     <section className="py-6 md:py-10">
       <div className="mx-auto max-w-[1090px] px-4">
-        <h2 className="mb-1.5 text-center text-2xl font-bold text-[#1e3c72]">What Customers Say</h2>
+        <h2 className="mb-1.5 text-center text-2xl font-bold text-brand-700">What Customers Say</h2>
         <ReviewSummary reviews={reviews} />
 
         <div className="mb-3 text-center">
@@ -161,7 +161,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
           {productId && !isHomepage && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 rounded bg-[#1e3c72] px-4 py-2 font-semibold text-white hover:bg-[#152c56]"
+              className="mt-2 rounded bg-brand-700 px-4 py-2 font-semibold text-white hover:bg-brand-900"
             >
               Write a Review
             </button>
@@ -178,7 +178,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
         {filtered.length === 0 ? (
           <p className="mb-10 mt-6 text-center text-gray-500">
             No reviews yet.{" "}
-            <Link href="/products" className="text-[#1e3c72] underline-offset-2 hover:underline">
+            <Link href="/products" className="text-brand-700 underline-offset-2 hover:underline">
               Be the first to review — Shop Now!
             </Link>
           </p>
@@ -205,7 +205,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
         )}
 
         {reviews.length > 0 && (
-          <div className="mt-6 rounded-2xl bg-[#f3fbff] p-4">
+          <div className="mt-6 rounded-2xl bg-brand-50 p-4">
             <h3 className="mb-2 text-lg font-semibold">Top Comments:</h3>
             {reviews
               .filter((r) => r.rating >= 4)

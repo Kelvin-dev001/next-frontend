@@ -117,7 +117,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         <div className="mx-auto max-w-screen-2xl px-4">
           {!showAnnouncement && (
             <>
-              <h1 className="font-extrabold leading-tight text-[#1e3c72] text-[1.5rem] md:text-[2.1rem]">
+              <h1 className="font-extrabold leading-tight text-brand-700 text-[1.5rem] md:text-[2.1rem]">
                 Buy Smartphones &amp; Accessories in Mombasa, Kenya
               </h1>
               <p className="mt-1 max-w-[720px] text-gray-500 text-[0.9rem] md:text-[1.05rem]">
@@ -129,13 +129,13 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
           <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-gray-600 md:text-[0.9rem]">
             <li className="inline-flex items-center gap-1.5">
-              <FaTruck className="text-[#1e3c72]" aria-hidden="true" /> Same-day delivery in {SAME_DAY_COUNTIES}
+              <FaTruck className="text-brand-700" aria-hidden="true" /> Same-day delivery in {SAME_DAY_COUNTIES}
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <FaWhatsapp className="text-[#2e7d32]" aria-hidden="true" /> Order on WhatsApp
+              <FaWhatsapp className="text-brand-600" aria-hidden="true" /> Order on WhatsApp
             </li>
             <li className="inline-flex items-center gap-1.5">
-              <FaClock className="text-[#1e3c72]" aria-hidden="true" /> Open {HOURS_DISPLAY}
+              <FaClock className="text-brand-700" aria-hidden="true" /> Open {HOURS_DISPLAY}
             </li>
           </ul>
         </div>

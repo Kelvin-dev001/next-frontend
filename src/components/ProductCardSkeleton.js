@@ -4,7 +4,7 @@ export default function ProductCardSkeleton({ size = "compact" }) {
   const isFull = size === "full";
   return (
     <div
-      className={`w-full overflow-hidden bg-white shadow-[0_6px_24px_rgba(30,60,114,0.08)] ${
+      className={`w-full overflow-hidden bg-white shadow-[0_6px_24px_rgba(7,89,133,0.08)] ${
         isFull ? "min-h-[420px] rounded-[22px] md:min-h-[360px]" : "min-h-[360px] rounded-[18px] md:min-h-[350px]"
       }`}
     >
