@@ -1,30 +1,22 @@
 import React from "react";
-import useInView from "@/hooks/useInView";
 
 /**
- * Fades and lifts a section into place the first time it scrolls into view.
+ * Lifts a section into place as it scrolls into view.
  *
- * Safety matters more than the effect here: a shop whose sections are stuck at
- * opacity 0 has no catalogue. Two guards —
- *   - useInView falls open to `true` if IntersectionObserver is missing
- *   - globals.css un-hides .section-reveal entirely under `@media (scripting:
- *     none)`, so a visitor without JavaScript sees the full page
- * Reveals fire once and never re-hide.
+ * Pure CSS, via a scroll-driven animation timeline (see .section-reveal in
+ * globals.css). There is no JavaScript in this path at all — no observer, no
+ * state, nothing to hydrate.
  *
- * Deliberately not used above the fold: the hero must paint immediately, since
- * it is the LCP element.
+ * That is a deliberate correction. An IntersectionObserver version left
+ * sections pinned at opacity 0 whenever callbacks were throttled, which on a
+ * shop means the catalogue disappears. Here the hidden state only ever exists
+ * inside `@supports (animation-timeline: view())`: a browser without support,
+ * or with reduce-motion set, renders the section plainly visible and there is
+ * no failure mode that can hide content.
+ *
+ * Not used above the fold — the hero must paint immediately, it is the LCP
+ * element.
  */
-export default function Reveal({ children, className = "", delay = 0 }) {
-  const [ref, inView] = useInView({ once: true, rootMargin: "-40px 0px" });
-
-  return (
-    <div
-      ref={ref}
-      className={`section-reveal ${className}`}
-      data-revealed={inView ? "true" : "false"}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-    >
-      {children}
-    </div>
-  );
+export default function Reveal({ children, className = "" }) {
+  return <div className={`section-reveal ${className}`}>{children}</div>;
 }

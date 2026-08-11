@@ -223,31 +223,25 @@ body {
 }
 
 /* ── Section entrance (P8) ─────────────────────────────────────────────────
-   See components/ui/Reveal.js. The scripting guard below is the important
-   part: without JavaScript nothing sets data-revealed, so the whole catalogue
-   would sit at opacity 0. */
-.section-reveal {
-  opacity: 0;
-  transform: translate3d(0, 18px, 0);
-  transition: opacity 520ms ease-out, transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+   See components/ui/Reveal.js. Scroll-driven, no JavaScript.
+
+   The hidden start state exists ONLY inside the @supports block, so the
+   fallback for a browser without scroll timelines is a fully visible section.
+   That ordering is the whole point: an earlier IntersectionObserver version
+   could leave sections stuck at opacity 0, and on a shop that means the
+   catalogue vanishes. Nothing here can hide content. */
+@keyframes section-rise {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: none; }
 }
 
-.section-reveal[data-revealed="true"] {
-  opacity: 1;
-  transform: none;
-}
-
-@media (scripting: none) {
-  .section-reveal {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .section-reveal {
-    opacity: 1;
-    transform: none;
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .section-reveal {
+      animation: section-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
   }
 }
 
