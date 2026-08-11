@@ -16,6 +16,11 @@ export default function ProductGrid({
   showViewBtn = true,
   onWishlistToggle,
   isWishlisted,
+  // RevealGrid needs to tag and measure this container; everything else spreads
+  // straight through (e.g. data-pages).
+  className = "",
+  containerRef,
+  ...containerProps
 }) {
   if (loading) {
     return (
@@ -28,7 +33,7 @@ export default function ProductGrid({
   }
 
   return (
-    <div className={GRID}>
+    <div ref={containerRef} className={`${GRID} ${className}`} {...containerProps}>
       {items.map((product, idx) => (
         <ProductCard
           key={product._id || product.id || idx}

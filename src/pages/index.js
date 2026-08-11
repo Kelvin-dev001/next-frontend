@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { Api } from "@/lib/api";
 import { filterActiveSections, hasActiveAnnouncement, getSection } from "@/utils/sections";
+import { toCardProducts } from "@/utils/productCard";
 import {
   BUSINESS_NAME as SITE_NAME,
   SITE_URL,
@@ -20,7 +21,10 @@ import ShopByBrandSection from "@/components/ShopByBrandSection";
 import ShopByCategorySection from "@/components/ShopByCategorySection";
 import FeaturedProductsSection from "@/components/FeaturedProductsSection";
 import NewArrivalsSection from "@/components/NewArrivalsSection";
-import PocketFriendlySection from "@/components/PocketFriendlySection";
+import PocketFriendlySection, {
+  POCKET_FRIENDLY_LIMIT,
+  POCKET_FRIENDLY_MAX_PRICE,
+} from "@/components/PocketFriendlySection";
 import DealsSection from "@/components/DealsSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import WhatsAppCTASection from "@/components/WhatsAppCTASection";
@@ -29,7 +33,7 @@ const PAGE_TITLE = "Buy Phones in Mombasa & Kenya | Snaap Connections";
 const PAGE_DESCRIPTION =
   "Shop the latest smartphones, accessories, and deals in Mombasa with fast nationwide delivery across Kenya.";
 
-export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections, lipaProducts = [] }) {
+export default function Home({ featured, newArrivals, brands, categories, recentReviews, sections, lipaProducts = [], pocketFriendly = [] }) {
   // Exactly one homepage <h1>: an active announcement card owns it; otherwise the
   // evergreen heading below does. Never both, never neither (P3).
   const showAnnouncement = hasActiveAnnouncement(sections, "promo_cards");
@@ -163,7 +167,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       <LipaMdogoMdogoSection sections={sections} products={lipaProducts} />
 
       {/* 8. Pocket Friendly Picks */}
-      <PocketFriendlySection />
+      <PocketFriendlySection products={pocketFriendly} />
 
       {/* 9. Reviews */}
       <ReviewsSection reviews={recentReviews} isHomepage />
@@ -180,36 +184,49 @@ export default function Home({ featured, newArrivals, brands, categories, recent
 
 export async function getStaticProps() {
   try {
-    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes, lipaRes] = await Promise.all([
-      Api.get("/products", { params: { featured: true, limit: 16 } }),
-      Api.get("/products", { params: { limit: 48 } }), // P2-P2: was 120 to show 48
-      Api.get("/categories"),
-      Api.get("/brands"),
-      Api.get("/reviews/recent"),
-      Api.get("/homepage-sections"),
-      Api.get("/products", { params: { lipaMdogoMdogoEligible: true, limit: 12 } }),
-    ]);
+    const [featuredRes, allRes, categoriesRes, brandsRes, reviewsRes, sectionsRes, lipaRes, pocketRes] =
+      await Promise.all([
+        // P8: 16 -> 32 so "See more" has a second page on a desktop grid.
+        Api.get("/products", { params: { featured: true, limit: 32 } }),
+        Api.get("/products", { params: { limit: 48 } }), // P2-P2: was 120 to show 48
+        Api.get("/categories"),
+        Api.get("/brands"),
+        Api.get("/reviews/recent"),
+        Api.get("/homepage-sections"),
+        Api.get("/products", { params: { lipaMdogoMdogoEligible: true, limit: 12 } }),
+        // P8: was fetched client-side in PocketFriendlySection, so none of these
+        // products reached the served HTML.
+        Api.get("/products", {
+          params: {
+            maxPrice: POCKET_FRIENDLY_MAX_PRICE,
+            limit: POCKET_FRIENDLY_LIMIT,
+            sort: "price_asc",
+          },
+        }),
+      ]);
 
     const shuffle = (arr = []) => [...arr].sort(() => 0.5 - Math.random());
-    const featured = shuffle(featuredRes.data?.products || []);
-    const newArrivals = shuffle(allRes.data?.products || []).slice(0, 48);
 
+    // Every list is trimmed to the fields ProductCard reads. The homepage ships
+    // its products twice (HTML + __NEXT_DATA__), and full documents carry
+    // descriptions, image arrays and timestamps no card ever renders.
     return {
       props: {
-        featured,
-        newArrivals,
+        featured: toCardProducts(shuffle(featuredRes.data?.products || [])),
+        newArrivals: toCardProducts(shuffle(allRes.data?.products || []).slice(0, 48)),
         categories: categoriesRes.data?.categories || categoriesRes.data || [],
         brands: brandsRes.data?.brands || brandsRes.data || [],
         recentReviews: reviewsRes.data?.reviews || [],
         sections: filterActiveSections(sectionsRes.data || []),
-        lipaProducts: lipaRes.data?.products || [],
+        lipaProducts: toCardProducts(lipaRes.data?.products || []),
+        pocketFriendly: toCardProducts(pocketRes.data?.products || []),
       },
       revalidate: 60,
     };
   } catch (e) {
     console.error("Home data error", e);
     return {
-      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [], lipaProducts: [] },
+      props: { featured: [], newArrivals: [], categories: [], brands: [], recentReviews: [], sections: [], lipaProducts: [], pocketFriendly: [] },
       revalidate: 30,
     };
   }

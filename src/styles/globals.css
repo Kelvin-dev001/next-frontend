@@ -185,6 +185,52 @@ body {
   }
 }
 
+/* ── "See more" grids (P8) ─────────────────────────────────────────────────
+   Five rows at a time. The grid is 2 / 3 / 4 columns, so five rows is 10, 15
+   or 20 cards — hence one block per breakpoint, and they are mutually
+   exclusive so a rule never leaks past its range.
+
+   Every card stays in the HTML and is only hidden visually, so crawlers still
+   see every product link. Past data-pages="3" no rule matches and the whole
+   list is shown, which is the fourth click at the latest. */
+@media (max-width: 767px) {
+  .reveal-grid[data-pages="1"] > :nth-child(n + 11) { display: none; }
+  .reveal-grid[data-pages="2"] > :nth-child(n + 21) { display: none; }
+  .reveal-grid[data-pages="3"] > :nth-child(n + 31) { display: none; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .reveal-grid[data-pages="1"] > :nth-child(n + 16) { display: none; }
+  .reveal-grid[data-pages="2"] > :nth-child(n + 31) { display: none; }
+  .reveal-grid[data-pages="3"] > :nth-child(n + 46) { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .reveal-grid[data-pages="1"] > :nth-child(n + 21) { display: none; }
+  .reveal-grid[data-pages="2"] > :nth-child(n + 41) { display: none; }
+  .reveal-grid[data-pages="3"] > :nth-child(n + 61) { display: none; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Applied by RevealGrid to just-revealed cards, then removed on animationend. */
+.card-reveal {
+  animation: card-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
+
+@keyframes chevron-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, 3px, 0); }
+}
+
+.see-more-chevron {
+  animation: chevron-bob 1.8s ease-in-out infinite;
+}
+
 .neon-text {
   text-shadow: 0 0 5px #00f, 0 0 10px #00f, 0 0 20px #0ff, 0 0 40px #0ff;
 }
