@@ -85,6 +85,12 @@ export const DELIVERY_ZONES = [
 
 export const SERVED_COUNTIES = DELIVERY_ZONES.flatMap((z) => z.counties);
 
+// Counties that get same-day delivery, derived from the matrix above rather
+// than listed again — the homepage and the top info bar both read this, and a
+// second hand-written list is a second thing to get wrong.
+export const SAME_DAY_COUNTIES =
+  DELIVERY_ZONES.find((z) => /same day/i.test(z.time))?.counties || [];
+
 export const deliveryForCounty = (county) =>
   DELIVERY_ZONES.find((z) =>
     z.counties.some((c) => c.toLowerCase() === String(county).toLowerCase())

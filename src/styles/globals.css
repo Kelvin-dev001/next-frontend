@@ -106,6 +106,74 @@ body {
   animation: glyph-nudge 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ── Marquee (P8) ──────────────────────────────────────────────────────────
+   Used by the top info bar, the deals rail, and the two-row category / brand /
+   Safaricom loops. One primitive, four consumers — see ui/Marquee.js. */
+.marquee-root {
+  overflow: hidden;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-left var(--marquee-duration, 40s) linear infinite;
+}
+
+.marquee-track[data-direction="right"] {
+  animation-name: marquee-right;
+}
+
+.marquee-track[data-paused="true"] {
+  animation-play-state: paused;
+}
+
+/* One repetition of the list. Copies sit flush against each other, so shifting
+   the track by exactly one copy's width lands the next copy where the last one
+   started — the loop closes with no seam at any content length. */
+.marquee-copy {
+  display: flex;
+  flex: none;
+}
+
+/* Each item carries its own trailing gap rather than the copy using `gap`, so
+   a copy's width is exactly sum(item + gap) and the seam spacing matches the
+   spacing inside the row. */
+.marquee-item {
+  flex: none;
+  margin-right: var(--marquee-gap, 1rem);
+}
+
+@keyframes marquee-left {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
+}
+
+@keyframes marquee-right {
+  from { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+/* Reduced motion: no loop at all. The repeat copies are dropped and the rail
+   becomes an ordinary horizontal swipe list, so every item is still reachable.
+   Handled entirely in CSS so there is no hydration mismatch and no flash. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-root {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+  .marquee-copy:not(:first-child) {
+    display: none !important;
+  }
+  .marquee-item {
+    scroll-snap-align: start;
+  }
+}
+
 .neon-text {
   text-shadow: 0 0 5px #00f, 0 0 10px #00f, 0 0 20px #0ff, 0 0 40px #0ff;
 }
