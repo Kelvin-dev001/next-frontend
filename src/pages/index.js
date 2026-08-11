@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { Api } from "@/lib/api";
-import { filterActiveSections, hasActiveAnnouncement } from "@/utils/sections";
+import { filterActiveSections, hasActiveAnnouncement, getSection } from "@/utils/sections";
 import {
   BUSINESS_NAME as SITE_NAME,
   SITE_URL,
@@ -12,6 +12,7 @@ import {
   SERVED_COUNTIES,
 } from "@/constants/business";
 
+import HeroSlider from "@/components/HeroSlider";
 import PromoCardsSection from "@/components/PromoCardsSection";
 import SafaricomCorner from "@/components/SafaricomCorner";
 import LipaMdogoMdogoSection from "@/components/LipaMdogoMdogoSection";
@@ -32,6 +33,11 @@ export default function Home({ featured, newArrivals, brands, categories, recent
   // Exactly one homepage <h1>: an active announcement card owns it; otherwise the
   // evergreen heading below does. Never both, never neither (P3).
   const showAnnouncement = hasActiveAnnouncement(sections, "promo_cards");
+
+  // The mid-page slider replaces the WhatsApp CTA block — but only once the
+  // owner has actually uploaded banners. Until then the CTA stays, so shipping
+  // this doesn't leave a hole on the live page while content is being entered.
+  const hasMidSlides = (getSection(sections, "hero_slider_mid")?.items || []).some((s) => s?.image);
 
   const storeJsonLd = {
     "@context": "https://schema.org",
@@ -105,6 +111,10 @@ export default function Home({ featured, newArrivals, brands, categories, recent
         />
       </Head>
 
+      {/* Admin-managed banner carousel, up to 5 slides. First in the page, so
+          its first slide is the LCP element — hence priority. */}
+      <HeroSlider sections={sections} sectionKey="hero_slider_top" priority />
+
       {/* Homepage heading. Exactly one <h1>: the evergreen heading here, UNLESS a
           scheduled announcement card is live — then that card owns the <h1> (P3).
 
@@ -158,8 +168,12 @@ export default function Home({ featured, newArrivals, brands, categories, recent
       {/* 9. Reviews */}
       <ReviewsSection reviews={recentReviews} isHomepage />
 
-      {/* 10. WhatsApp CTA */}
-      <WhatsAppCTASection />
+      {/* 10. Second banner carousel, or the WhatsApp CTA until slides exist */}
+      {hasMidSlides ? (
+        <HeroSlider sections={sections} sectionKey="hero_slider_mid" />
+      ) : (
+        <WhatsAppCTASection />
+      )}
     </>
   );
 }
