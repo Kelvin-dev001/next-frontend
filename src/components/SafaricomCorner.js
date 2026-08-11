@@ -50,13 +50,13 @@ export default function SafaricomCorner({ sections = [] }) {
                 key={`${item.title}-${idx}`}
                 href={link}
                 prefetch={false}
-                className="relative flex min-h-[210px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-black/5 bg-white bg-cover bg-center p-5 text-center shadow-[0_5px_18px_rgba(30,60,114,0.08)]"
+                className="relative flex min-h-[210px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-black/5 bg-white bg-cover bg-center p-5 text-center shadow-[0_5px_18px_rgba(7,89,133,0.08)]"
                 style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
               >
                 {item.image && <span className="absolute inset-0 bg-black/55" aria-hidden="true" />}
 
                 {!item.image && (
-                  <span className="relative z-[1] mx-auto mb-3 grid h-16 w-16 place-items-center rounded-lg bg-[#f5f8ff] text-[#1e3c72]">
+                  <span className="relative z-[1] mx-auto mb-3 grid h-16 w-16 place-items-center rounded-lg bg-brand-50 text-brand-700">
                     {iconMap[item.iconKey] || iconMap.default}
                   </span>
                 )}
@@ -66,7 +66,7 @@ export default function SafaricomCorner({ sections = [] }) {
                   {item.subtitle && (
                     <span className={`block text-xs ${item.image ? "text-white/80" : "text-gray-500"}`}>{item.subtitle}</span>
                   )}
-                  <span className="mt-1 inline-block rounded-full bg-[#1e3c72] px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">
+                  <span className="mt-1 inline-block rounded-full bg-brand-700 px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">
                     {item.ctaLabel || "View Service"}
                   </span>
                 </span>

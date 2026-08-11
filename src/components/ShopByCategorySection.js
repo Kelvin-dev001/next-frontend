@@ -31,14 +31,14 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
               key={cat._id || idx}
               href={`/products?category=${encodeURIComponent(cat.name || "")}`}
               prefetch={false}
-              className="flex min-h-[125px] flex-col items-center gap-2 rounded-[10px] border border-black/5 bg-white p-4 text-center shadow-[0_5px_18px_rgba(30,60,114,0.08)] transition hover:shadow-md"
+              className="flex min-h-[125px] flex-col items-center gap-2 rounded-[10px] border border-black/5 bg-white p-4 text-center shadow-[0_5px_18px_rgba(7,89,133,0.08)] transition hover:shadow-md"
             >
-              <span className="grid h-[52px] w-[52px] place-items-center rounded-md bg-[#f8fafc] p-2">
+              <span className="grid h-[52px] w-[52px] place-items-center rounded-md bg-brand-50 p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={cat.icon || "/category-placeholder.png"} alt={`${cat.name} category`} className="h-10 w-10 object-contain" />
               </span>
-              <span className="text-xs font-bold text-[#152c56]">{cat.name || "Loading"}</span>
-              <span className="rounded-full bg-[#1e3c72] px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">Explore</span>
+              <span className="text-xs font-bold text-brand-900">{cat.name || "Loading"}</span>
+              <span className="rounded-full bg-brand-700 px-2 py-0.5 text-[0.68rem] font-bold tracking-wide text-white">Explore</span>
             </Link>
           ))}
         </div>

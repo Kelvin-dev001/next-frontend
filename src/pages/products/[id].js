@@ -135,9 +135,9 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
   ];
 
   const badges = [
-    { icon: <FaTruck className="text-[#1e3c72] text-lg" />, title: "Delivery", sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos` },
-    ...(product.returnPolicyDays ? [{ icon: <FaUndoAlt className="text-[#1e3c72] text-lg" />, title: `${product.returnPolicyDays}-Day Returns`, sub: "See our returns policy" }] : []),
-    ...(product.warrantyPeriod ? [{ icon: <FaShieldAlt className="text-[#1e3c72] text-lg" />, title: "Warranty", sub: `${product.warrantyPeriod} warranty` }] : []),
+    { icon: <FaTruck className="text-brand-700 text-lg" />, title: "Delivery", sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos` },
+    ...(product.returnPolicyDays ? [{ icon: <FaUndoAlt className="text-brand-700 text-lg" />, title: `${product.returnPolicyDays}-Day Returns`, sub: "See our returns policy" }] : []),
+    ...(product.warrantyPeriod ? [{ icon: <FaShieldAlt className="text-brand-700 text-lg" />, title: "Warranty", sub: `${product.warrantyPeriod} warranty` }] : []),
   ];
 
   const tabs = ["Description", "Specifications", "Reviews"];
@@ -188,7 +188,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`h-14 w-14 flex-shrink-0 overflow-hidden rounded transition md:h-[70px] md:w-[70px] ${
-                    selectedImage === index ? "border-2 border-[#1e3c72] opacity-100" : "border border-gray-200 opacity-70 hover:opacity-100"
+                    selectedImage === index ? "border-2 border-brand-700 opacity-100" : "border border-gray-200 opacity-70 hover:opacity-100"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -203,7 +203,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
             <h1 className="mb-1 font-bold text-[1.4rem] md:text-[2rem]">{product.name}</h1>
 
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="font-bold text-[#1e3c72] text-[1.3rem] md:text-[1.8rem]">{formatPrice(product.discountPrice || product.price)}</span>
+              <span className="font-bold text-brand-700 text-[1.3rem] md:text-[1.8rem]">{formatPrice(product.discountPrice || product.price)}</span>
               {product.discountPrice && (
                 <span className="text-gray-500 line-through text-[0.85rem] md:text-base">{formatPrice(product.price)}</span>
               )}
@@ -239,7 +239,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
             <button
               onClick={handleWhatsAppBuy}
               disabled={!product.inStock}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#2e7d32] py-3 font-semibold text-white transition hover:bg-[#1b5e20] disabled:opacity-50 text-[0.95rem] md:py-3.5 md:text-[1.1rem]"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50 text-[0.95rem] md:py-3.5 md:text-[1.1rem]"
             >
               <FaWhatsapp /> Buy on WhatsApp
             </button>
@@ -259,7 +259,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
 
             {product.lipaMdogoMdogoEligible && (
               <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
-                <p className="flex items-center gap-2 font-semibold text-[#2e7d32] text-[0.9rem]">
+                <p className="flex items-center gap-2 font-semibold text-brand-600 text-[0.9rem]">
                   <FaMoneyBillWave aria-hidden="true" /> Lipa Mdogo Mdogo available
                 </p>
                 {product.lipaMdogoMdogoSummary && (
@@ -270,7 +270,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                 </p>
                 <button
                   onClick={handleLipaWhatsApp}
-                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[0.82rem] font-semibold text-[#2e7d32] ring-1 ring-[#2e7d32] transition hover:bg-[#2e7d32] hover:text-white"
+                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[0.82rem] font-semibold text-brand-600 ring-1 ring-brand-600 transition hover:bg-brand-600 hover:text-white"
                 >
                   <FaWhatsapp /> Ask about Lipa Mdogo Mdogo
                 </button>
@@ -302,7 +302,7 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                 key={label}
                 onClick={() => setTabValue(i)}
                 className={`-mb-px flex-1 border-b-[3px] py-2 font-medium text-[0.78rem] md:text-[0.875rem] ${
-                  tabValue === i ? "border-[#1e3c72] text-[#1e3c72]" : "border-transparent text-gray-500 hover:text-gray-700"
+                  tabValue === i ? "border-brand-700 text-brand-700" : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {label}

@@ -293,7 +293,7 @@ export default function ProductListingPage({
                       href={buildPageHref(item)}
                       onClick={(e) => { e.preventDefault(); handlePageChange(e, item); }}
                       aria-current={item === filters.page ? "page" : undefined}
-                      className={`min-w-9 rounded px-3 py-1 text-center text-sm ${item === filters.page ? "bg-[#1e3c72] text-white" : "border border-gray-300 hover:bg-gray-100"}`}
+                      className={`min-w-9 rounded px-3 py-1 text-center text-sm ${item === filters.page ? "bg-brand-700 text-white" : "border border-gray-300 hover:bg-gray-100"}`}
                     >
                       {item}
                     </Link>
@@ -314,7 +314,7 @@ export default function ProductListingPage({
 function SidebarFilters({ filters, setFilters, categories, brands, handleSearchSelect, clearFilters }) {
   const setPrice = (key, val) =>
     setFilters((f) => ({ ...f, [key]: Number(val) || (key === "maxPrice" ? 500000 : 0), page: 1 }));
-  const inputCls = "w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-[#1e3c72]";
+  const inputCls = "w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-brand-700";
 
   return (
     <>

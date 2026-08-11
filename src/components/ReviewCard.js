@@ -16,7 +16,7 @@ function Stars({ value = 0 }) {
 export default function ReviewCard({ review = {} }) {
   const { name, rating, comment, createdAt, image } = review;
   return (
-    <div className="flex min-h-[180px] flex-col rounded-2xl bg-white p-4 shadow-[0_3px_14px_rgba(30,60,114,0.1)]">
+    <div className="flex min-h-[180px] flex-col rounded-2xl bg-white p-4 shadow-[0_3px_14px_rgba(7,89,133,0.1)]">
       <div className="mb-1 flex items-center gap-2">
         <span className="font-bold text-gray-900">{name || "Customer"}</span>
         <Stars value={rating || 0} />

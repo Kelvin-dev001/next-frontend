@@ -15,7 +15,7 @@ export default function WhatsAppCTASection() {
   return (
     <section
       className="relative my-5 overflow-hidden rounded-[32px] px-2 py-4 text-center md:my-8 md:py-6"
-      style={{ background: "linear-gradient(100deg, #6dd5ed 0%, #1e3c72 120%)", boxShadow: "0 4px 36px 0 #1e3c7211, 0 1.5px 16px #6dd5ed22" }}
+      style={{ background: "linear-gradient(100deg, #6fd0f2 0%, #075985 120%)", boxShadow: "0 4px 36px 0 #07598511, 0 1.5px 16px #6fd0f222" }}
     >
       <style>{`
         @keyframes whatsapp-pulse { 0% { box-shadow: 0 0 0 0 #25d36677;} 50% { box-shadow: 0 0 24px 8px #25d36644;} 100% { box-shadow: 0 0 0 0 #25d36677;} }
@@ -34,10 +34,10 @@ export default function WhatsAppCTASection() {
         <a href={whatsappLink} target="_blank" rel="noopener" className="whatsapp-circular" aria-label="Chat with us on WhatsApp" title="Chat with us on WhatsApp!">
           <FaWhatsapp className="text-[38px]" />
         </a>
-        <h2 className="mb-1 font-extrabold tracking-wide text-white text-[1.5rem] md:text-[2.1rem]" style={{ textShadow: "0 2px 18px #1e3c72cc" }}>
+        <h2 className="mb-1 font-extrabold tracking-wide text-white text-[1.5rem] md:text-[2.1rem]" style={{ textShadow: "0 2px 18px #075985cc" }}>
           Need Help? Chat with Us on WhatsApp!
         </h2>
-        <p className="mx-auto mb-2 max-w-[480px] font-medium text-[#e6f2ff] opacity-90">
+        <p className="mx-auto mb-2 max-w-[480px] font-medium text-brand-50 opacity-90">
           Our friendly team is ready to answer your questions, recommend the perfect phone, or assist with your order—instantly.
         </p>
         <a
@@ -46,7 +46,7 @@ export default function WhatsAppCTASection() {
           rel="noopener"
           aria-label="Chat with us on WhatsApp"
           className="inline-flex items-center gap-2 rounded-full px-8 py-3 font-bold text-white shadow-[0_2px_12px_#25d36622] transition hover:shadow-[0_3px_24px_#25d36655] active:scale-95 text-[1.08rem] md:px-12 md:text-[1.19rem]"
-          style={{ background: "linear-gradient(96deg,#1e3c72 50%,#25d366 100%)" }}
+          style={{ background: "linear-gradient(96deg,#075985 50%,#25d366 100%)" }}
         >
           <FaWhatsapp className="text-[1.3em]" /> Start WhatsApp Chat
         </a>

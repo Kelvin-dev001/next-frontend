@@ -112,7 +112,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
           <span className="text-gray-900">{loc.county}</span>
         </nav>
 
-        <h1 className="mb-3 text-[1.9rem] font-extrabold leading-tight text-[#1e3c72] md:text-[2.4rem]">
+        <h1 className="mb-3 text-[1.9rem] font-extrabold leading-tight text-brand-700 md:text-[2.4rem]">
           {loc.h1}
         </h1>
         {loc.introParas.map((p, i) => (
@@ -123,7 +123,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
         <div className="my-6 grid gap-3 sm:grid-cols-2">
           {zone && (
             <div className="rounded-xl border border-gray-200 p-4">
-              <p className="flex items-center gap-2 font-bold text-[#1e3c72]">
+              <p className="flex items-center gap-2 font-bold text-brand-700">
                 <FaTruck aria-hidden="true" /> Delivery to {loc.county}
               </p>
               <p className="mt-1 text-gray-700">
@@ -134,19 +134,19 @@ export default function LocationPage({ loc, zone, products = [] }) {
           )}
           {loc.isShop ? (
             <div className="rounded-xl border border-gray-200 p-4">
-              <p className="flex items-center gap-2 font-bold text-[#1e3c72]">
+              <p className="flex items-center gap-2 font-bold text-brand-700">
                 <FaStore aria-hidden="true" /> Visit the shop
               </p>
               <p className="mt-1 flex items-start gap-2 text-gray-700">
-                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-[#6dd5ed]" aria-hidden="true" /> {ADDRESS.full}
+                <FaMapMarkerAlt className="mt-1 flex-shrink-0 text-brand-300" aria-hidden="true" /> {ADDRESS.full}
               </p>
               <p className="mt-1 flex items-center gap-2 text-gray-700">
-                <FaClock className="flex-shrink-0 text-[#6dd5ed]" aria-hidden="true" /> {HOURS_DISPLAY}
+                <FaClock className="flex-shrink-0 text-brand-300" aria-hidden="true" /> {HOURS_DISPLAY}
               </p>
             </div>
           ) : (
             <div className="rounded-xl border border-gray-200 p-4">
-              <p className="flex items-center gap-2 font-bold text-[#1e3c72]">
+              <p className="flex items-center gap-2 font-bold text-brand-700">
                 <FaWhatsapp aria-hidden="true" /> How to order
               </p>
               <p className="mt-1 text-gray-700">
@@ -163,7 +163,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
           href={waLink(waMessage)}
           target="_blank"
           rel="noopener"
-          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-[#2e7d32] px-5 py-2.5 font-bold text-white no-underline transition hover:bg-[#256628]"
+          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
         >
           <FaWhatsapp className="text-lg" /> {loc.isShop ? "Message the Mombasa shop" : `Order on WhatsApp for ${loc.county}`}
         </a>
@@ -171,12 +171,12 @@ export default function LocationPage({ loc, zone, products = [] }) {
         {/* Areas covered */}
         {loc.towns?.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-2 text-[1.15rem] font-bold text-[#1e3c72]">
+            <h2 className="mb-2 text-[1.15rem] font-bold text-brand-700">
               {loc.isShop ? `Areas in ${loc.county}` : `Areas we deliver to in ${loc.county}`}
             </h2>
             <ul className="flex flex-wrap gap-2">
               {loc.towns.map((t) => (
-                <li key={t} className="rounded-full bg-[#f5f8ff] px-3 py-1 text-[0.85rem] text-[#1e3c72]">{t}</li>
+                <li key={t} className="rounded-full bg-brand-50 px-3 py-1 text-[0.85rem] text-brand-700">{t}</li>
               ))}
             </ul>
           </div>
@@ -185,7 +185,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
         {/* Relevant stock */}
         {products.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-3 text-[1.15rem] font-bold text-[#1e3c72]">Popular phones we deliver to {loc.county}</h2>
+            <h2 className="mb-3 text-[1.15rem] font-bold text-brand-700">Popular phones we deliver to {loc.county}</h2>
             <ProductGrid items={products} eagerCount={4} size="compact" showWhatsApp showViewBtn />
           </div>
         )}
@@ -193,7 +193,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
         {/* Local FAQ */}
         {faqs.length > 0 && (
           <div className="mb-8">
-            <h2 className="mb-3 text-[1.15rem] font-bold text-[#1e3c72]">
+            <h2 className="mb-3 text-[1.15rem] font-bold text-brand-700">
               {loc.county} delivery — questions
             </h2>
             {faqs.map((item, idx) => (

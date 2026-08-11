@@ -37,8 +37,8 @@ export default function AutoCompleteSearch({ onSelect, placeholder = "Search pro
 
   return (
     <div className="relative w-full">
-      <div className="flex items-center gap-2 rounded-full bg-[#f4f6fa] px-4 py-2 shadow-[0_1px_8px_#6dd5ed22]">
-        <FaSearch className="flex-shrink-0 text-[#1e3c72]" />
+      <div className="flex items-center gap-2 rounded-full bg-brand-50 px-4 py-2 shadow-[0_1px_8px_#6fd0f222]">
+        <FaSearch className="flex-shrink-0 text-brand-700" />
         <input
           type="text"
           aria-label="search"
