@@ -1,15 +1,36 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getSection } from "@/utils/sections";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
+import { cloudinarySrcSet } from "@/utils/cloudinarySrcSet";
 import { waLink } from "@/constants/business";
 import useReducedMotion from "@/hooks/useReducedMotion";
 import useInView from "@/hooks/useInView";
 import MotionToggle from "@/components/ui/MotionToggle";
 
 const AUTOPLAY_MS = 6000;
+
+/* ── Art direction ─────────────────────────────────────────────────────────
+   Phones get their own artwork, not a centre-crop of the wide banner. The
+   switch is at 640px (Tailwind `sm`), which is deliberately the portrait-phone
+   boundary: a phone turned landscape is 640px+ and genuinely wants the wide
+   banner, not a 4:3 one.
+
+   The frame is `max-w-screen-2xl px-4`, so the rendered box is
+   min(viewport, 1536) - 32 — 1504px at its widest. The `sizes` strings below
+   say exactly that, so Cloudinary is never asked for a rendition larger than
+   the box it lands in.
+
+   Master asset sizes these widths assume (see HeroSlidesManager's upload hint):
+     wide    2560 x 840  (64:21)
+     mobile  1280 x 960  (4:3)
+   Nothing here upscales past those. */
+const WIDE_WIDTHS = [768, 1024, 1366, 1600, 1920, 2560];
+const MOBILE_WIDTHS = [480, 640, 828, 1080, 1280];
+const WIDE_SIZES = "(min-width: 1536px) 1504px, calc(100vw - 32px)";
+const MOBILE_SIZES = "calc(100vw - 32px)";
+const WIDE_MEDIA = "(min-width: 640px)";
 
 /**
  * Admin-managed banner carousel. Two placements on the homepage, both fed from
@@ -91,6 +112,14 @@ export default function HeroSlider({ sections = [], sectionKey, priority = false
 
   if (!section || slides.length === 0) return null;
 
+  // A carousel with mixed frames would be ragged — every slide shares one box,
+  // so the taller ones would leave gaps under the shorter ones. The 4:3 phone
+  // frame therefore only engages once EVERY slide has its own mobile artwork;
+  // until then we keep the old 16:9 centre-crop of the wide banner, which is
+  // what slides created before this feature existed still rely on.
+  const hasMobileArt = slides.every((slide) => slide.imageMobile);
+  const frameClass = hasMobileArt ? "aspect-[4/3]" : "aspect-[16/9]";
+
   return (
     <section
       ref={rootRef}
@@ -115,6 +144,13 @@ export default function HeroSlider({ sections = [], sectionKey, priority = false
               ? { href, target: "_blank", rel: "noopener" }
               : { href, prefetch: false };
 
+            // Slide 1 of the top placement is the homepage LCP element, so it
+            // loads eagerly and at high priority. Every other slide stays lazy
+            // — five full-bleed banners on a metered connection is not a cost
+            // we can pass to the customer for content they may never swipe to.
+            const eager = priority && i === 0;
+            const mobileSrc = slide.imageMobile || slide.image;
+
             return (
               <div
                 key={slide._id || `${slide.title}-${i}`}
@@ -125,19 +161,32 @@ export default function HeroSlider({ sections = [], sectionKey, priority = false
               >
                 <Wrapper
                   {...wrapperProps}
-                  className="relative block aspect-[16/9] w-full overflow-hidden rounded-2xl md:aspect-[64/21]"
+                  className={`relative block ${frameClass} w-full overflow-hidden rounded-2xl sm:aspect-[64/21]`}
                 >
-                  <Image
-                    src={getOptimizedCloudinaryUrl(slide.image, { width: 1920 }) || slide.image}
-                    alt={slide.alt || slide.title || "Promotional banner"}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    // Only the first slide of the top placement is eager: it is
-                    // the homepage LCP element. The rest must stay lazy or the
-                    // hero costs five full-width images on a metered connection.
-                    priority={priority && i === 0}
-                  />
+                  {/* A raw <picture> rather than next/image: this is art
+                      direction (two different pictures), not one picture at two
+                      sizes, and next/image has no API for that. See
+                      utils/cloudinarySrcSet.js for the full reasoning. */}
+                  <picture>
+                    <source
+                      media={WIDE_MEDIA}
+                      srcSet={cloudinarySrcSet(slide.image, WIDE_WIDTHS) || undefined}
+                      sizes={WIDE_SIZES}
+                    />
+                    <source
+                      srcSet={cloudinarySrcSet(mobileSrc, MOBILE_WIDTHS) || undefined}
+                      sizes={MOBILE_SIZES}
+                    />
+                    <img
+                      src={getOptimizedCloudinaryUrl(mobileSrc, { width: 1080 })}
+                      alt={slide.alt || slide.title || "Promotional banner"}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading={eager ? "eager" : "lazy"}
+                      fetchPriority={eager ? "high" : "auto"}
+                      decoding="async"
+                      draggable={false}
+                    />
+                  </picture>
 
                   {(slide.title || slide.subtitle || slide.ctaLabel) && (
                     <>
