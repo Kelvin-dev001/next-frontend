@@ -331,7 +331,7 @@ export default function HeroSlidesManager() {
           <strong>two artworks</strong>: a wide one for desktop
           (2560&nbsp;&times;&nbsp;840&nbsp;px) and a separate portrait one for phones
           (1280&nbsp;&times;&nbsp;960&nbsp;px). Neither is cropped — the phone is shown the
-          phone artwork, so design each to its own shape.
+          phone artwork, so design each to its own shape. JPG or PNG, up to 5&nbsp;MB each.
         </Typography>
         <Alert severity="warning" sx={{ mb: 2 }}>
           If you fill in the headline, supporting line or button text below, they are drawn{" "}
