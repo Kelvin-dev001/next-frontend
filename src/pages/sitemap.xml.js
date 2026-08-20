@@ -28,6 +28,8 @@ const STATIC_ROUTES = [
   { path: "/locations/kwale", changefreq: "monthly", priority: "0.6" },
   { path: "/locations/nairobi", changefreq: "monthly", priority: "0.6" },
   { path: "/locations/machakos", changefreq: "monthly", priority: "0.6" },
+  // Safaricom Corner hub (P9) — the front door, above its twelve services
+  { path: "/safaricom", changefreq: "weekly", priority: "0.7" },
   // Safaricom Corner service pages (P7)
   { path: "/safaricom/mpesa", changefreq: "monthly", priority: "0.6" },
   { path: "/safaricom/sim", changefreq: "monthly", priority: "0.6" },
@@ -38,7 +40,8 @@ const STATIC_ROUTES = [
   { path: "/safaricom/pochi-la-biashara", changefreq: "monthly", priority: "0.6" },
   { path: "/safaricom/business-app", changefreq: "monthly", priority: "0.6" },
   { path: "/safaricom/business-connectivity", changefreq: "monthly", priority: "0.6" },
-  { path: "/safaricom/devices", changefreq: "monthly", priority: "0.6" },
+  // The Devices page carries stock, so it changes more often than the copy pages.
+  { path: "/safaricom/devices", changefreq: "weekly", priority: "0.7" },
   { path: "/safaricom/bulk-payments", changefreq: "monthly", priority: "0.6" },
   { path: "/safaricom/support", changefreq: "monthly", priority: "0.6" },
 ];

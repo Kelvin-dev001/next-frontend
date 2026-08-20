@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge } from "react-icons/fa";
+import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi } from "react-icons/fa";
 import { SiBrandfolder } from "react-icons/si";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import { Api } from "@/lib/api";
 
 const menuSections = [
   { label: "All Products", icon: <FaStore />, link: "/products" },
+  { label: "Safaricom Corner", icon: <FaWifi />, link: "/safaricom" },
   { label: "Deals", icon: <FaTags />, link: "/#deals" },
   { label: "New Arrivals", icon: <FaStar />, link: "/products?sort=newest" },
   { label: "Best Sellers", icon: <FaStar />, link: "/products?sort=popular" },
@@ -17,6 +18,7 @@ const menuSections = [
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/products" },
+  { label: "Safaricom", href: "/safaricom" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
