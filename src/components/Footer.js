@@ -10,6 +10,7 @@ const shopLinks = [
   { label: "Earbuds", href: "/products?category=Earbuds" },
   { label: "Tablets", href: "/products?category=Tablets" },
   { label: "Smart Watches", href: "/products?category=Smart Watches" },
+  { label: "Safaricom Corner", href: "/safaricom" },
 ];
 
 const footerLinks = [

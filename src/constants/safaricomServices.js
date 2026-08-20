@@ -782,3 +782,37 @@ export const SAFARICOM_SERVICES = {
 export const SERVICE_SLUGS = Object.keys(SAFARICOM_SERVICES);
 
 export const getService = (slug) => SAFARICOM_SERVICES[slug] || null;
+
+/**
+ * The shelves of the Safaricom device shop (P9), in display order.
+ *
+ * `type` matches Product.safaricomType on the API. The blurbs describe what WE
+ * do — they deliberately say nothing about Safaricom's offers, terms or
+ * financing, because those vary by device and belong in that product's own
+ * description (see ../../CLAUDE.md).
+ *
+ * A shelf with no stock is not rendered at all: an empty shelf under a heading
+ * reads as "sold out" when the truth is "we haven't listed any yet".
+ */
+export const SAFARICOM_DEVICE_SHELVES = [
+  {
+    type: "smartphone",
+    title: "Smartphones",
+    blurb: "Tap a phone for its price, full specification and what it comes with. Order on WhatsApp.",
+  },
+  {
+    type: "router",
+    title: "4G & 5G Routers",
+    blurb: "Wi-Fi for a home, shop or office from a mobile network, with no fixed line to install.",
+  },
+  {
+    type: "mifi",
+    title: "MiFi & Portable Internet",
+    blurb: "Pocket Wi-Fi you can carry — for travelling, working away from the office or a second connection.",
+  },
+  {
+    type: "accessory",
+    title: "Accessories",
+    blurb: "Cables, chargers and add-ons for the devices above.",
+  },
+];

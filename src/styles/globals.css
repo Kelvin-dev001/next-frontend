@@ -35,6 +35,35 @@
      and use the brand blue instead. */
   --color-wa: #25d366;
   --color-wa-dark: #128c7e;
+
+  /* ── Safaricom green (P9) ────────────────────────────────────────────────
+     Used ONLY on the Safaricom Corner: /safaricom, /safaricom/*, and the
+     Safaricom section of the homepage. Everywhere else stays azure — the green
+     is what tells a visitor which side of the shop they are on.
+
+     ⚠ UNVERIFIED: #00b140 is the green Safaricom publishes on its own site,
+     not a value taken from a dealer brand kit or sampled from a supplied
+     asset. Owner to confirm; when he does, correct saf-500 here and rebuild
+     the two darker shades from it. Every green on the site resolves through
+     these four tokens, so it is a one-place change.
+
+     CONTRAST — the same trap as the azure, but worse. #00b140 is a light
+     green: white on it is 2.85:1, which fails AA at EVERY size, large text
+     included. So saf-500 never carries white text.
+       white on saf-500 (#00b140) = 2.85:1  -> fails at any size
+       white on saf-600 (#00812f) = 5.02:1  -> passes AA
+       white on saf-700 (#00601f) = 7.80:1  -> passes AAA
+       near-black (#111) on saf-500          = 6.62:1 -> passes AA
+     saf-500 is the identity colour (accent bars, icons, borders, large fills
+     with dark text); anything with small white text on it uses saf-600 or
+     darker. Ratios computed in scripts/ci/check-invariants.js — see the
+     contrast block there, which fails the build if these drift. */
+  --color-saf-50: #e9f8ee;
+  --color-saf-100: #cdeed9;
+  --color-saf-300: #58cf87;
+  --color-saf-500: #00b140;
+  --color-saf-600: #00812f;
+  --color-saf-700: #00601f;
 }
 
 *,

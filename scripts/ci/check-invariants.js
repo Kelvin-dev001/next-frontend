@@ -10,6 +10,7 @@
  *      routes sitemap/robots/llms are exempt.)
  *   3. PLACEHOLDER COPY is never on an indexable page (must carry noindex).
  *   4. sitemap.xml and robots.txt exist.
+ *   5. Palette contrast: any token that carries white text clears WCAG AA.
  */
 const fs = require("fs");
 const path = require("path");
@@ -96,6 +97,40 @@ for (const f of htmlPageFiles()) {
   const txt = fs.readFileSync(f, "utf8");
   if (txt.includes("PLACEHOLDER COPY") && !/content=["']noindex/.test(txt)) {
     fail(`PLACEHOLDER: ${rel(f)} contains placeholder copy but is not noindex`);
+  }
+}
+
+// 5) Palette contrast (P9). The Safaricom green is lighter than it looks:
+// white on #00b140 is 2.85:1, which fails AA at every size, large text
+// included. The palette therefore carries darker shades for anything with
+// white text on it, and this gate stops a future edit from quietly promoting
+// the identity green into a button. Same rule the azure needed in P8.
+const srgb = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+function luminance(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * srgb(r) + 0.7152 * srgb(g) + 0.0722 * srgb(b);
+}
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+const cssPath = path.join(SRC, "styles", "globals.css");
+if (fs.existsSync(cssPath)) {
+  const css = fs.readFileSync(cssPath, "utf8");
+  const token = (name) => (css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`)) || [])[1];
+  // Every token that is allowed to carry small white text must clear AA.
+  const WHITE_TEXT_TOKENS = ["brand-600", "brand-700", "saf-600", "saf-700"];
+  for (const name of WHITE_TEXT_TOKENS) {
+    const hex = token(name);
+    if (!hex) {
+      fail(`CONTRAST: --color-${name} is missing from src/styles/globals.css`);
+      continue;
+    }
+    const ratio = contrast("#ffffff", hex);
+    if (ratio < 4.5) {
+      fail(`CONTRAST: white on --color-${name} (${hex}) is ${ratio.toFixed(2)}:1, below the 4.5:1 AA floor`);
+    }
   }
 }
 
