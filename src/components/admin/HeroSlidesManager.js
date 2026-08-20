@@ -48,6 +48,30 @@ const LINK_KINDS = [
   { value: "whatsapp", label: "A WhatsApp enquiry" },
 ];
 
+// The two artworks each slide carries. Phones are served `imageMobile` and
+// desktops `image` — they are different pictures, not two sizes of one, so the
+// shop designs both. See next-frontend/src/components/HeroSlider.js.
+const ARTWORKS = [
+  {
+    key: "image",
+    fileKey: "_file",
+    previewKey: "_preview",
+    label: "Wide banner (desktop & tablet)",
+    spec: "2560 × 840 px",
+    ratio: "64 / 21",
+    field: "itemImage",
+  },
+  {
+    key: "imageMobile",
+    fileKey: "_fileMobile",
+    previewKey: "_previewMobile",
+    label: "Phone banner (portrait)",
+    spec: "1280 × 960 px",
+    ratio: "4 / 3",
+    field: "itemImageMobile",
+  },
+];
+
 const emptySlide = () => ({
   _key: `new-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
   title: "",
@@ -55,6 +79,7 @@ const emptySlide = () => ({
   ctaLabel: "Shop now",
   alt: "",
   image: "",
+  imageMobile: "",
   linkKind: "category",
   productId: null,
   productLabel: "",
@@ -63,6 +88,8 @@ const emptySlide = () => ({
   customLink: "",
   _file: null,
   _preview: "",
+  _fileMobile: null,
+  _previewMobile: "",
 });
 
 // Rebuild the editor's link fields from what the API stored. ctaType alone
@@ -84,6 +111,7 @@ function slideFromApi(item, index) {
     ctaLabel: item.ctaLabel || "Shop now",
     alt: item.alt || "",
     image: item.image || "",
+    imageMobile: item.imageMobile || "",
     linkKind,
     productId: item.productId ? String(item.productId) : null,
     productLabel: item.productId ? `Product ${String(item.productId).slice(-6)}` : "",
@@ -92,6 +120,8 @@ function slideFromApi(item, index) {
     customLink: linkKind === "custom" ? link : "",
     _file: null,
     _preview: "",
+    _fileMobile: null,
+    _previewMobile: "",
   };
 }
 
@@ -104,6 +134,7 @@ function slideToApi(slide) {
     ctaLabel: slide.ctaLabel,
     alt: slide.alt || slide.title,
     image: slide.image || "",
+    imageMobile: slide.imageMobile || "",
     type: "offer",
     iconKey: "default",
     category: "",
@@ -209,16 +240,27 @@ export default function HeroSlidesManager() {
       return next;
     });
 
-  const handleImage = (index, file) => {
+  const handleImage = (index, artwork, file) => {
     if (!file) return;
-    patchSlide(index, { _file: file, _preview: URL.createObjectURL(file) });
+    patchSlide(index, {
+      [artwork.fileKey]: file,
+      [artwork.previewKey]: URL.createObjectURL(file),
+    });
   };
 
   const validateLocally = () => {
     for (let i = 0; i < slides.length; i++) {
       const slide = slides[i];
       const label = slide.title ? `"${slide.title}"` : `Slide ${i + 1}`;
-      if (!slide._file && !slide.image) return `${label} needs an image.`;
+      // Both artworks are required. Mobile is optional in the model so older
+      // sections keep validating, but a hero slide without phone artwork means
+      // the whole carousel silently falls back to a 16:9 crop of the wide
+      // banner — which is the exact problem this field exists to remove.
+      for (const artwork of ARTWORKS) {
+        if (!slide[artwork.fileKey] && !slide[artwork.key]) {
+          return `${label} needs a ${artwork.label.toLowerCase()} (${artwork.spec}).`;
+        }
+      }
       if (slide.linkKind === "product" && !slide.productId) return `${label}: pick a product to link to.`;
       if (slide.linkKind === "category" && !slide.categoryName) return `${label}: pick a category.`;
       if (slide.linkKind === "brand" && !slide.brandName) return `${label}: pick a brand.`;
@@ -248,7 +290,10 @@ export default function HeroSlidesManager() {
       payload.append("endsAt", "");
       payload.append("items", JSON.stringify(slides.map(slideToApi)));
       slides.forEach((slide, index) => {
-        if (slide._file) payload.append(`itemImage_${index}`, slide._file);
+        ARTWORKS.forEach((artwork) => {
+          const file = slide[artwork.fileKey];
+          if (file) payload.append(`${artwork.field}_${index}`, file);
+        });
       });
 
       const config = { headers: { "Content-Type": "multipart/form-data" } };
@@ -282,10 +327,19 @@ export default function HeroSlidesManager() {
           Hero Slides
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Up to {MAX_SLIDES} sliding banners per placement. Landscape artwork works best —
-          around 2000&nbsp;&times;&nbsp;660&nbsp;px. Keep the important part of the picture on
-          the right: the caption sits over the left side, and phones crop the banner to 16:9.
+          Up to {MAX_SLIDES} sliding banners per placement. Each slide takes{" "}
+          <strong>two artworks</strong>: a wide one for desktop
+          (2560&nbsp;&times;&nbsp;840&nbsp;px) and a separate portrait one for phones
+          (1280&nbsp;&times;&nbsp;960&nbsp;px). Neither is cropped — the phone is shown the
+          phone artwork, so design each to its own shape. JPG or PNG, up to 5&nbsp;MB each.
         </Typography>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          If you fill in the headline, supporting line or button text below, they are drawn{" "}
+          <strong>over the left of the picture</strong> with a dark fade behind them — so keep
+          that side clear and put your subject on the right. Leave all three blank and the
+          artwork shows on its own with nothing over it. Either way, never draw words into the
+          picture itself: they can&apos;t be read by Google or by a screen reader.
+        </Alert>
 
         <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 1 }}>
           {PLACEMENTS.map((p) => (
@@ -354,30 +408,45 @@ export default function HeroSlidesManager() {
                 </Stack>
 
                 <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                  <Stack spacing={1} sx={{ width: { xs: "100%", md: 260 }, flexShrink: 0 }}>
-                    <Box
-                      sx={{
-                        width: "100%",
-                        aspectRatio: "16 / 9",
-                        borderRadius: 1,
-                        border: "1px dashed",
-                        borderColor: "divider",
-                        backgroundColor: "grey.100",
-                        backgroundImage:
-                          slide._preview || slide.image ? `url(${slide._preview || slide.image})` : "none",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                    <Button variant="outlined" component="label" size="small">
-                      {slide.image || slide._preview ? "Replace image" : "Upload image"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={(e) => handleImage(index, e.target.files?.[0])}
-                      />
-                    </Button>
+                  <Stack spacing={2} sx={{ width: { xs: "100%", md: 260 }, flexShrink: 0 }}>
+                    {ARTWORKS.map((artwork) => {
+                      const preview = slide[artwork.previewKey] || slide[artwork.key];
+                      return (
+                        <Stack key={artwork.key} spacing={0.5}>
+                          <Typography variant="caption" fontWeight={700}>
+                            {artwork.label}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {artwork.spec}
+                          </Typography>
+                          {/* The preview box matches the real frame on the
+                              storefront, so a badly cropped banner is obvious
+                              here rather than after publishing. */}
+                          <Box
+                            sx={{
+                              width: "100%",
+                              aspectRatio: artwork.ratio,
+                              borderRadius: 1,
+                              border: "1px dashed",
+                              borderColor: preview ? "divider" : "warning.main",
+                              backgroundColor: "grey.100",
+                              backgroundImage: preview ? `url(${preview})` : "none",
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                            }}
+                          />
+                          <Button variant="outlined" component="label" size="small">
+                            {preview ? "Replace" : "Upload"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              hidden
+                              onChange={(e) => handleImage(index, artwork, e.target.files?.[0])}
+                            />
+                          </Button>
+                        </Stack>
+                      );
+                    })}
                   </Stack>
 
                   <Stack spacing={2} sx={{ flex: 1 }}>
