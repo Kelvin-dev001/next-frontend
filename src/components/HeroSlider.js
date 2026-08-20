@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { getSection } from "@/utils/sections";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
-import { waLink } from "@/constants/business";
+import ctaTarget from "@/utils/ctaTarget";
 import useReducedMotion from "@/hooks/useReducedMotion";
 import useInView from "@/hooks/useInView";
 import MotionToggle from "@/components/ui/MotionToggle";
@@ -25,19 +25,6 @@ const AUTOPLAY_MS = 6000;
  * images whose text repeats the destination page, and the homepage's single
  * <h1> invariant (see pages/index.js) must not be disturbed.
  */
-function slideTarget(slide) {
-  if (slide.ctaType === "whatsapp") {
-    return {
-      href: waLink(`Hello Snaap Connections, I'm interested in: ${slide.title || "this offer"}`),
-      external: true,
-    };
-  }
-  if (slide.ctaType === "product" && slide.productId) {
-    return { href: `/products/${slide.productId}`, external: false };
-  }
-  return { href: slide.ctaLink || "/products", external: false };
-}
-
 export default function HeroSlider({ sections = [], sectionKey, priority = false }) {
   const section = getSection(sections, sectionKey);
   const slides = (section?.items || []).filter((item) => item && item.image);
@@ -109,7 +96,7 @@ export default function HeroSlider({ sections = [], sectionKey, priority = false
           className="hide-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl"
         >
           {slides.map((slide, i) => {
-            const { href, external } = slideTarget(slide);
+            const { href, external } = ctaTarget(slide);
             const Wrapper = external ? "a" : Link;
             const wrapperProps = external
               ? { href, target: "_blank", rel: "noopener" }
