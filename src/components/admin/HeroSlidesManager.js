@@ -11,34 +11,65 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import SaveIcon from "@mui/icons-material/Save";
 import { Api } from "@/lib/api";
+import { nairobiInputToISO, isoToNairobiInput } from "@/utils/nairobiTime";
 
 /**
- * Hero slide manager for the two homepage banner carousels.
+ * Manager for the shop's three placements: the two homepage banner carousels
+ * and, since P9, the entry pop-up advert.
  *
- * These are stored as ordinary HomepageSections under fixed sectionKeys, so
+ * All three are stored as ordinary HomepageSections under fixed sectionKeys, so
  * they inherit the existing multipart upload path, the scheduling fields and
  * the server-side validator that already refuses a card pointing at a deleted
- * product or an empty filter. Nothing new was added to the API for this.
+ * product or an empty filter. Nothing new was added to the API for any of them
+ * — the pop-up needed one extra cap on the section key and nothing else.
+ *
+ * That shared validator is the point: an advert that interrupts a visitor to
+ * push a product we deleted is the worst first impression this site can make,
+ * and it is now impossible to save one.
  *
  * The section is created on first save — the owner never has to know a
  * "sectionKey" exists.
  */
 const MAX_SLIDES = 5;
+// P9: the pop-up is capped far lower than a slider, and the cap is enforced on
+// the API too. Only the first live advert is ever shown to a visitor — the
+// other two are there so a campaign can be queued, not stacked.
+const MAX_POPUP_ADS = 3;
 
 const PLACEMENTS = [
   {
     sectionKey: "hero_slider_top",
     label: "Top of homepage",
     title: "Homepage Hero",
+    max: MAX_SLIDES,
     hint: "Shows at the very top of the homepage, above everything else.",
+    artwork:
+      "Landscape artwork works best — around 2000 × 660 px. Keep the important part of the picture on the right: the caption sits over the left side, and phones crop the banner to 16:9.",
   },
   {
     sectionKey: "hero_slider_mid",
     label: "Lower homepage",
     title: "Homepage Lower Banners",
+    max: MAX_SLIDES,
     hint: "Shows near the bottom, in place of the old \"Chat with us on WhatsApp\" block. That block stays visible until you add at least one slide here.",
+    artwork:
+      "Landscape artwork works best — around 2000 × 660 px. Keep the important part of the picture on the right: the caption sits over the left side, and phones crop the banner to 16:9.",
+  },
+  {
+    sectionKey: "popup_ads",
+    label: "Pop-up advert",
+    title: "Entry Pop-up",
+    max: MAX_POPUP_ADS,
+    scheduling: true,
+    hint:
+      "Appears on any storefront page about six seconds in, or as soon as the visitor scrolls — never immediately, and on phones it sits at the bottom without covering the page. Dismissed once, it stays away for a week. Only the FIRST advert below is shown; add a second only to queue the next one. Turn the switch off to stop it entirely.",
+    artwork:
+      "Portrait or square artwork works best — around 800 × 800 px. The card is small on a phone, so use one clear picture and few words.",
   },
 ];
+
+// "Slide 2" is wrong on the pop-up tab, where there is no carousel.
+const itemLabel = (placement) => (placement.scheduling ? "Advert" : "Slide");
 
 const LINK_KINDS = [
   { value: "product", label: "A specific product" },
@@ -145,6 +176,10 @@ export default function HeroSlidesManager() {
   const [sections, setSections] = useState([]);
   const [slides, setSlides] = useState([]);
   const [enabled, setEnabled] = useState(true);
+  // Only the pop-up placement exposes these. A campaign has an end date; a
+  // homepage banner just gets switched off.
+  const [startsAt, setStartsAt] = useState(null);
+  const [endsAt, setEndsAt] = useState(null);
   const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
@@ -166,7 +201,7 @@ export default function HeroSlidesManager() {
       const res = await Api.get("/homepage-sections");
       setSections(res.data || []);
     } catch (err) {
-      notify(err?.response?.data?.message || "Failed to load hero slides", "error");
+      notify(err?.response?.data?.message || "Failed to load banners", "error");
     }
   }, []);
 
@@ -184,6 +219,8 @@ export default function HeroSlidesManager() {
   useEffect(() => {
     setSlides((section?.items || []).map(slideFromApi));
     setEnabled(section ? section.enabled !== false : true);
+    setStartsAt(section?.startsAt || null);
+    setEndsAt(section?.endsAt || null);
   }, [section]);
 
   // Product picker search.
@@ -217,7 +254,7 @@ export default function HeroSlidesManager() {
   const validateLocally = () => {
     for (let i = 0; i < slides.length; i++) {
       const slide = slides[i];
-      const label = slide.title ? `"${slide.title}"` : `Slide ${i + 1}`;
+      const label = slide.title ? `"${slide.title}"` : `${itemLabel(placement)} ${i + 1}`;
       if (!slide._file && !slide.image) return `${label} needs an image.`;
       if (slide.linkKind === "product" && !slide.productId) return `${label}: pick a product to link to.`;
       if (slide.linkKind === "category" && !slide.categoryName) return `${label}: pick a category.`;
@@ -244,8 +281,11 @@ export default function HeroSlidesManager() {
       payload.append("subtitle", "");
       payload.append("enabled", String(enabled));
       payload.append("order", "0");
-      payload.append("startsAt", "");
-      payload.append("endsAt", "");
+      // Scheduling is server-authoritative: these are absolute instants, and
+      // the storefront decides what is live against the server clock, never
+      // the visitor's device (P3).
+      payload.append("startsAt", placement.scheduling ? startsAt || "" : "");
+      payload.append("endsAt", placement.scheduling ? endsAt || "" : "");
       payload.append("items", JSON.stringify(slides.map(slideToApi)));
       slides.forEach((slide, index) => {
         if (slide._file) payload.append(`itemImage_${index}`, slide._file);
@@ -259,10 +299,10 @@ export default function HeroSlidesManager() {
       }
 
       await loadSections();
-      notify("Hero slides saved. The homepage refreshes within a minute.");
+      notify(`${placement.label} saved. The site refreshes within a minute.`);
     } catch (err) {
       const v = err?.response?.data?.validation;
-      let message = err?.response?.data?.message || "Failed to save hero slides";
+      let message = err?.response?.data?.message || "Failed to save";
       if (v) {
         const errors = [...(v.sectionErrors || []), ...(v.items || []).flatMap((it) => it.errors || [])];
         if (errors.length) message = errors.join(" ");
@@ -273,18 +313,18 @@ export default function HeroSlidesManager() {
     }
   };
 
-  const atCapacity = slides.length >= MAX_SLIDES;
+  const placementMax = placement.max || MAX_SLIDES;
+  const atCapacity = slides.length >= placementMax;
+  const itemNoun = placement.scheduling ? "advert" : "slide";
 
   return (
     <Box sx={{ maxWidth: 960, mx: "auto", mt: 4 }}>
       <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" fontWeight={700} gutterBottom>
-          Hero Slides
+          Banners &amp; Pop-ups
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Up to {MAX_SLIDES} sliding banners per placement. Landscape artwork works best —
-          around 2000&nbsp;&times;&nbsp;660&nbsp;px. Keep the important part of the picture on
-          the right: the caption sits over the left side, and phones crop the banner to 16:9.
+          Up to {placementMax} per placement. {placement.artwork}
         </Typography>
 
         <Tabs value={tab} onChange={(_, next) => setTab(next)} sx={{ mb: 1 }}>
@@ -296,13 +336,36 @@ export default function HeroSlidesManager() {
           {placement.hint}
         </Alert>
 
+        {placement.scheduling && (
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
+            <TextField
+              label="Starts at (Nairobi time)"
+              type="datetime-local"
+              value={isoToNairobiInput(startsAt)}
+              onChange={(e) => setStartsAt(nairobiInputToISO(e.target.value))}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              helperText="Leave empty to start immediately."
+            />
+            <TextField
+              label="Ends at (Nairobi time)"
+              type="datetime-local"
+              value={isoToNairobiInput(endsAt)}
+              onChange={(e) => setEndsAt(nairobiInputToISO(e.target.value))}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              helperText="Leave empty to run until you switch it off."
+            />
+          </Stack>
+        )}
+
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <FormControlLabel
             control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
             label={enabled ? "Showing on the site" : "Hidden from the site"}
           />
           <Stack direction="row" spacing={1}>
-            <Tooltip title={atCapacity ? `Maximum ${MAX_SLIDES} slides` : ""}>
+            <Tooltip title={atCapacity ? `Maximum ${placementMax} ${itemNoun}s` : ""}>
               <span>
                 <Button
                   variant="outlined"
@@ -310,7 +373,7 @@ export default function HeroSlidesManager() {
                   disabled={atCapacity}
                   onClick={() => setSlides((current) => [...current, emptySlide()])}
                 >
-                  Add slide
+                  Add {itemNoun}
                 </Button>
               </span>
             </Tooltip>
@@ -322,7 +385,9 @@ export default function HeroSlidesManager() {
 
         {slides.length === 0 && (
           <Typography color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
-            No slides yet. Add one to start the carousel.
+            {placement.scheduling
+              ? "No advert yet. Add one and it will start showing on the site."
+              : "No slides yet. Add one to start the carousel."}
           </Typography>
         )}
 
@@ -331,7 +396,7 @@ export default function HeroSlidesManager() {
             <Card key={slide._key} variant="outlined">
               <CardContent>
                 <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Typography fontWeight={700}>Slide {index + 1}</Typography>
+                  <Typography fontWeight={700}>{itemLabel(placement)} {index + 1}</Typography>
                   <Stack direction="row">
                     <IconButton aria-label="Move up" disabled={index === 0} onClick={() => moveSlide(index, -1)}>
                       <ArrowUpwardIcon />

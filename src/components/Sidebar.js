@@ -39,7 +39,7 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
     { text: "Customers", icon: <CustomersIcon />, path: "/admin/customers" },
     { text: "Categories", icon: <CategoryIcon />, path: "/admin/categories" },
     { text: "Brands", icon: <BrandIcon />, path: "/admin/brands" },
-    { text: "Hero Slides", icon: <SlideshowIcon />, path: "/admin/hero-slides" },
+    { text: "Banners & Pop-ups", icon: <SlideshowIcon />, path: "/admin/hero-slides" },
     { text: "Homepage Sections", icon: <ViewCarouselIcon />, path: "/admin/homepage-sections" },
   ];
 

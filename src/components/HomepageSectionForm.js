@@ -10,6 +10,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { Api } from "@/lib/api";
+import { nairobiInputToISO, isoToNairobiInput } from "@/utils/nairobiTime";
 
 const iconOptions = [
   { label: "Default", value: "default" },
@@ -35,23 +36,8 @@ const ctaTypeOptions = [
 
 const toneOptions = ["", "soft", "light", "cool", "dark", "midnight"];
 
-// Africa/Nairobi is UTC+3 with no DST. The admin types wall-clock Nairobi time in
-// a naive datetime-local input; anchor it to +03:00 so the stored instant is right
-// regardless of the (UTC) server's timezone.
-const NAIROBI_OFFSET = "+03:00";
-function nairobiInputToISO(v) {
-  if (!v) return null;
-  const withSeconds = v.length === 16 ? `${v}:00` : v;
-  const d = new Date(`${withSeconds}${NAIROBI_OFFSET}`);
-  return isNaN(d.getTime()) ? null : d.toISOString();
-}
-function isoToNairobiInput(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "";
-  const nairobi = new Date(d.getTime() + 3 * 60 * 60 * 1000);
-  return nairobi.toISOString().slice(0, 16);
-}
+// Nairobi wall-clock <-> ISO. Lives in utils/nairobiTime since P9, shared with
+// the pop-up scheduler.
 function isPast(iso) {
   if (!iso) return false;
   const t = new Date(iso).getTime();

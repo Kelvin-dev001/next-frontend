@@ -11,6 +11,12 @@ import AppLayout from "@/layouts/AppLayout";
 // so the storefront ships no carousel library at all.
 const AdminProviders = dynamic(() => import("@/components/AdminProviders"), { ssr: false });
 
+// The entry advert (P9). ssr:false on purpose, twice over: it must add nothing
+// to the served HTML on a metered connection, and it must not be part of the
+// layout a crawler evaluates for intrusive interstitials. It fetches its own
+// content, several seconds in, only if there is something to show.
+const PopupAd = dynamic(() => import("@/components/PopupAd"), { ssr: false });
+
 export default function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const isAdmin = router?.pathname?.startsWith("/admin");
@@ -33,6 +39,8 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <AppLayout>
       <Component {...pageProps} />
+      {/* Storefront only — never over the admin, which is a workplace. */}
+      <PopupAd />
     </AppLayout>
   );
 }
