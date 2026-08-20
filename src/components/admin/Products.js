@@ -4,7 +4,7 @@ import {
   Box, Typography, Button, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, FormControl, InputLabel, Chip, useTheme, useMediaQuery,
-  CircularProgress, FormControlLabel, Checkbox, Tooltip, TablePagination, Snackbar
+  CircularProgress, FormControlLabel, FormHelperText, Checkbox, Tooltip, TablePagination, Snackbar
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import { Add, Edit, Delete, Search, Clear, Visibility, Category, Inventory } from "@mui/icons-material";
@@ -12,6 +12,17 @@ import { Api } from "@/lib/api";
 import ErrorAlert from "@/components/ErrorAlert";
 
 const MAX_IMAGES = 10;
+
+// Safaricom Corner (P9). This is a flag on the product, deliberately NOT a
+// category: a Safaricom router is still a router and has to keep showing up
+// under Routers. The type below only decides which shelf it lands on in the
+// Safaricom shop.
+const SAFARICOM_TYPES = [
+  { value: "smartphone", label: "Smartphone" },
+  { value: "router", label: "Router (4G / 5G)" },
+  { value: "mifi", label: "MiFi / portable internet" },
+  { value: "accessory", label: "Accessory" },
+];
 const emptyProduct = {
   name: "",
   price: 0,
@@ -55,6 +66,8 @@ const emptyProduct = {
   returnPolicyDays: 30,
   lipaMdogoMdogoEligible: false,
   lipaMdogoMdogoSummary: "",
+  safaricomExclusive: false,
+  safaricomType: "",
   isActive: true,
 };
 
@@ -194,6 +207,8 @@ export default function Products() {
     if (currentProduct.returnPolicyDays) formData.append("returnPolicyDays", currentProduct.returnPolicyDays);
     formData.append("lipaMdogoMdogoEligible", currentProduct.lipaMdogoMdogoEligible ? "true" : "false");
     formData.append("lipaMdogoMdogoSummary", currentProduct.lipaMdogoMdogoSummary || "");
+    formData.append("safaricomExclusive", currentProduct.safaricomExclusive ? "true" : "false");
+    formData.append("safaricomType", currentProduct.safaricomType || "");
     formData.append("dealType", currentProduct.dealType || "");
     formData.append("dealExpiry", currentProduct.dealExpiry || "");
 
@@ -219,6 +234,12 @@ export default function Products() {
   const handleSaveProduct = async () => {
     if (!currentProduct.name || !currentProduct.price || !currentProduct.brand || !currentProduct.category) {
       setError("Please fill in all required fields (name, price, brand, category).");
+      return;
+    }
+    // A Safaricom product with no type has no shelf to land on in the Safaricom
+    // shop, so it would be flagged and invisible there.
+    if (currentProduct.safaricomExclusive && !currentProduct.safaricomType) {
+      setError("Choose a Safaricom type (smartphone, router, MiFi or accessory) for this product.");
       return;
     }
     try {
@@ -321,7 +342,16 @@ export default function Products() {
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>{product.name}</Typography>
                       </Box>
                     </TableCell>
-                    <TableCell><Chip label={product.category} size="small" icon={<Category fontSize="small" />} /></TableCell>
+                    <TableCell>
+                      <Chip label={product.category} size="small" icon={<Category fontSize="small" />} />
+                      {product.safaricomExclusive && (
+                        <Chip
+                          label={SAFARICOM_TYPES.find((t) => t.value === product.safaricomType)?.label || "Safaricom"}
+                          size="small"
+                          sx={{ ml: 0.5, bgcolor: "#00812f", color: "#fff" }}
+                        />
+                      )}
+                    </TableCell>
                     <TableCell><Typography variant="body2">{product.brand}</Typography></TableCell>
                     <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{product.currency || "KES"} {Number(product.price || 0).toLocaleString()}</Typography></TableCell>
                     <TableCell>
@@ -429,6 +459,20 @@ export default function Products() {
               <TextField fullWidth label="Return Policy Days" name="returnPolicyDays" type="number" value={currentProduct?.returnPolicyDays || 30} onChange={handleInputChange} margin="normal" />
               <FormControlLabel control={<Checkbox name="lipaMdogoMdogoEligible" checked={currentProduct?.lipaMdogoMdogoEligible || false} onChange={handleInputChange} />} label="Lipa Mdogo Mdogo eligible" sx={{ mt: 1 }} />
               <TextField fullWidth label="Lipa Mdogo Mdogo summary (one line, optional)" name="lipaMdogoMdogoSummary" value={currentProduct?.lipaMdogoMdogoSummary || ""} onChange={handleInputChange} margin="normal" helperText="Headline for THIS device only — full terms go in the description. Never a global figure." />
+
+              {/* SAFARICOM CORNER — a flag, not a category. The product keeps
+                  its real category and additionally appears in the Safaricom
+                  shop. */}
+              <FormControlLabel control={<Checkbox name="safaricomExclusive" checked={currentProduct?.safaricomExclusive || false} onChange={handleInputChange} />} label="Safaricom product" sx={{ mt: 1 }} />
+              {currentProduct?.safaricomExclusive && (
+                <FormControl fullWidth margin="normal" required>
+                  <InputLabel>Safaricom type</InputLabel>
+                  <Select label="Safaricom type" name="safaricomType" value={currentProduct?.safaricomType || ""} onChange={handleInputChange}>
+                    {SAFARICOM_TYPES.map((t) => <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>)}
+                  </Select>
+                  <FormHelperText>Which shelf it appears on in the Safaricom shop. The Category above is unchanged.</FormHelperText>
+                </FormControl>
+              )}
               <FormControlLabel control={<Checkbox name="isFeatured" checked={currentProduct?.isFeatured || false} onChange={handleInputChange} />} label="Featured" sx={{ mt: 1 }} />
               <FormControlLabel control={<Checkbox name="isNewRelease" checked={currentProduct?.isNewRelease || false} onChange={handleInputChange} />} label="New Release" sx={{ mt: 1 }} />
               <TextField fullWidth label="Release Date" name="releaseDate" type="date" value={currentProduct?.releaseDate ? currentProduct.releaseDate.slice(0, 10) : ""} onChange={handleInputChange} margin="normal" InputLabelProps={{ shrink: true }} />
