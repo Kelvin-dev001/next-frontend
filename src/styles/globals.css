@@ -35,6 +35,35 @@
      and use the brand blue instead. */
   --color-wa: #25d366;
   --color-wa-dark: #128c7e;
+
+  /* ── Safaricom green (P9) ────────────────────────────────────────────────
+     Used ONLY on the Safaricom Corner: /safaricom, /safaricom/*, and the
+     Safaricom section of the homepage. Everywhere else stays azure — the green
+     is what tells a visitor which side of the shop they are on.
+
+     ⚠ UNVERIFIED: #00b140 is the green Safaricom publishes on its own site,
+     not a value taken from a dealer brand kit or sampled from a supplied
+     asset. Owner to confirm; when he does, correct saf-500 here and rebuild
+     the two darker shades from it. Every green on the site resolves through
+     these four tokens, so it is a one-place change.
+
+     CONTRAST — the same trap as the azure, but worse. #00b140 is a light
+     green: white on it is 2.85:1, which fails AA at EVERY size, large text
+     included. So saf-500 never carries white text.
+       white on saf-500 (#00b140) = 2.85:1  -> fails at any size
+       white on saf-600 (#00812f) = 5.02:1  -> passes AA
+       white on saf-700 (#00601f) = 7.80:1  -> passes AAA
+       near-black (#111) on saf-500          = 6.62:1 -> passes AA
+     saf-500 is the identity colour (accent bars, icons, borders, large fills
+     with dark text); anything with small white text on it uses saf-600 or
+     darker. Ratios computed in scripts/ci/check-invariants.js — see the
+     contrast block there, which fails the build if these drift. */
+  --color-saf-50: #e9f8ee;
+  --color-saf-100: #cdeed9;
+  --color-saf-300: #58cf87;
+  --color-saf-500: #00b140;
+  --color-saf-600: #00812f;
+  --color-saf-700: #00601f;
 }
 
 *,
@@ -117,30 +146,39 @@ body {
   display: none;
 }
 
-/* ── Marquee (P8) ──────────────────────────────────────────────────────────
+/* ── Marquee (P8, reworked P9) ─────────────────────────────────────────────
    Used by the top info bar, the deals rail, and the two-row category / brand /
-   Safaricom loops. One primitive, four consumers — see ui/Marquee.js. */
+   Safaricom loops. One primitive, four consumers — see ui/Marquee.js.
+
+   P9: the rail is a real scroll container and the loop is driven by
+   scrollLeft, not a CSS keyframe — a transform cannot be grabbed, and the
+   customer has to be able to push the rail back to the card that just went
+   past. Everything here is layout only; the motion lives in the component.
+
+   No `scroll-behavior: smooth` and no scroll snapping in the default state:
+   both fight a per-frame scrollLeft write. Snapping is switched on only under
+   reduce-motion, where there is no autoplay to fight. */
 .marquee-root {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* A flick that runs off the end of a rail must not turn into a browser
+     back-navigation or bounce the page behind it. */
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.marquee-root::-webkit-scrollbar {
+  display: none;
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
-  will-change: transform;
-  animation: marquee-left var(--marquee-duration, 40s) linear infinite;
 }
 
-.marquee-track[data-direction="right"] {
-  animation-name: marquee-right;
-}
-
-.marquee-track[data-paused="true"] {
-  animation-play-state: paused;
-}
-
-/* One repetition of the list. Copies sit flush against each other, so shifting
-   the track by exactly one copy's width lands the next copy where the last one
+/* One repetition of the list. Copies sit flush against each other, so moving
+   the rail by exactly one copy's width lands the next copy where the last one
    started — the loop closes with no seam at any content length. */
 .marquee-copy {
   display: flex;
@@ -155,27 +193,12 @@ body {
   margin-right: var(--marquee-gap, 1rem);
 }
 
-@keyframes marquee-left {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
-}
-
-@keyframes marquee-right {
-  from { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
-  to { transform: translate3d(0, 0, 0); }
-}
-
 /* Reduced motion: no loop at all. The repeat copies are dropped and the rail
    becomes an ordinary horizontal swipe list, so every item is still reachable.
-   Handled entirely in CSS so there is no hydration mismatch and no flash. */
+   Handled in CSS so there is no hydration mismatch and no flash. */
 @media (prefers-reduced-motion: reduce) {
   .marquee-root {
-    overflow-x: auto;
     scroll-snap-type: x mandatory;
-  }
-  .marquee-track {
-    animation: none !important;
-    transform: none !important;
   }
   .marquee-copy:not(:first-child) {
     display: none !important;
