@@ -117,30 +117,39 @@ body {
   display: none;
 }
 
-/* ── Marquee (P8) ──────────────────────────────────────────────────────────
+/* ── Marquee (P8, reworked P9) ─────────────────────────────────────────────
    Used by the top info bar, the deals rail, and the two-row category / brand /
-   Safaricom loops. One primitive, four consumers — see ui/Marquee.js. */
+   Safaricom loops. One primitive, four consumers — see ui/Marquee.js.
+
+   P9: the rail is a real scroll container and the loop is driven by
+   scrollLeft, not a CSS keyframe — a transform cannot be grabbed, and the
+   customer has to be able to push the rail back to the card that just went
+   past. Everything here is layout only; the motion lives in the component.
+
+   No `scroll-behavior: smooth` and no scroll snapping in the default state:
+   both fight a per-frame scrollLeft write. Snapping is switched on only under
+   reduce-motion, where there is no autoplay to fight. */
 .marquee-root {
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* A flick that runs off the end of a rail must not turn into a browser
+     back-navigation or bounce the page behind it. */
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.marquee-root::-webkit-scrollbar {
+  display: none;
 }
 
 .marquee-track {
   display: flex;
   width: max-content;
-  will-change: transform;
-  animation: marquee-left var(--marquee-duration, 40s) linear infinite;
 }
 
-.marquee-track[data-direction="right"] {
-  animation-name: marquee-right;
-}
-
-.marquee-track[data-paused="true"] {
-  animation-play-state: paused;
-}
-
-/* One repetition of the list. Copies sit flush against each other, so shifting
-   the track by exactly one copy's width lands the next copy where the last one
+/* One repetition of the list. Copies sit flush against each other, so moving
+   the rail by exactly one copy's width lands the next copy where the last one
    started — the loop closes with no seam at any content length. */
 .marquee-copy {
   display: flex;
@@ -155,27 +164,12 @@ body {
   margin-right: var(--marquee-gap, 1rem);
 }
 
-@keyframes marquee-left {
-  from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
-}
-
-@keyframes marquee-right {
-  from { transform: translate3d(calc(-1 * var(--marquee-shift, 50%)), 0, 0); }
-  to { transform: translate3d(0, 0, 0); }
-}
-
 /* Reduced motion: no loop at all. The repeat copies are dropped and the rail
    becomes an ordinary horizontal swipe list, so every item is still reachable.
-   Handled entirely in CSS so there is no hydration mismatch and no flash. */
+   Handled in CSS so there is no hydration mismatch and no flash. */
 @media (prefers-reduced-motion: reduce) {
   .marquee-root {
-    overflow-x: auto;
     scroll-snap-type: x mandatory;
-  }
-  .marquee-track {
-    animation: none !important;
-    transform: none !important;
   }
   .marquee-copy:not(:first-child) {
     display: none !important;

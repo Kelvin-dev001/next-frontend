@@ -42,7 +42,6 @@ export default function SafaricomCorner({ sections = [] }) {
 
         <TwoRowMarquee
           items={section.items}
-          label="the Safaricom services carousel"
           itemKey={(item, idx) => `${item.title}-${idx}`}
           renderItem={(item) => {
             const link = item.ctaLink
