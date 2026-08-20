@@ -17,7 +17,11 @@ export const SITE_URL = "https://www.snaapconnections.co.ke";
 export const WHATSAPP_NUMBER = "254117000900";
 export const PHONE_E164 = "+254117000900";
 export const PHONE_DISPLAY = "+254 117 000 900";
-export const EMAIL = "info@snaapconnections.com";
+// Changed 2026-08-20 from info@snaapconnections.com. Note the domain is
+// snaapkenya.co.ke, not the site's own snaapconnections.co.ke — that is what
+// the owner specified. Every mailto:, the footer, the contact and careers
+// pages, /llms.txt and the MobilePhoneStore schema read this one constant.
+export const EMAIL = "info@snaapkenya.co.ke";
 
 export const waLink = (message) =>
   `https://wa.me/${WHATSAPP_NUMBER}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
