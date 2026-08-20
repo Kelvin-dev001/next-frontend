@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Marquee from "@/components/ui/Marquee";
-import MotionToggle from "@/components/ui/MotionToggle";
 
 /**
  * Two looping rows, scrolling in opposite directions.
@@ -10,19 +9,16 @@ import MotionToggle from "@/components/ui/MotionToggle";
  * gets — previously these were open grids that grew a row every few additions
  * and pushed the rest of the homepage further out of reach.
  *
- * Both rows share one pause control so a visitor stops the whole section at
- * once rather than chasing two buttons.
+ * Each row is independently draggable (P9): the two rows move opposite ways, so
+ * a shared control over both never matched what the visitor was reaching for.
  */
 export default function TwoRowMarquee({
   items = [],
   renderItem,
   itemKey,
-  label,
   speed = 30,
   gap = "1rem",
 }) {
-  const [paused, setPaused] = useState(false);
-
   // Below six items a split leaves rows too sparse to read as a pair, so keep
   // it as a single rail instead.
   const [topRow, bottomRow] = useMemo(() => {
@@ -33,7 +29,7 @@ export default function TwoRowMarquee({
 
   if (!items.length) return null;
 
-  const rowProps = { renderItem, itemKey, speed, gap, paused, className: "py-2" };
+  const rowProps = { renderItem, itemKey, speed, gap, className: "py-2" };
 
   return (
     <div>
@@ -41,15 +37,6 @@ export default function TwoRowMarquee({
       {bottomRow.length > 0 && (
         <Marquee items={bottomRow} direction="right" {...rowProps} />
       )}
-
-      <div className="mt-3 flex justify-center">
-        <MotionToggle
-          paused={paused}
-          onToggle={() => setPaused((p) => !p)}
-          label={label}
-          tone="dark"
-        />
-      </div>
     </div>
   );
 }

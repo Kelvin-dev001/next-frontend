@@ -30,7 +30,6 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
             two rows tall however many brands the shop carries. */}
         <TwoRowMarquee
           items={list}
-          label="the brand carousel"
           itemKey={(brand, idx) => brand._id || `${brand.name}-${idx}`}
           renderItem={(brand) => (
             <Link

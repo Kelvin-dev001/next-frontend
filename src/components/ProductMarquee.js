@@ -8,10 +8,11 @@ import ProductCard from "@/components/ProductCard";
  *
  * Deliberately slower than the brand/category rails: these cards are tap
  * targets with a price to read, not logos to glance at. The rail also stops
- * the moment a pointer or focus enters it (handled inside Marquee), so a card
- * is never moving at the instant it gets tapped.
+ * the moment a pointer, finger or focus enters it (handled inside Marquee), so
+ * a card is never moving at the instant it gets tapped — and it can be dragged
+ * either way to reach the card that has just gone past.
  */
-export default function ProductMarquee({ products = [], direction = "left", speed = 26, paused = false }) {
+export default function ProductMarquee({ products = [], direction = "left", speed = 26 }) {
   if (!products.length) return null;
 
   return (
@@ -19,7 +20,6 @@ export default function ProductMarquee({ products = [], direction = "left", spee
       items={products}
       direction={direction}
       speed={speed}
-      paused={paused}
       gap="0.75rem"
       className="py-2"
       renderItem={(product) => (

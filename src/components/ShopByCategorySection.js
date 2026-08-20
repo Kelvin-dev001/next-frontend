@@ -28,7 +28,6 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
         <SectionHeading>Shop by Category</SectionHeading>
         <TwoRowMarquee
           items={list}
-          label="the category carousel"
           itemKey={(cat, idx) => cat._id || `${cat.name}-${idx}`}
           renderItem={(cat) => (
             <Link

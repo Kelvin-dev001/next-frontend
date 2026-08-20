@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Api } from "@/lib/api";
 import ProductMarquee from "@/components/ProductMarquee";
-import MotionToggle from "@/components/ui/MotionToggle";
 import useInView from "@/hooks/useInView";
 
 const dealTypes = [
@@ -78,7 +77,6 @@ function CountdownTimer({ expiry }) {
 
 export default function DealsSection() {
   const [deals, setDeals] = useState({ dealOfTheDay: [], flashSale: [], limitedOffer: [] });
-  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     Api.get("/products/deals/active")
@@ -109,20 +107,10 @@ export default function DealsSection() {
             <ProductMarquee
               products={items}
               direction={rowIndex % 2 === 0 ? "left" : "right"}
-              paused={paused}
             />
           </div>
         );
       })}
-
-      <div className="flex justify-center">
-        <MotionToggle
-          paused={paused}
-          onToggle={() => setPaused((p) => !p)}
-          label="the deals carousels"
-          tone="dark"
-        />
-      </div>
     </section>
   );
 }
