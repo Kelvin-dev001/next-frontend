@@ -23,7 +23,10 @@ const footerLinks = [
   { title: "Support", links: [
     { label: "Contact", href: "/contact" },
     { label: "FAQs", href: "/faqs" },
-    { label: "Returns", href: "/returns" },
+    // Returns is unlinked until the business supplies an approved returns policy.
+    // The page itself still exists and is already noindex + out of the sitemap, so
+    // nothing 404s; restore this line once the copy is signed off.
+    // { label: "Returns", href: "/returns" },
     { label: "Shipping", href: "/shipping" },
   ] },
 ];

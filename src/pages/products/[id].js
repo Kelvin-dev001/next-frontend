@@ -136,7 +136,14 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
 
   const badges = [
     { icon: <FaTruck className="text-brand-700 text-lg" />, title: "Delivery", sub: `${DELIVERY_ZONES[0].priceDisplay} in Mombasa, Kilifi & Kwale · ${DELIVERY_ZONES[1].priceDisplay} to Nairobi & Machakos` },
-    ...(product.returnPolicyDays ? [{ icon: <FaUndoAlt className="text-brand-700 text-lg" />, title: `${product.returnPolicyDays}-Day Returns`, sub: "See our returns policy" }] : []),
+    // Returns badge hidden until the business supplies an approved returns
+    // policy. It printed `${product.returnPolicyDays}-Day Returns` -- defaulting
+    // to 30 from the admin form -- on every indexed product page, and linked to
+    // /returns, whose copy is not approved. An unverified promise at that scale
+    // is the same mistake as the old "Free Delivery over KES 10,000" claim.
+    // The returnPolicyDays field is untouched in the DB and admin; restore this
+    // line once the policy is signed off.
+    // ...(product.returnPolicyDays ? [{ icon: <FaUndoAlt className="text-brand-700 text-lg" />, title: `${product.returnPolicyDays}-Day Returns`, sub: "See our returns policy" }] : []),
     ...(product.warrantyPeriod ? [{ icon: <FaShieldAlt className="text-brand-700 text-lg" />, title: "Warranty", sub: `${product.warrantyPeriod} warranty` }] : []),
   ];
 
