@@ -15,11 +15,15 @@ const shopLinks = [
 
 const footerLinks = [
   { title: "Shop", links: shopLinks },
-  { title: "About", links: [
-    { label: "Our Story", href: "/our-story" },
-    { label: "Why Choose Us", href: "/why-us" },
-    { label: "Careers", href: "/careers" },
-  ] },
+  // The About column is unlinked in full: /our-story, /why-us and /careers all
+  // carry unapproved placeholder copy (see sitemap.xml.js), are already noindex
+  // and out of the sitemap, and the whole column would otherwise render with no
+  // links in it. The pages still resolve by direct URL, so nothing 404s.
+  // { title: "About", links: [
+  //   { label: "Our Story", href: "/our-story" },
+  //   { label: "Why Choose Us", href: "/why-us" },
+  //   { label: "Careers", href: "/careers" },
+  // ] },
   { title: "Support", links: [
     { label: "Contact", href: "/contact" },
     { label: "FAQs", href: "/faqs" },
@@ -50,7 +54,9 @@ export default function Footer() {
       style={{ background: "linear-gradient(135deg, #075985 0%, #0179ab 60%, #6fd0f2 100%)" }}
     >
       <div className="mx-auto max-w-screen-2xl px-4">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
+        {/* 5 columns = branding (2) + link columns (2) + contact (1). Was 6 while
+            the About column existed; restore it to 6 when About is relinked. */}
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {/* Branding */}
           <div className="col-span-2">
             <div className="mb-3 flex items-center gap-3">
