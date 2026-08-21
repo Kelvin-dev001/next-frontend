@@ -4,10 +4,10 @@ import {
   Box, Typography, Button, Grid, Card, CardContent, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, FormControl, InputLabel, Chip, useTheme, useMediaQuery,
-  CircularProgress, FormControlLabel, FormHelperText, Checkbox, Tooltip, TablePagination, Snackbar
+  CircularProgress, FormControlLabel, FormHelperText, Checkbox, Tooltip, TablePagination, Snackbar, Switch
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
-import { Add, Edit, Delete, Search, Clear, Visibility, Category, Inventory } from "@mui/icons-material";
+import { Add, Edit, Delete, Search, Clear, Visibility, Category, Inventory, Restore } from "@mui/icons-material";
 import { Api } from "@/lib/api";
 import ErrorAlert from "@/components/ErrorAlert";
 
@@ -89,6 +89,9 @@ export default function Products() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [initialPreviews, setInitialPreviews] = useState([]);
   const [successMsg, setSuccessMsg] = useState("");
+  // Deleting is a soft delete, so the retired products have to be reachable
+  // from somewhere or they are gone as far as the owner is concerned.
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const handleSuccessClose = () => setSuccessMsg("");
 
@@ -97,12 +100,14 @@ export default function Products() {
       try {
         setLoading(true);
         const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-          Api.get("/products", { params: { page: page + 1, limit: rowsPerPage, search: searchTerm || undefined } }),
+          showDeleted
+            ? Api.get("/products/deleted")
+            : Api.get("/products", { params: { page: page + 1, limit: rowsPerPage, search: searchTerm || undefined } }),
           Api.get("/categories"),
           Api.get("/brands"),
         ]);
         setProducts(productsRes.data?.products || productsRes.data || []);
-        setTotalProducts(productsRes.data?.count || productsRes.data?.length || 0);
+        setTotalProducts(productsRes.data?.count || productsRes.data?.total || productsRes.data?.length || 0);
         setCategories(categoriesRes.data?.categories || categoriesRes.data || []);
         setBrands(brandsRes.data?.brands || brandsRes.data || []);
       } catch (err) {
@@ -112,7 +117,7 @@ export default function Products() {
       }
     };
     fetchData();
-  }, [page, rowsPerPage, searchTerm]);
+  }, [page, rowsPerPage, searchTerm, showDeleted]);
 
   const handleOpenDialog = (product = null) => {
     setCurrentProduct(
@@ -264,7 +269,10 @@ export default function Products() {
   };
 
   const handleDeleteProduct = async (id) => {
-    const ok = typeof window === "undefined" ? true : window.confirm("Are you sure you want to delete this product?");
+    const ok = typeof window === "undefined" ? true : window.confirm(
+      "Delete this product? It disappears from the storefront immediately, but nothing is destroyed — "
+      + "you can bring it back from the \"Show deleted\" view."
+    );
     if (!ok) return;
     try {
       setLoading(true);
@@ -274,6 +282,24 @@ export default function Products() {
       setTotalProducts(res.data?.count || res.data?.length || 0);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to delete product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // The 409 for a P1-13 merged duplicate carries its own explanation from the
+  // API — surface it rather than a generic failure, since it tells the owner
+  // what to do instead.
+  const handleRestoreProduct = async (id) => {
+    try {
+      setLoading(true);
+      await Api.post(`/products/${id}/restore`);
+      const res = await Api.get("/products/deleted");
+      setProducts(res.data?.products || []);
+      setTotalProducts(res.data?.total || 0);
+      setSuccessMsg("Product restored — it is back on the storefront.");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to restore product");
     } finally {
       setLoading(false);
     }
@@ -304,12 +330,19 @@ export default function Products() {
         <CardContent>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <TextField
-              fullWidth variant="outlined" placeholder="Search products..." value={searchTerm}
+              fullWidth variant="outlined" disabled={showDeleted}
+              placeholder={showDeleted ? "Search does not apply to deleted products" : "Search products..."}
+              value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
               InputProps={{
                 startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />,
                 endAdornment: searchTerm && (<IconButton onClick={() => { setSearchTerm(""); setPage(0); }}><Clear fontSize="small" /></IconButton>),
               }}
+            />
+            <FormControlLabel
+              sx={{ whiteSpace: "nowrap" }}
+              control={<Switch checked={showDeleted} onChange={(e) => { setShowDeleted(e.target.checked); setPage(0); }} />}
+              label="Show deleted"
             />
           </Box>
         </CardContent>
@@ -371,12 +404,31 @@ export default function Products() {
                         <Typography variant="caption" color="text.secondary">—</Typography>
                       )}
                     </TableCell>
-                    <TableCell><Chip label={product.inStock ? "In Stock" : "Out of Stock"} color={product.inStock ? "success" : "error"} size="small" /></TableCell>
+                    <TableCell>
+                      {showDeleted ? (
+                        <Chip
+                          size="small"
+                          label={product.deletedReason || "deleted"}
+                          color={product.mergedInto ? "warning" : "default"}
+                          title={product.mergedInto ? "Merged into another product during dedup — cannot be restored here" : undefined}
+                        />
+                      ) : (
+                        <Chip label={product.inStock ? "In Stock" : "Out of Stock"} color={product.inStock ? "success" : "error"} size="small" />
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        <Tooltip title="View"><IconButton size="small" color="info"><Visibility fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Edit"><IconButton size="small" color="primary" onClick={() => handleOpenDialog(product)}><Edit fontSize="small" /></IconButton></Tooltip>
-                        <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => handleDeleteProduct(product._id)}><Delete fontSize="small" /></IconButton></Tooltip>
+                        {showDeleted ? (
+                          <Tooltip title="Restore to the storefront">
+                            <IconButton size="small" color="success" onClick={() => handleRestoreProduct(product._id)}><Restore fontSize="small" /></IconButton>
+                          </Tooltip>
+                        ) : (
+                          <>
+                            <Tooltip title="View"><IconButton size="small" color="info"><Visibility fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title="Edit"><IconButton size="small" color="primary" onClick={() => handleOpenDialog(product)}><Edit fontSize="small" /></IconButton></Tooltip>
+                            <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => handleDeleteProduct(product._id)}><Delete fontSize="small" /></IconButton></Tooltip>
+                          </>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -384,12 +436,12 @@ export default function Products() {
               </TableBody>
             </Table>
           </TableContainer>
-          <TablePagination
+          {!showDeleted && <TablePagination
             rowsPerPageOptions={[5, 10, 25, 100, 250, 1000]} component="div" count={totalProducts}
             rowsPerPage={rowsPerPage} page={page}
             onPageChange={(_, newPage) => setPage(newPage)}
             onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-          />
+          />}
         </CardContent>
       </Card>
 
