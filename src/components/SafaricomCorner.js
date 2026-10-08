@@ -31,6 +31,7 @@ export default function SafaricomCorner({ sections = [] }) {
         )}
 
         <TwoRowMarquee
+          autoplay={false}
           items={section.items}
           itemKey={(item, idx) => `${item.title}-${idx}`}
           renderItem={(item) => {

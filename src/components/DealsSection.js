@@ -91,7 +91,7 @@ export default function DealsSection() {
 
   return (
     <section id="deals" className="py-4 md:py-8">
-      {dealTypes.map(({ key, label }, rowIndex) => {
+      {dealTypes.map(({ key, label }) => {
         const items = deals[key] || [];
         if (!items.length) return null;
         const earliestExpiry = items.map((p) => p.dealExpiry).filter(Boolean).sort()[0];
@@ -102,12 +102,8 @@ export default function DealsSection() {
               <h2 className="font-bold tracking-wide text-brand-900 text-[1.1rem] md:text-[1.4rem]">{label}</h2>
               <CountdownTimer expiry={earliestExpiry} />
             </div>
-            {/* Alternating direction so three stacked rails don't read as one
-                sliding block. */}
-            <ProductMarquee
-              products={items}
-              direction={rowIndex % 2 === 0 ? "left" : "right"}
-            />
+            {/* Still, swipeable rows — no autoplay (owner's call, Oct 2026). */}
+            <ProductMarquee products={items} autoplay={false} />
           </div>
         );
       })}

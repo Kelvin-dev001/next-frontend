@@ -11,6 +11,9 @@ import Marquee from "@/components/ui/Marquee";
  *
  * Each row is independently draggable (P9): the two rows move opposite ways, so
  * a shared control over both never matched what the visitor was reaching for.
+ *
+ * `autoplay={false}` keeps the two rows but stops them moving; each row is then
+ * centred under the (centred) section heading whenever it fits.
  */
 export default function TwoRowMarquee({
   items = [],
@@ -18,6 +21,7 @@ export default function TwoRowMarquee({
   itemKey,
   speed = 30,
   gap = "1rem",
+  autoplay = true,
 }) {
   // Below six items a split leaves rows too sparse to read as a pair, so keep
   // it as a single rail instead.
@@ -29,7 +33,14 @@ export default function TwoRowMarquee({
 
   if (!items.length) return null;
 
-  const rowProps = { renderItem, itemKey, speed, gap, className: "py-2" };
+  const rowProps = {
+    renderItem,
+    itemKey,
+    speed,
+    gap,
+    autoplay,
+    className: autoplay ? "py-2" : "py-2 marquee-center",
+  };
 
   return (
     <div>

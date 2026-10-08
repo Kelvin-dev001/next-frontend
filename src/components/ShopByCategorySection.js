@@ -27,6 +27,7 @@ export default function ShopByCategorySection({ categories: categoriesProp = [] 
       <div className="mx-auto max-w-screen-2xl px-4">
         <SectionHeading>Shop by Category</SectionHeading>
         <TwoRowMarquee
+          autoplay={false}
           items={list}
           itemKey={(cat, idx) => cat._id || `${cat.name}-${idx}`}
           renderItem={(cat) => (
