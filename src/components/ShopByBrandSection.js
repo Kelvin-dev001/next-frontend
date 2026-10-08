@@ -26,9 +26,10 @@ export default function ShopByBrandSection({ brands: brandsProp = [] }) {
     <section aria-label="Shop by top brands" className="py-5 md:py-8">
       <div className="mx-auto max-w-screen-2xl px-4">
         <SectionHeading>Shop by Top Brands</SectionHeading>
-        {/* Two looping rows rather than an open grid: the section stays exactly
-            two rows tall however many brands the shop carries. */}
+        {/* Two still, swipeable rows rather than an open grid: the section stays
+            exactly two rows tall however many brands the shop carries. */}
         <TwoRowMarquee
+          autoplay={false}
           items={list}
           itemKey={(brand, idx) => brand._id || `${brand.name}-${idx}`}
           renderItem={(brand) => (

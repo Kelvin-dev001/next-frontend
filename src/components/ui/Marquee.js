@@ -52,8 +52,8 @@ const now = () => (typeof performance === "undefined" ? Date.now() : performance
  * the rail stops it, and the OS "reduce motion" setting removes the movement
  * altogether. Recorded in BACKLOG.md under P9.
  *
- * `autoplay={false}` makes a still rail (owner's call, Oct 2026: all three
- * deals rails, Shop by Category and Safaricom Corner). One copy, no loop,
+ * `autoplay={false}` makes a still rail (owner's call, Oct 2026: every rail
+ * except the top info bar, which has no links). One copy, no loop,
  * nothing moves on its own — it is the reduced-motion rail for every visitor,
  * still swipeable by finger and draggable by mouse. Never measuring leaves
  * `shift` at 0, and every loop path below already bails on that.
@@ -198,12 +198,7 @@ export default function Marquee({
       if (event.pointerType !== "mouse" || event.button !== 0) return;
       const root = rootRef.current;
       if (!root) return;
-      dragRef.current = { x: event.clientX, scroll: root.scrollLeft };
-      try {
-        event.currentTarget.setPointerCapture?.(event.pointerId);
-      } catch {
-        // Capture is a nicety; the drag still works without it.
-      }
+      dragRef.current = { x: event.clientX, y: event.clientY, scroll: root.scrollLeft };
     },
     [holdOff, rootRef]
   );
@@ -214,7 +209,18 @@ export default function Marquee({
       const root = rootRef.current;
       if (!drag || !root) return;
       const travelled = event.clientX - drag.x;
-      if (Math.abs(travelled) > DRAG_SLOP_PX) draggedRef.current = true;
+      if (!draggedRef.current) {
+        if (Math.abs(travelled) <= DRAG_SLOP_PX && Math.abs(event.clientY - drag.y) <= DRAG_SLOP_PX) return;
+        draggedRef.current = true;
+        // Capture only once this is really a drag. Captured on pointerdown, the
+        // click of a plain press is retargeted to the rail itself, so the link
+        // under the pointer never receives it — every card was dead to a mouse.
+        try {
+          root.setPointerCapture?.(event.pointerId);
+        } catch {
+          // Capture is a nicety; the drag still works without it.
+        }
+      }
       root.scrollLeft = drag.scroll - travelled;
       programmaticRef.current = -1; // make handleScroll read this as the user
       holdOff();

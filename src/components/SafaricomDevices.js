@@ -30,7 +30,9 @@ export default function SafaricomDevices({ shelves = [], variant = "grid" }) {
           {shelf.blurb && <p className="mb-3 max-w-[760px] text-[0.92rem] text-gray-600">{shelf.blurb}</p>}
 
           {variant === "rail" ? (
-            <ProductMarquee products={shelf.products} />
+            // Still: a moving rail shows its inert repeat copies, so most of
+            // the cards on screen could not be tapped (owner's call, Oct 2026).
+            <ProductMarquee products={shelf.products} autoplay={false} />
           ) : (
             <ProductGrid items={shelf.products} eagerCount={4} />
           )}
