@@ -51,6 +51,12 @@ const now = () => (typeof performance === "undefined" ? Date.now() : performance
  * for a mechanism to stop the motion: touching, dragging, hovering or focusing
  * the rail stops it, and the OS "reduce motion" setting removes the movement
  * altogether. Recorded in BACKLOG.md under P9.
+ *
+ * `autoplay={false}` makes a still rail (owner's call, Oct 2026: all three
+ * deals rails, Shop by Category and Safaricom Corner). One copy, no loop,
+ * nothing moves on its own — it is the reduced-motion rail for every visitor,
+ * still swipeable by finger and draggable by mouse. Never measuring leaves
+ * `shift` at 0, and every loop path below already bails on that.
  */
 export default function Marquee({
   items = [],
@@ -59,6 +65,7 @@ export default function Marquee({
   direction = "left",
   speed = 45, // px per second
   gap = "1rem",
+  autoplay = true,
   pauseOnHover = true,
   className = "",
   ...rest
@@ -100,6 +107,7 @@ export default function Marquee({
   }, []);
 
   useEffect(() => {
+    if (!autoplay) return;
     const copy = copyRef.current;
     const root = rootRef.current;
     if (!copy || !root) return;
@@ -121,7 +129,7 @@ export default function Marquee({
     observer.observe(copy);
     observer.observe(root);
     return () => observer.disconnect();
-  }, [items, rootRef]);
+  }, [items, rootRef, autoplay]);
 
   // Park one copy in, once the copies for that measurement have rendered.
   useEffect(() => {
@@ -135,7 +143,7 @@ export default function Marquee({
   }, [shift, copies, reducedMotion, rootRef]);
 
   useEffect(() => {
-    if (reducedMotion || !inView || !shift || (pauseOnHover && hovered)) return;
+    if (!autoplay || reducedMotion || !inView || !shift || (pauseOnHover && hovered)) return;
     const root = rootRef.current;
     if (!root) return;
 
@@ -156,7 +164,7 @@ export default function Marquee({
 
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [reducedMotion, inView, shift, hovered, pauseOnHover, speed, direction, write, rootRef]);
+  }, [autoplay, reducedMotion, inView, shift, hovered, pauseOnHover, speed, direction, write, rootRef]);
 
   // Any scroll we did not write is the visitor's — hold the loop off, and once
   // they are no longer holding the rail, keep them off the hard ends so it
@@ -250,7 +258,7 @@ export default function Marquee({
   return (
     <div
       ref={rootRef}
-      className={`marquee-root ${className}`}
+      className={`marquee-root ${autoplay ? "" : "marquee-root--still"} ${className}`}
       onScroll={handleScroll}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -266,7 +274,7 @@ export default function Marquee({
       {...rest}
     >
       <div className="marquee-track" style={{ "--marquee-gap": gap }}>
-        {Array.from({ length: copies }, (_, index) => copy(index))}
+        {Array.from({ length: autoplay ? copies : 1 }, (_, index) => copy(index))}
       </div>
     </div>
   );

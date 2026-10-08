@@ -193,6 +193,19 @@ body {
   margin-right: var(--marquee-gap, 1rem);
 }
 
+/* Still rails (autoplay={false}, Oct 2026): the list once, nothing moving.
+   `.marquee-center` centres the row under a centred heading while it fits;
+   auto margins resolve to 0 once it overflows, so a phone still gets a plain
+   left-aligned swipe rail. The last item drops its trailing gap so that the
+   centring is true. */
+.marquee-root--still .marquee-item:last-child {
+  margin-right: 0;
+}
+
+.marquee-center > .marquee-track {
+  margin-inline: auto;
+}
+
 /* Reduced motion: no loop at all. The repeat copies are dropped and the rail
    becomes an ordinary horizontal swipe list, so every item is still reachable.
    Handled in CSS so there is no hydration mismatch and no flash. */
