@@ -14,8 +14,6 @@ export default function ProductGrid({
   size = "compact",
   showWhatsApp = true,
   showViewBtn = true,
-  onWishlistToggle,
-  isWishlisted,
   // RevealGrid needs to tag and measure this container; everything else spreads
   // straight through (e.g. data-pages).
   className = "",
@@ -41,8 +39,6 @@ export default function ProductGrid({
           size={size}
           showWhatsApp={showWhatsApp}
           showViewBtn={showViewBtn}
-          onWishlistToggle={onWishlistToggle}
-          isWishlisted={isWishlisted?.(product)}
           imagePriority={idx < eagerCount}
         />
       ))}

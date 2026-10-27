@@ -6,6 +6,7 @@ import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 import { waLink, formatKES } from "@/constants/business";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
+import useWishlist from "@/hooks/useWishlist";
 
 const BADGE_BG = {
   HOT: "bg-red-600",
@@ -17,8 +18,6 @@ const BADGE_BG = {
 
 export default function ProductCard({
   product,
-  onWishlistToggle,
-  isWishlisted,
   showWhatsApp = true,
   showViewBtn = true,
   badge,
@@ -29,7 +28,12 @@ export default function ProductCard({
   // Payload is a business metric here: every KB costs the customer money.
   imageSizes = "(max-width: 600px) 48vw, (max-width: 900px) 32vw, 25vw",
 }) {
-  const productHref = `/products/${product?._id || product?.id || ""}`;
+  const productId = product?._id || product?.id || "";
+  const productHref = `/products/${productId}`;
+  // P10-2: the heart works on every card. It used to depend on the parent page
+  // passing handlers, and only /products did — on the homepage it did nothing.
+  const wishlist = useWishlist();
+  const isWishlisted = wishlist.has(productId);
 
   const discountPercent =
     product?.discountPrice && product?.price
@@ -84,14 +88,16 @@ export default function ProductCard({
         )}
 
         <button
-          aria-label="add to wishlist"
+          type="button"
+          aria-label={`Save ${product?.name || "this product"} to wishlist`}
+          aria-pressed={isWishlisted}
           onClick={(e) => {
             e.stopPropagation();
-            if (onWishlistToggle) onWishlistToggle(product?._id || product?.id);
+            wishlist.toggle(productId);
           }}
           className="absolute bottom-1 right-2 z-[2] grid h-8 w-8 place-items-center rounded-full bg-white shadow-[0_2px_8px_#2221] hover:bg-brand-300/30"
         >
-          {isWishlisted ? <FaHeart className="text-red-500" /> : <FaRegHeart className="text-gray-500" />}
+          {isWishlisted ? <FaHeart className="text-red-600" aria-hidden="true" /> : <FaRegHeart className="text-gray-600" aria-hidden="true" />}
         </button>
       </div>
 
