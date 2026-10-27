@@ -109,9 +109,9 @@ export const deliveryForCounty = (county) =>
 // mirrors these values; scripts/ci/check-live-data.js fails if they drift.
 export const MPESA_TILL = "9478805";
 // The business name M-Pesa shows for this Till, which customers should check
-// before entering their PIN. null until the owner confirms the exact spelling —
-// the checkout only prints the line once it is set.
-export const MPESA_TILL_NAME = null;
+// before entering their PIN. Confirmed by the owner "exactly as typed", trailing
+// 4 included (27 Oct 2026).
+export const MPESA_TILL_NAME = "Phone World Snaap Intl Limited4";
 
 // Nairobi/Machakos: the order goes in with the delivery fee "to be confirmed".
 // The customer pays for the items at checkout and the delivery fee separately,
