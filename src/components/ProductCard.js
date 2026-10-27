@@ -107,14 +107,22 @@ export default function ProductCard({
           {product?.name}
         </Link>
 
+        {/* product.rating is written by the API from approved reviews only (P10-1). */}
         {hasRealRating && (
-          <div className="mb-1 flex items-center gap-1">
-            <span className="flex">
+          <div
+            className="mb-1 flex items-center gap-1"
+            role="img"
+            aria-label={`Rated ${product.rating.toFixed(1)} out of 5${product.reviewCount ? ` from ${product.reviewCount} review${product.reviewCount !== 1 ? "s" : ""}` : ""}`}
+          >
+            <span className="flex" aria-hidden="true">
               {[0, 1, 2, 3, 4].map((i) => (
                 <FaStar key={i} className={i < Math.round(product.rating) ? "text-brand-300" : "text-gray-300"} />
               ))}
             </span>
-            <span className="text-[0.6rem] md:text-[0.75rem]">{product.rating.toFixed(1)}</span>
+            <span className="text-[0.6rem] md:text-[0.75rem]" aria-hidden="true">
+              {product.rating.toFixed(1)}
+              {product.reviewCount ? ` (${product.reviewCount})` : ""}
+            </span>
           </div>
         )}
 

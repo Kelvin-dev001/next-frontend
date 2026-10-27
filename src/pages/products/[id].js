@@ -1,9 +1,9 @@
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
-  FaWhatsapp, FaShareAlt, FaHeart, FaRegHeart,
+  FaWhatsapp, FaShareAlt, FaHeart, FaRegHeart, FaStar, FaRegStar,
   FaTruck, FaUndoAlt, FaShieldAlt, FaMoneyBillWave,
 } from "react-icons/fa";
 import { Api } from "@/lib/api";
@@ -17,18 +17,13 @@ const FALLBACK_IMAGE = "/fallback.png";
 const SITE_NAME = "Snaap Connections";
 const SITE_URL = "https://www.snaapconnections.co.ke";
 
-export default function ProductDetailPage({ product, related = [], priceValidUntil = null }) {
+export default function ProductDetailPage({ product, related = [], reviews = [], priceValidUntil = null }) {
   const router = useRouter();
 
   const [wishlist, setWishlist] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const [, setError] = useState(null);
-
-  useEffect(() => {
-    setError(null);
-  }, [product?._id]);
 
   // Null check AFTER all hooks (keeps hook order stable across renders).
   if (product === null) {
@@ -93,6 +88,11 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
     },
   }));
 
+  // Real, moderated reviews only (P10-1): Product.rating/reviewCount are written
+  // by the API from approved reviews, and the reviews themselves are in this
+  // page's HTML (Reviews tab), so the markup describes content a visitor can see.
+  const hasReviews = product?.reviewCount > 0 && product?.rating > 0;
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -102,6 +102,17 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
     brand: { "@type": "Brand", name: product?.brand || SITE_NAME },
     ...(product?.sku ? { sku: product.sku } : {}),
     ...(product?.category ? { category: product.category } : {}),
+    ...(hasReviews
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       priceCurrency: "KES",
@@ -131,7 +142,8 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
     { label: "Brand", value: product.brand },
     { label: "Category", value: product.category },
     { label: "Warranty", value: product.warrantyPeriod || "1 year" },
-    { label: "Availability", value: product.inStock ? "In stock" : "Out of stock", color: product.inStock ? "text-green-600" : "text-red-600" },
+    // -700 shades: green-600 on white is 3.2:1 and fails AA at this size.
+    { label: "Availability", value: product.inStock ? "In stock" : "Out of stock", color: product.inStock ? "text-green-700" : "text-red-700" },
   ];
 
   const badges = [
@@ -209,6 +221,21 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
           <div>
             <h1 className="mb-1 font-bold text-[1.4rem] md:text-[2rem]">{product.name}</h1>
 
+            {hasReviews && (
+              <a
+                href="#reviews"
+                onClick={() => setTabValue(2)}
+                className="mb-2 inline-flex items-center gap-1.5 text-[0.85rem] text-gray-600 hover:underline"
+              >
+                <span className="flex text-[#FFD600]" aria-hidden="true">
+                  {[1, 2, 3, 4, 5].map((i) => (i <= Math.round(product.rating) ? <FaStar key={i} /> : <FaRegStar key={i} />))}
+                </span>
+                <span>
+                  {product.rating.toFixed(1)} out of 5 · {product.reviewCount} review{product.reviewCount !== 1 ? "s" : ""}
+                </span>
+              </a>
+            )}
+
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <span className="font-bold text-brand-700 text-[1.3rem] md:text-[1.8rem]">{formatPrice(product.discountPrice || product.price)}</span>
               {product.discountPrice && (
@@ -233,12 +260,12 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
             <hr className="my-4 border-gray-200" />
 
             {/* Quantity + buy */}
-            <p className="mb-1 font-semibold text-[0.9rem] md:text-base">Quantity</p>
+            <label htmlFor="product-qty" className="mb-1 block font-semibold text-[0.9rem] md:text-base">Quantity</label>
             <div className="mb-2 flex items-center gap-4">
               <div className="flex overflow-hidden rounded border border-gray-300">
-                <button onClick={decrementQuantity} disabled={quantity <= 1} className="min-w-9 px-2 py-1 disabled:opacity-40">−</button>
-                <input type="number" value={quantity} min={1} max={product.inStock ? 10 : 0} onChange={handleQuantityChange} className="w-11 border-0 text-center text-[0.95rem] outline-none" />
-                <button onClick={incrementQuantity} disabled={quantity >= (product.inStock ? 10 : 0)} className="min-w-9 px-2 py-1 disabled:opacity-40">+</button>
+                <button type="button" aria-label="Decrease quantity" onClick={decrementQuantity} disabled={quantity <= 1} className="min-w-9 px-2 py-1 disabled:opacity-40">−</button>
+                <input id="product-qty" type="number" value={quantity} min={1} max={product.inStock ? 10 : 0} onChange={handleQuantityChange} className="w-11 border-0 text-center text-[0.95rem] outline-none" />
+                <button type="button" aria-label="Increase quantity" onClick={incrementQuantity} disabled={quantity >= (product.inStock ? 10 : 0)} className="min-w-9 px-2 py-1 disabled:opacity-40">+</button>
               </div>
               <span className="text-[0.85rem] text-gray-500">{product.inStock ? "In stock" : "Out of stock"}</span>
             </div>
@@ -301,27 +328,35 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mt-8 md:mt-12">
-          <div className="mb-4 flex border-b border-gray-200">
+        {/* Tabs. Every panel is rendered and the inactive ones are `hidden`, so the
+            description, specs and reviews are all in the server HTML for crawlers
+            (P10-1: the reviews used to load only after a client-side fetch). */}
+        <div className="mt-8 scroll-mt-24 md:mt-12" id="reviews">
+          <div className="mb-4 flex border-b border-gray-200" role="tablist" aria-label="Product information">
             {tabs.map((label, i) => (
               <button
                 key={label}
+                type="button"
+                role="tab"
+                id={`product-tab-${i}`}
+                aria-selected={tabValue === i}
+                aria-controls={`product-panel-${i}`}
                 onClick={() => setTabValue(i)}
                 className={`-mb-px flex-1 border-b-[3px] py-2 font-medium text-[0.78rem] md:text-[0.875rem] ${
                   tabValue === i ? "border-brand-700 text-brand-700" : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {label}
+                {i === 2 && product.reviewCount > 0 ? ` (${product.reviewCount})` : ""}
               </button>
             ))}
           </div>
 
           <div className="rounded-lg bg-white p-3 md:p-6">
-            {tabValue === 0 && (
+            <div role="tabpanel" id="product-panel-0" aria-labelledby="product-tab-0" hidden={tabValue !== 0}>
               <p className="whitespace-pre-line text-[0.88rem] md:text-base">{product.fullDescription || "No description available"}</p>
-            )}
-            {tabValue === 1 && (
+            </div>
+            <div role="tabpanel" id="product-panel-1" aria-labelledby="product-tab-1" hidden={tabValue !== 1}>
               <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                 {product.specs &&
                   Object.entries(product.specs)
@@ -333,13 +368,11 @@ export default function ProductDetailPage({ product, related = [], priceValidUnt
                       </div>
                     ))}
               </div>
-            )}
-            {tabValue === 2 && (
-              <div>
-                <h2 className="mb-4 font-semibold text-base md:text-xl">Customer Reviews</h2>
-                <ReviewSection productId={product._id} />
-              </div>
-            )}
+            </div>
+            <div role="tabpanel" id="product-panel-2" aria-labelledby="product-tab-2" hidden={tabValue !== 2}>
+              <h2 className="mb-4 font-semibold text-base md:text-xl">Customer Reviews</h2>
+              <ReviewSection productId={product._id} reviews={reviews} />
+            </div>
           </div>
         </div>
 
@@ -363,18 +396,25 @@ export async function getServerSideProps({ params }) {
     const res = await Api.get(`/products/${params.id}`);
     const product = res.data?.product || null;
 
-    let related = [];
-    if (product?.category) {
-      try {
-        const relRes = await Api.get("/products", { params: { category: product.category, limit: 4 } });
-        related = (relRes.data?.products || []).filter((p) => p._id !== params.id);
-      } catch {
-        related = [];
-      }
-    }
+    // Related products and approved reviews in parallel; either failing only
+    // empties its own section, never the page.
+    const [relRes, revRes] = await Promise.allSettled([
+      product?.category
+        ? Api.get("/products", { params: { category: product.category, limit: 4 } })
+        : Promise.resolve(null),
+      product ? Api.get(`/products/${params.id}/reviews`) : Promise.resolve(null),
+    ]);
+    const related =
+      relRes.status === "fulfilled" && relRes.value
+        ? (relRes.value.data?.products || []).filter((p) => p._id !== params.id)
+        : [];
+    // Capped so a heavily reviewed product can't bloat the HTML on a metered
+    // connection; the headline average comes from product.rating regardless.
+    const reviews =
+      revRes.status === "fulfilled" && revRes.value ? (revRes.value.data?.reviews || []).slice(0, 50) : [];
 
-    return { props: { product, related, priceValidUntil } };
+    return { props: { product, related, reviews, priceValidUntil } };
   } catch (e) {
-    return { props: { product: null, related: [], priceValidUntil: null } };
+    return { props: { product: null, related: [], reviews: [], priceValidUntil: null } };
   }
 }

@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import {
   Box, Typography, Card, CardContent, Table, TableHead, TableRow, TableCell, TableBody,
-  TableContainer, IconButton, Tooltip, CircularProgress, Snackbar, Alert, TablePagination
+  TableContainer, IconButton, Tooltip, CircularProgress, Snackbar, Alert, TablePagination,
+  ToggleButton, ToggleButtonGroup,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,6 +11,8 @@ import { Api } from "@/lib/api";
 
 const PAGE_SIZE = 10;
 
+// P10-1: these were /reviews, POST /reviews/:id/approve and DELETE /reviews/:id —
+// none of which exist, so moderation 404'd. The API's routes are below.
 export default function AdminReviewsTable() {
   const [reviews, setReviews] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
@@ -17,13 +20,15 @@ export default function AdminReviewsTable() {
   const [actionLoading, setActionLoading] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [page, setPage] = useState(0);
+  // Pending first: that is the queue that needs a decision.
+  const [status, setStatus] = useState("pending");
 
-  const fetchReviews = async (pageNum = 0) => {
+  const fetchReviews = async (pageNum = page) => {
     setLoading(true);
     try {
-      const res = await Api.get("/reviews", { params: { limit: PAGE_SIZE, skip: pageNum * PAGE_SIZE } });
-      setReviews(res.data?.reviews || res.data || []);
-      setTotalReviews(res.data?.total || res.data?.reviews?.length || 0);
+      const res = await Api.get("/admin/reviews", { params: { status, limit: PAGE_SIZE, page: pageNum + 1 } });
+      setReviews(res.data?.reviews || []);
+      setTotalReviews(res.data?.total || 0);
     } catch (err) {
       setSnackbar({ open: true, message: err?.response?.data?.message || "Failed to fetch reviews", severity: "error" });
     }
@@ -32,13 +37,14 @@ export default function AdminReviewsTable() {
 
   useEffect(() => {
     fetchReviews(page);
-  }, [page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, status]);
 
   const handleApprove = async (reviewId) => {
     setActionLoading(reviewId);
     try {
-      await Api.post(`/reviews/${reviewId}/approve`);
-      setSnackbar({ open: true, message: "Review approved!", severity: "success" });
+      await Api.patch(`/admin/reviews/${reviewId}/approve`);
+      setSnackbar({ open: true, message: "Review approved — it is now public.", severity: "success" });
       fetchReviews(page);
     } catch (err) {
       setSnackbar({ open: true, message: err?.response?.data?.message || "Failed to approve review", severity: "error" });
@@ -47,11 +53,11 @@ export default function AdminReviewsTable() {
   };
 
   const handleDelete = async (reviewId) => {
-    const ok = typeof window === "undefined" ? true : window.confirm("Are you sure you want to delete this review?");
+    const ok = typeof window === "undefined" ? true : window.confirm("Delete this review permanently?");
     if (!ok) return;
     setActionLoading(reviewId);
     try {
-      await Api.delete(`/reviews/${reviewId}`);
+      await Api.delete(`/admin/reviews/${reviewId}`);
       setSnackbar({ open: true, message: "Review deleted.", severity: "success" });
       if (reviews.length === 1 && page > 0) setPage(page - 1);
       else fetchReviews(page);
@@ -64,15 +70,28 @@ export default function AdminReviewsTable() {
   return (
     <Card sx={{ borderRadius: 2, mt: 4 }}>
       <CardContent>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-          Customer Reviews (Moderation)
-        </Typography>
+        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Customer Reviews (Moderation)
+          </Typography>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={status}
+            onChange={(_, v) => { if (v) { setStatus(v); setPage(0); } }}
+            aria-label="Filter reviews"
+          >
+            <ToggleButton value="pending">Pending</ToggleButton>
+            <ToggleButton value="approved">Approved</ToggleButton>
+            <ToggleButton value="all">All</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={120}>
             <CircularProgress />
           </Box>
         ) : reviews.length === 0 ? (
-          <Typography>No reviews found.</Typography>
+          <Typography>{status === "pending" ? "No reviews waiting for approval." : "No reviews found."}</Typography>
         ) : (
           <>
             <TableContainer>
@@ -80,7 +99,7 @@ export default function AdminReviewsTable() {
                 <TableHead>
                   <TableRow>
                     <TableCell>Name</TableCell>
-                    <TableCell>WhatsApp</TableCell>
+                    <TableCell>Phone (private)</TableCell>
                     <TableCell>Product</TableCell>
                     <TableCell>Rating</TableCell>
                     <TableCell>Comment</TableCell>
@@ -94,10 +113,10 @@ export default function AdminReviewsTable() {
                     <TableRow key={review._id}>
                       <TableCell>{review.name}</TableCell>
                       <TableCell>{review.whatsapp || "-"}</TableCell>
-                      <TableCell>{review.product?.name || String(review.product || "").slice(0, 6) + "..."}</TableCell>
+                      <TableCell>{review.product?.name || "(product removed)"}</TableCell>
                       <TableCell>{review.rating}</TableCell>
-                      <TableCell style={{ maxWidth: 200, whiteSpace: "pre-line" }}>{review.comment}</TableCell>
-                      <TableCell>{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ""}</TableCell>
+                      <TableCell style={{ maxWidth: 240, whiteSpace: "pre-line" }}>{review.comment}</TableCell>
+                      <TableCell>{review.createdAt ? new Date(review.createdAt).toLocaleDateString("en-KE") : ""}</TableCell>
                       <TableCell>
                         {review.isApproved ? (
                           <Typography color="success.main" fontWeight={600}>
@@ -113,7 +132,7 @@ export default function AdminReviewsTable() {
                         {!review.isApproved && (
                           <Tooltip title="Approve">
                             <span>
-                              <IconButton color="success" disabled={actionLoading === review._id} onClick={() => handleApprove(review._id)}>
+                              <IconButton aria-label="Approve review" color="success" disabled={actionLoading === review._id} onClick={() => handleApprove(review._id)}>
                                 <CheckCircleIcon />
                               </IconButton>
                             </span>
@@ -121,7 +140,7 @@ export default function AdminReviewsTable() {
                         )}
                         <Tooltip title="Delete">
                           <span>
-                            <IconButton color="error" disabled={actionLoading === review._id} onClick={() => handleDelete(review._id)}>
+                            <IconButton aria-label="Delete review" color="error" disabled={actionLoading === review._id} onClick={() => handleDelete(review._id)}>
                               <DeleteIcon />
                             </IconButton>
                           </span>

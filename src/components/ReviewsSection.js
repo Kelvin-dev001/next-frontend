@@ -39,11 +39,13 @@ function RatingInput({ value, onChange }) {
         <button
           key={star}
           type="button"
+          role="radio"
+          aria-checked={value === star}
           onClick={() => onChange(star)}
           aria-label={`${star} star${star > 1 ? "s" : ""}`}
           className="text-2xl text-[#FFD600]"
         >
-          {value >= star ? <FaStar /> : <FaRegStar />}
+          {value >= star ? <FaStar aria-hidden="true" /> : <FaRegStar aria-hidden="true" />}
         </button>
       ))}
     </div>
@@ -73,32 +75,44 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
     }
     setSubmitting(true);
     try {
-      await Api.post(`/products/${productId}/reviews`, { name, whatsapp, rating, comment });
+      const res = await Api.post(`/products/${productId}/reviews`, { name, whatsapp, rating, comment });
       setLastSubmitted(Date.now());
       setName(""); setWhatsapp(""); setRating(0); setComment("");
-      onSubmitSuccess();
+      onSubmitSuccess(res?.data?.message || "Thanks! Your review will appear once it has been approved.");
       handleClose();
     } catch (e) {
-      setError(e?.message || "Failed to submit review.");
+      // The API explains what was wrong ("Rating must be…"); axios's own
+      // message ("Request failed with status code 401") means nothing to a buyer.
+      setError(e?.response?.data?.message || "We couldn't send your review. Please try again.");
     }
     setSubmitting(false);
   };
 
   const field = "w-full border-b border-gray-300 bg-transparent px-1 py-2 outline-none focus:border-brand-700";
+  const label = "block text-sm font-medium text-gray-700";
 
   return (
-    <div className="fixed inset-0 z-[1300] flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-[1300] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="review-form-title"
+      onKeyDown={(e) => { if (e.key === "Escape") handleClose(); }}
+    >
       <div className="absolute inset-0 bg-black/50" onClick={handleClose} aria-hidden="true" />
       <div className="relative z-[1] w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h3 className="mb-4 text-xl font-bold">Write a Review</h3>
-        {error && <div className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
-        <input className={`${field} mb-3`} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className={`${field} mb-3`} placeholder="WhatsApp (optional)" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
-        <p className="mb-1 mt-2">Rating</p>
+        <h3 id="review-form-title" className="mb-4 text-xl font-bold">Write a Review</h3>
+        {error && <div role="alert" className="mb-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+        <label htmlFor="review-name" className={label}>Your name</label>
+        <input id="review-name" className={`${field} mb-3`} maxLength={60} autoComplete="name" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
+        <label htmlFor="review-phone" className={label}>Phone (optional — never shown publicly)</label>
+        <input id="review-phone" type="tel" className={`${field} mb-3`} maxLength={20} autoComplete="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+        <p className={`${label} mt-2`} id="review-rating-label">Rating</p>
         <RatingInput value={rating} onChange={setRating} />
-        <textarea className={`${field} mt-3`} rows={3} placeholder="Comment" value={comment} onChange={(e) => setComment(e.target.value)} />
+        <label htmlFor="review-comment" className={`${label} mt-3`}>Your review</label>
+        <textarea id="review-comment" className={field} rows={3} maxLength={1000} value={comment} onChange={(e) => setComment(e.target.value)} />
         <p className="mt-2 block text-xs text-gray-500">
-          Submitted reviews are subject to admin approval before they appear publicly.
+          Reviews are checked by our team before they appear publicly.
         </p>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={handleClose} disabled={submitting} className="rounded px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50">
@@ -118,23 +132,26 @@ const ReviewForm = ({ open, handleClose, productId, onSubmitSuccess }) => {
 };
 
 export default function ReviewSection({ productId, reviews: propReviews, isHomepage }) {
-  const [reviews, setReviews] = useState(propReviews || []);
+  const [fetchedReviews, setFetchedReviews] = useState(null);
   const [filterStars, setFilterStars] = useState(0);
   const [sortOrder, setSortOrder] = useState("newest");
   const [showForm, setShowForm] = useState(false);
-  const [refreshFlag, setRefreshFlag] = useState(false);
+  const [notice, setNotice] = useState("");
 
+  // Both callers server-render the reviews and pass them in (the product page
+  // since P10-1), so there is nothing to fetch on a customer's phone. The fetch
+  // is only a fallback for a caller that passes a productId and no reviews.
+  // No refetch after a submission: a new review stays hidden until approved.
   useEffect(() => {
-    if (propReviews && isHomepage) {
-      setReviews(propReviews);
-      return;
-    }
-    if (productId) {
-      Api.get(`/products/${productId}/reviews`)
-        .then((res) => setReviews(res.data?.reviews || []))
-        .catch(() => setReviews([]));
-    }
-  }, [productId, refreshFlag, propReviews, isHomepage]);
+    if (propReviews || !productId || isHomepage) return;
+    let cancelled = false;
+    Api.get(`/products/${productId}/reviews`)
+      .then((res) => { if (!cancelled) setFetchedReviews(res.data?.reviews || []); })
+      .catch(() => { if (!cancelled) setFetchedReviews([]); });
+    return () => { cancelled = true; };
+  }, [productId, propReviews, isHomepage]);
+
+  const reviews = propReviews || fetchedReviews || [];
 
   const filtered = reviews
     .filter((r) => (filterStars ? Math.round(r.rating) === filterStars : true))
@@ -145,7 +162,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
     );
 
   const avgRating = reviews.length
-    ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(2)
+    ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)
     : "—";
 
   return (
@@ -160,11 +177,16 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
           </p>
           {productId && !isHomepage && (
             <button
-              onClick={() => setShowForm(true)}
+              onClick={() => { setNotice(""); setShowForm(true); }}
               className="mt-2 rounded bg-brand-700 px-4 py-2 font-semibold text-white hover:bg-brand-900"
             >
               Write a Review
             </button>
+          )}
+          {notice && (
+            <p role="status" className="mx-auto mt-3 max-w-md rounded bg-green-50 px-3 py-2 text-sm text-green-800">
+              {notice}
+            </p>
           )}
         </div>
 
@@ -176,12 +198,18 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
         />
 
         {filtered.length === 0 ? (
-          <p className="mb-10 mt-6 text-center text-gray-500">
-            No reviews yet.{" "}
-            <Link href="/products" className="text-brand-700 underline-offset-2 hover:underline">
-              Be the first to review — Shop Now!
-            </Link>
-          </p>
+          productId && !isHomepage ? (
+            <p className="mb-10 mt-6 text-center text-gray-500">
+              {reviews.length ? "No reviews match this filter." : "No reviews yet — be the first to review this product."}
+            </p>
+          ) : (
+            <p className="mb-10 mt-6 text-center text-gray-500">
+              No reviews yet.{" "}
+              <Link href="/products" className="text-brand-700 underline-offset-2 hover:underline">
+                Be the first to review — Shop Now!
+              </Link>
+            </p>
+          )
         ) : (
           <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
             {filtered.map((review, i) => (
@@ -200,7 +228,7 @@ export default function ReviewSection({ productId, reviews: propReviews, isHomep
             open={showForm}
             handleClose={() => setShowForm(false)}
             productId={productId}
-            onSubmitSuccess={() => setRefreshFlag((f) => !f)}
+            onSubmitSuccess={setNotice}
           />
         )}
 
