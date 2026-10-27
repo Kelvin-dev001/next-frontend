@@ -66,7 +66,6 @@ export default function ProductListingPage({
   const [totalProducts, setTotalProducts] = useState(initialTotal);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [clientFacetsReady, setClientFacetsReady] = useState(false);
 
@@ -184,9 +183,6 @@ export default function ProductListingPage({
     setFilters({ page: 1, limit: 12, category: "", brand: "", minPrice: 0, maxPrice: 500000, sort: "random", search: "", dealType: "" });
     router.replace("/products", undefined, { shallow: true });
   };
-  const toggleWishlist = (productId) => {
-    setWishlist((prev) => (prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]));
-  };
   const handleSearchSelect = (productId) => router.push(`/products/${productId}`);
 
   const totalPages = Math.ceil(totalProducts / filters.limit);
@@ -275,8 +271,6 @@ export default function ProductListingPage({
               size="compact"
               showWhatsApp
               showViewBtn
-              onWishlistToggle={toggleWishlist}
-              isWishlisted={(p) => wishlist.includes(p._id)}
             />
 
             {totalPages > 1 && (

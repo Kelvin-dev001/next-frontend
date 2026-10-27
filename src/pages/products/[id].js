@@ -12,6 +12,7 @@ import ProductGrid from "@/components/ProductGrid";
 import Chip from "@/components/ui/Chip";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
 import { DELIVERY_ZONES, formatKES, waLink } from "@/constants/business";
+import useWishlist from "@/hooks/useWishlist";
 
 const FALLBACK_IMAGE = "/fallback.png";
 const SITE_NAME = "Snaap Connections";
@@ -20,7 +21,7 @@ const SITE_URL = "https://www.snaapconnections.co.ke";
 export default function ProductDetailPage({ product, related = [], reviews = [], priceValidUntil = null }) {
   const router = useRouter();
 
-  const [wishlist, setWishlist] = useState([]);
+  const wishlist = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [tabValue, setTabValue] = useState(0);
@@ -37,11 +38,6 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
     );
   }
 
-  const toggleWishlist = (productId) => {
-    setWishlist((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
-    );
-  };
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
     if (value > 0 && value <= (product?.inStock ? 10 : 0)) setQuantity(value);
@@ -279,8 +275,14 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
             </button>
 
             <div className="mt-3 flex gap-2">
-              <button aria-label="add to wishlist" onClick={() => toggleWishlist(product._id)} className="grid h-10 w-10 place-items-center rounded-full border border-gray-300">
-                {wishlist.includes(product._id) ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+              <button
+                type="button"
+                aria-label="Save to wishlist"
+                aria-pressed={wishlist.has(product._id)}
+                onClick={() => wishlist.toggle(product._id)}
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-300"
+              >
+                {wishlist.has(product._id) ? <FaHeart className="text-red-600" aria-hidden="true" /> : <FaRegHeart aria-hidden="true" />}
               </button>
               <button
                 aria-label="share"

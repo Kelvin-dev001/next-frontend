@@ -1,10 +1,34 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi } from "react-icons/fa";
+import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi, FaRegHeart } from "react-icons/fa";
 import { SiBrandfolder } from "react-icons/si";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import { Api } from "@/lib/api";
+import useWishlist from "@/hooks/useWishlist";
+
+// Header icon with a count bubble. The count comes from this device's storage,
+// so it is empty in the server HTML and fills in right after hydration.
+function CountLink({ href, label, count, children }) {
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      aria-label={count ? `${label}, ${count} item${count !== 1 ? "s" : ""}` : label}
+      className="relative grid h-10 w-10 place-items-center rounded-full text-brand-700 hover:bg-brand-50"
+    >
+      {children}
+      {count > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute right-0.5 top-0.5 grid min-w-[18px] place-items-center rounded-full bg-red-600 px-1 text-[0.65rem] font-bold leading-[18px] text-white"
+        >
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </Link>
+  );
+}
 
 const menuSections = [
   { label: "All Products", icon: <FaStore />, link: "/products" },
@@ -28,6 +52,7 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [brands, setBrands] = useState(brandsProp);
   const [categories, setCategories] = useState(categoriesProp);
+  const wishlist = useWishlist();
 
   const shouldFetchBrands = brandsProp.length === 0;
   const shouldFetchCategories = categoriesProp.length === 0;
@@ -69,6 +94,10 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
             <AutoCompleteSearch onSelect={handleSearchSelect} placeholder="Search products, brands, categories..." />
           </div>
         </nav>
+
+        <CountLink href="/wishlist" label="Wishlist" count={wishlist.count}>
+          <FaRegHeart className="text-xl" aria-hidden="true" />
+        </CountLink>
 
         <button onClick={openDrawer} className="text-brand-700 md:hidden" aria-label="Search"><FaSearch className="text-xl" /></button>
       </div>
