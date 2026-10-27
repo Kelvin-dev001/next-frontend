@@ -55,6 +55,9 @@ export default function CheckoutPage() {
   const [quote, setQuote] = useState({ key: null, data: null, failed: false });
   // P10-4: optional "Create an account" for guests.
   const [account, setAccount] = useState({ create: false, password: "" });
+  // P10-5: the code being typed, and the one applied to the quote.
+  const [couponInput, setCouponInput] = useState("");
+  const [couponCode, setCouponCode] = useState("");
   const errorSummaryRef = useRef(null);
   const touched = useRef(false);
   const customer = useCustomer();
@@ -86,20 +89,21 @@ export default function CheckoutPage() {
 
   const itemsKey = cart.lines.map((l) => `${l.id}:${l.qty}`).join(",");
   const fulfilmentKey = form.method === "pickup" ? "pickup" : form.county ? `delivery:${form.county}` : "";
-  const quoteKey = itemsKey ? `${itemsKey}|${fulfilmentKey}` : "";
+  const quoteKey = itemsKey ? `${itemsKey}|${fulfilmentKey}|${couponCode}` : "";
 
-  // The API prices the cart for the chosen delivery; the browser never does.
+  // The API prices the cart for the chosen delivery and coupon; the browser
+  // never does.
   useEffect(() => {
     if (!quoteKey) return undefined;
     let cancelled = false;
     const t = setTimeout(() => {
-      const [itemsPart, fPart] = quoteKey.split("|");
+      const [itemsPart, fPart, cPart] = quoteKey.split("|");
       const items = itemsPart.split(",").map((s) => {
         const [productId, qty] = s.split(":");
         return { productId, quantity: Number(qty) };
       });
       const fulfilment = fPart === "pickup" ? { method: "pickup" } : fPart ? { method: "delivery", county: fPart.split(":")[1] } : undefined;
-      Api.quoteOrder({ items, fulfilment })
+      Api.quoteOrder({ items, fulfilment, couponCode: cPart || undefined })
         .then((res) => { if (!cancelled) setQuote({ key: quoteKey, data: res.data, failed: false }); })
         .catch(() => { if (!cancelled) setQuote({ key: quoteKey, data: null, failed: true }); });
     }, 250);
@@ -111,6 +115,9 @@ export default function CheckoutPage() {
   const tbc = Boolean(zone) && deliveryIsToBeConfirmed(zone);
   const deliveryChosen = form.method === "pickup" || Boolean(zone);
   const dueNow = q && deliveryChosen ? q.dueNow : null;
+  const appliedCoupon = couponCode && q?.coupon ? q.coupon : null;
+  const couponError = couponCode && q?.couponError ? q.couponError : "";
+  const applyCoupon = () => setCouponCode(couponInput.trim().toUpperCase());
   const lineErrors = submit.lineErrors.length ? submit.lineErrors : q?.lineErrors || [];
 
   const errors = {};
@@ -149,6 +156,8 @@ export default function CheckoutPage() {
           : { method: "delivery", county: form.county, town: form.town.trim(), address: form.address.trim(), notes: form.notes.trim() },
         items: cart.lines.map((l) => ({ productId: l.id, quantity: l.qty })),
         mpesaCode: form.mpesaCode.trim() || undefined,
+        // Only a code the quote accepted — never one already shown as invalid.
+        ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
         ...(creatingAccount ? { createAccount: true, password: account.password } : {}),
       });
       const order = res.data.order;
@@ -159,10 +168,16 @@ export default function CheckoutPage() {
       router.push(`/checkout/thank-you?order=${encodeURIComponent(order.orderNumber)}`);
     } catch (err) {
       const data = err?.response?.data;
+      // A refused coupon comes off, so the customer sees the real total before
+      // placing the order again — never charged without the discount unawares.
+      const couponRefused = data?.code === "COUPON_USED" || data?.code === "COUPON_INVALID";
+      if (couponRefused) setCouponCode("");
       setSubmit({
         busy: false,
         placed: false,
-        error: data?.message || "We couldn't reach our server. Check your connection and try again — your cart is saved.",
+        error: couponRefused
+          ? `${data.message} We've removed it — check the new total, then place your order.`
+          : data?.message || "We couldn't reach our server. Check your connection and try again — your cart is saved.",
         lineErrors: data?.lineErrors || [],
         emailTaken: data?.code === "EMAIL_TAKEN",
       });
@@ -381,17 +396,68 @@ export default function CheckoutPage() {
             </ul>
             <dl className="space-y-1 border-t border-gray-200 pt-3 text-sm">
               <div className="flex justify-between"><dt>Subtotal</dt><dd>{q ? formatKES(q.totals.subtotal) : "…"}</dd></div>
+              {appliedCoupon && q.totals.itemsDiscount > 0 && (
+                <div className="flex justify-between text-green-800"><dt>Coupon {appliedCoupon.code}</dt><dd>−{formatKES(q.totals.itemsDiscount)}</dd></div>
+              )}
               <div className="flex justify-between">
                 <dt>{form.method === "pickup" ? "Pickup" : "Delivery"}</dt>
                 <dd>
                   {form.method === "pickup" ? "No delivery fee" : !zone ? "Choose county" : tbc ? `${zone.priceDisplay} — confirmed by phone` : zone.priceDisplay}
                 </dd>
               </div>
+              {appliedCoupon && q.totals.deliveryDiscount > 0 && (
+                <div className="flex justify-between text-green-800"><dt>Coupon on delivery</dt><dd>−{formatKES(q.totals.deliveryDiscount)}</dd></div>
+              )}
               <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-bold">
                 <dt>{tbc ? "Pay now (items)" : "Total"}</dt>
                 <dd aria-live="polite">{dueNow == null ? "—" : formatKES(dueNow)}</dd>
               </div>
             </dl>
+            {appliedCoupon && tbc && appliedCoupon.appliesTo !== "items" && (
+              <p className="text-xs text-gray-700">
+                Your coupon also takes {appliedCoupon.percentOff}% off the delivery fee once we&apos;ve confirmed it.
+              </p>
+            )}
+
+            {/* P10-5. Not a nested <form> (invalid inside checkout's), so Enter
+                in the box applies the code instead of placing the order. */}
+            <div className="border-t border-gray-200 pt-3">
+              {appliedCoupon ? (
+                <p className="flex items-center justify-between gap-2 text-sm">
+                  <span>
+                    <strong>{appliedCoupon.code}</strong> applied — {appliedCoupon.description}
+                  </span>
+                  <button type="button" onClick={() => { setCouponCode(""); setCouponInput(""); }} className="shrink-0 font-semibold text-brand-700 underline">
+                    Remove
+                  </button>
+                </p>
+              ) : (
+                <>
+                  <label htmlFor="co-coupon" className="mb-1 block text-sm font-semibold">Coupon code</label>
+                  <div className="flex gap-2">
+                    <input
+                      id="co-coupon"
+                      className={`${FIELD} uppercase`}
+                      value={couponInput}
+                      maxLength={20}
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
+                      aria-describedby={couponError ? "co-coupon-error" : undefined}
+                      aria-invalid={Boolean(couponError)}
+                    />
+                    <button type="button" onClick={applyCoupon} disabled={couponInput.trim().length < 3}
+                      className="shrink-0 rounded-lg border-2 border-brand-700 px-4 font-semibold text-brand-700 disabled:opacity-50">
+                      Apply
+                    </button>
+                  </div>
+                  <div aria-live="polite">
+                    {couponError && <p id="co-coupon-error" className="mt-1 text-sm text-red-700">{couponError}</p>}
+                  </div>
+                </>
+              )}
+            </div>
             {quote.failed && quote.key === quoteKey && (
               <p className="text-sm text-red-700">We couldn&apos;t check prices. Check your connection.</p>
             )}

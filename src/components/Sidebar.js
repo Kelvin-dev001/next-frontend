@@ -23,6 +23,7 @@ import {
   Logout as LogoutIcon,
   Category as CategoryIcon,
   BrandingWatermark as BrandIcon,
+  LocalOffer as CouponIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -69,6 +70,7 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
     { text: "Products", icon: <ProductsIcon />, path: "/admin/products" },
     { text: "Orders", icon: <OrdersIcon />, path: "/admin/orders" },
     { text: "Customers", icon: <CustomersIcon />, path: "/admin/customers" },
+    { text: "Coupons", icon: <CouponIcon />, path: "/admin/coupons" },
     { text: "Categories", icon: <CategoryIcon />, path: "/admin/categories" },
     { text: "Brands", icon: <BrandIcon />, path: "/admin/brands" },
     { text: "Banners & Pop-ups", icon: <SlideshowIcon />, path: "/admin/hero-slides" },
