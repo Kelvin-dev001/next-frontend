@@ -33,6 +33,7 @@ const footerLinks = [
     // { label: "Returns", href: "/returns" },
     { label: "Shipping", href: "/shipping" },
     { label: "Track your order", href: "/track-order" },
+    { label: "My account", href: "/account" },
     // The page ships noindex while its copy awaits the owner's review (P10-3),
     // but customers must be able to read it, so it is linked.
     { label: "Privacy policy", href: "/privacy-policy" },

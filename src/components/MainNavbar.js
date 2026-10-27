@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi, FaRegHeart, FaShoppingBag, FaTruck } from "react-icons/fa";
+import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi, FaRegHeart, FaShoppingBag, FaTruck, FaRegUser } from "react-icons/fa";
 import { SiBrandfolder } from "react-icons/si";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import { Api } from "@/lib/api";
 import useWishlist from "@/hooks/useWishlist";
 import useCart from "@/hooks/useCart";
+import useCustomer from "@/hooks/useCustomer";
 
 // Header icon with a count bubble. The count comes from this device's storage,
 // so it is empty in the server HTML and fills in right after hydration.
@@ -56,6 +57,10 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
   const [categories, setCategories] = useState(categoriesProp);
   const wishlist = useWishlist();
   const cart = useCart();
+  const customer = useCustomer();
+  const signedIn = customer.status === "signedIn";
+  const accountHref = signedIn ? "/account" : "/account/login";
+  const accountLabel = signedIn ? `My account (${customer.user?.name?.split(" ")[0] || "signed in"})` : "Sign in";
 
   const shouldFetchBrands = brandsProp.length === 0;
   const shouldFetchCategories = categoriesProp.length === 0;
@@ -111,6 +116,17 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
         <CountLink href="/cart" label="Cart" count={cart.count}>
           <FaShoppingBag className="text-xl" aria-hidden="true" />
         </CountLink>
+
+        {/* Account (P10-4). Desktop only: on phones it is the first menu item,
+            so the header still fits a 320px screen. */}
+        <Link
+          href={accountHref}
+          prefetch={false}
+          aria-label={accountLabel}
+          className="hidden h-10 w-10 shrink-0 place-items-center rounded-full text-brand-700 hover:bg-brand-50 md:grid"
+        >
+          <FaRegUser className="text-xl" aria-hidden="true" />
+        </Link>
       </div>
 
       {drawerOpen && (
@@ -121,6 +137,9 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
               <button onClick={closeDrawer} aria-label="Close menu" className="rounded-lg bg-white p-2 shadow"><FaTimes className="text-2xl" /></button>
             </div>
             <p className="mb-2 text-lg font-bold">Menu</p>
+            <Link href={accountHref} onClick={closeDrawer} className={`${drawerItem} mb-2 bg-white font-semibold`}>
+              <FaRegUser className="text-brand-700" aria-hidden="true" /> {accountLabel}
+            </Link>
             <div className="mb-3"><AutoCompleteSearch onSelect={handleSearchSelect} placeholder="Quick search..." /></div>
 
             <hr className="my-2 border-gray-200" />
