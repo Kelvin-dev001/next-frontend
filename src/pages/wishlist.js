@@ -31,11 +31,18 @@ export default function WishlistPage() {
     Api.getProducts({ ids: idsKey, limit: idsKey.split(",").length, sort: "newest" })
       .then((res) => {
         if (cancelled) return;
+        const wanted = new Set(idsKey.split(","));
         const found = res.data?.products || [];
-        const foundIds = new Set(found.map((p) => p._id));
-        const gone = idsKey.split(",").filter((id) => !foundIds.has(id));
-        if (gone.length) remove(gone);
-        setResult({ key: idsKey, products: found, failed: false });
+        // Prune only when the API visibly honoured ?ids= (everything it sent
+        // back was asked for). An API that ignored the filter would send other
+        // products, and "not found" would then wrongly erase the saved list.
+        const honoured = found.every((p) => wanted.has(p._id));
+        if (honoured) {
+          const foundIds = new Set(found.map((p) => p._id));
+          const gone = [...wanted].filter((id) => !foundIds.has(id));
+          if (gone.length) remove(gone);
+        }
+        setResult({ key: idsKey, products: found.filter((p) => wanted.has(p._id)), failed: false });
       })
       .catch(() => {
         if (!cancelled) setResult({ key: idsKey, products: [], failed: true });
