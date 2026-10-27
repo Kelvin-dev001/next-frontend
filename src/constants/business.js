@@ -14,6 +14,8 @@ export const SITE_URL = "https://www.snaapconnections.co.ke";
 
 // ── Contact ────────────────────────────────────────────────────────────────
 // The ONLY number. Two older numbers were in circulation and are now retired.
+// Since P10-3 (owner, 27 Oct 2026) WhatsApp is for SUPPORT only: orders are
+// placed on the site through the cart and checkout, never "Buy on WhatsApp".
 export const WHATSAPP_NUMBER = "254117000900";
 export const PHONE_E164 = "+254117000900";
 export const PHONE_DISPLAY = "+254 117 000 900";
@@ -99,6 +101,31 @@ export const deliveryForCounty = (county) =>
   DELIVERY_ZONES.find((z) =>
     z.counties.some((c) => c.toLowerCase() === String(county).toLowerCase())
   ) || null;
+
+// ── Checkout & payment (P10-3) ─────────────────────────────────────────────
+// Owner-confirmed 27 Oct 2026. M-Pesa Buy Goods is the ONLY payment method; the
+// customer types the confirmation code and the shop checks it against the Till
+// statement. The API prices orders from snaap-backend/config/business.js, which
+// mirrors these values; scripts/ci/check-live-data.js fails if they drift.
+export const MPESA_TILL = "9478805";
+// The business name M-Pesa shows for this Till, which customers should check
+// before entering their PIN. null until the owner confirms the exact spelling —
+// the checkout only prints the line once it is set.
+export const MPESA_TILL_NAME = null;
+
+// Nairobi/Machakos: the order goes in with the delivery fee "to be confirmed".
+// The customer pays for the items at checkout and the delivery fee separately,
+// after the shop calls with it.
+export const deliveryIsToBeConfirmed = (zone) => Boolean(zone) && zone.priceKES == null;
+
+// Pickup from the shop. No delivery fee because nothing is delivered — never
+// present it as free delivery.
+export const PICKUP = {
+  label: "Pick up from our shop",
+  address: ADDRESS.full,
+};
+
+export const MAX_QTY_PER_PRODUCT = 10;
 
 // ── Social ─────────────────────────────────────────────────────────────────
 export const SOCIAL = {

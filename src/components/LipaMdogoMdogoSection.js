@@ -19,7 +19,7 @@ export default function LipaMdogoMdogoSection({ sections = [], products = [] }) 
           {section.subtitle ||
             "Own a phone now and pay in small amounts. Terms vary by device — message us on WhatsApp for the specific phone you want."}
         </p>
-        <ProductGrid items={products} eagerCount={4} size="compact" showWhatsApp showViewBtn />
+        <ProductGrid items={products} eagerCount={4} size="compact" showAddToCart showViewBtn />
       </div>
     </section>
   );

@@ -40,7 +40,7 @@ export default function PocketFriendlySection({ products: productsProp = [] }) {
         items={products}
         eagerCount={4}
         size="compact"
-        showWhatsApp
+        showAddToCart
         showViewBtn
         viewAllHref={`/products?sort=price-low&maxPrice=${POCKET_FRIENDLY_MAX_PRICE}`}
         viewAllLabel="View all pocket friendly picks"

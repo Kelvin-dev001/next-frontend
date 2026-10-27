@@ -1,11 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaHeart, FaRegHeart, FaWhatsapp, FaStar } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
-import { waLink, formatKES } from "@/constants/business";
+import { formatKES } from "@/constants/business";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
+import AddToCartButton from "@/components/AddToCartButton";
 import useWishlist from "@/hooks/useWishlist";
 
 const BADGE_BG = {
@@ -18,7 +19,7 @@ const BADGE_BG = {
 
 export default function ProductCard({
   product,
-  showWhatsApp = true,
+  showAddToCart = true,
   showViewBtn = true,
   badge,
   size = "compact",
@@ -44,8 +45,6 @@ export default function ProductCard({
     product?.thumbnail ||
     (Array.isArray(product?.images) && product.images.length > 0 && product.images[0]);
   const imgUrl = getOptimizedCloudinaryUrl(cloudUrl, { width: 720 }) || "/fallback.png";
-
-  const message = `Hello, am interested in buying (${product?.name}${product?.model ? ", " + product.model : ""}, KES ${product?.discountPrice || product?.price})`;
 
   const hasRealRating = typeof product?.rating === "number" && product.rating > 0;
   const price = product?.discountPrice || product?.price;
@@ -161,17 +160,11 @@ export default function ProductCard({
 
       {/* Actions */}
       <div className="relative z-[2] px-[0.8rem] pb-[0.8rem] pt-1 md:px-[1.2rem] md:pb-[1.2rem]">
-        {showWhatsApp && (
-          <Button
-            variant="whatsapp"
-            className="mb-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(waLink(message), "_blank");
-            }}
-          >
-            <FaWhatsapp /> Buy on WhatsApp
-          </Button>
+        {/* P10-3: orders are placed on the site; WhatsApp is support only. */}
+        {showAddToCart && (
+          <div className="mb-1">
+            <AddToCartButton product={product} stopPropagation />
+          </div>
         )}
         {showViewBtn && (
           <Button

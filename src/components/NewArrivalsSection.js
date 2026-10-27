@@ -14,7 +14,7 @@ export default function NewArrivalsSection({ products = [], title = "New Smartph
         items={products}
         eagerCount={6}
         size="compact"
-        showWhatsApp
+        showAddToCart
         showViewBtn
         viewAllHref="/products"
       />

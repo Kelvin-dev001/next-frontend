@@ -54,6 +54,13 @@ export const Api = {
   getProductReviews: (productId) => ApiClient.get(`/products/${productId}/reviews`),
   submitProductReview: (productId, payload) => ApiClient.post(`/products/${productId}/reviews`, payload),
 
+  // P10-3 checkout. The API prices everything; these only carry ids, quantities
+  // and the customer's details.
+  quoteOrder: (payload) => ApiClient.post("/orders/quote", payload),
+  placeOrder: (payload) => ApiClient.post("/orders", payload),
+  trackOrder: (payload) => ApiClient.post("/orders/track", payload),
+  submitPayment: (payload) => ApiClient.post("/orders/payment", payload),
+
   client: ApiClient,
 };
 

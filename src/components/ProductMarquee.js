@@ -30,7 +30,7 @@ export default function ProductMarquee({ products = [], direction = "left", spee
           <ProductCard
             product={product}
             imageSizes="(max-width: 640px) 46vw, 230px"
-            showWhatsApp
+            showAddToCart
             showViewBtn
           />
         </div>
