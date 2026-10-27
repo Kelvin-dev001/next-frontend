@@ -27,8 +27,10 @@ export default function ShippingPage() {
           Shipping &amp; Delivery
         </h1>
         <p className="mb-8 text-gray-500">
-          We deliver to five counties. The rates and times below are fixed — the price you see is
-          the price you pay. There is no free-delivery threshold and no hidden courier fee.
+          We deliver to five counties. Where the table shows a single rate, that is the price you
+          pay. Where it shows a range, we call you to confirm the exact fee and you pay it separately
+          from your items. There is no free-delivery threshold and no hidden courier fee. You can
+          also pick up from our shop in Mombasa.
         </p>
 
         <div className="mb-6 overflow-x-auto rounded-3xl border border-gray-200">
@@ -53,9 +55,9 @@ export default function ShippingPage() {
         </div>
 
         <p className="mb-8 text-sm text-gray-500">
-          These five counties are the complete list of areas we currently deliver to. Orders are
-          placed and confirmed on WhatsApp, where we agree the delivery details with you before
-          dispatch.
+          These five counties are the complete list of areas we currently deliver to. You order
+          online and choose delivery or pickup from our Mombasa shop; we contact you to arrange
+          delivery.
         </p>
 
         <a

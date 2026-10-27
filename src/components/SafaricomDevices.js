@@ -11,9 +11,9 @@ import ProductMarquee from "@/components/ProductMarquee";
  *   variant="grid"  /safaricom/devices, which IS the shop — every device
  *                   visible at once, nothing hidden behind a swipe
  *
- * Both render ProductCard, so "Buy on WhatsApp" on a Safaricom router is the
- * same button, the same number and the same message as everywhere else on the
- * site. There is no second checkout to build.
+ * Both render ProductCard, so "Add to cart" on a Safaricom router is the
+ * same button and the same checkout as everywhere else on the
+ * site (P10-3). There is no second checkout to build.
  *
  * Empty shelves never reach this component (see utils/safaricomDevices.js).
  */

@@ -9,7 +9,7 @@
  *   - No prices anywhere. Home Fibre / packages -> "ask on WhatsApp". Safaricom
  *     terms stay in the owner-approved, hedged wording ("subject to the current
  *     offering", "depending on availability") — never invent a figure or term.
- *   - WhatsApp is the only checkout: every CTA is a wa.me link built by waLink()
+ *   - Services are enquiries, not cart items (P10-3): every CTA is a wa.me link built by waLink()
  *     on the page, from the prefilled `message` here.
  *
  * Content model — each service is:
@@ -798,7 +798,7 @@ export const SAFARICOM_DEVICE_SHELVES = [
   {
     type: "smartphone",
     title: "Smartphones",
-    blurb: "Tap a phone for its price, full specification and what it comes with. Order on WhatsApp.",
+    blurb: "Tap a phone for its price, full specification and what it comes with. Order online and pay with M-Pesa.",
   },
   {
     type: "router",

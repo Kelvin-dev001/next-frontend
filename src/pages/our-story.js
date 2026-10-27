@@ -37,7 +37,7 @@ export default function OurStoryPage() {
         <p className="mb-6 text-gray-500">
           The full {BUSINESS_NAME} story is coming soon. The short version, and everything we can
           state for certain today: we&apos;re a smartphone and accessories shop based in Mombasa,
-          serving customers across Kenya, with WhatsApp as our checkout.
+          serving customers across Kenya online and in store.
         </p>
 
         <div aria-hidden dangerouslySetInnerHTML={{ __html: "<!-- END PLACEHOLDER COPY -->" }} />
