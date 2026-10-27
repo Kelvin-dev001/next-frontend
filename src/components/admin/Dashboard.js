@@ -10,9 +10,11 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import { ShoppingCart, People, LocalShipping, MonetizationOn } from "@mui/icons-material";
+import Link from "next/link";
+import { ShoppingCart, PendingActions, ReceiptLong, MonetizationOn } from "@mui/icons-material";
 import { BarChart, PieChart } from "@mui/x-charts";
 import { Api } from "@/lib/api";
+import { formatKES } from "@/constants/business";
 import ErrorAlert from "@/components/ErrorAlert";
 import AdminReviewsTable from "@/components/admin/AdminReviewsTable";
 
@@ -27,20 +29,16 @@ export default function Dashboard() {
   const [productDistribution, setProductDistribution] = useState([]);
 
   useEffect(() => {
+    // P10-3: one request to /admin/dashboard. The four calls this replaced asked
+    // /orders and /products for stats parameters neither route ever supported.
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [statsRes, ordersRes, salesRes, productsRes] = await Promise.all([
-          Api.get("/orders", { params: { status: "completed", limit: 1, statsOnly: true } }),
-          Api.get("/orders", { params: { limit: 5 } }),
-          Api.get("/orders", { params: { statsBy: "month", limit: 6 } }),
-          Api.get("/products", { params: { limit: 100, stats: "category" } }),
-        ]);
-
-        setStats(statsRes?.data?.stats || {});
-        setRecentOrders(Array.isArray(ordersRes?.data?.orders) ? ordersRes.data.orders : ordersRes.data || []);
-        setSalesData(Array.isArray(salesRes?.data?.stats) ? salesRes.data.stats : []);
-        setProductDistribution(Array.isArray(productsRes?.data?.stats) ? productsRes.data.stats : []);
+        const res = await Api.get("/admin/dashboard");
+        setStats(res.data?.stats || {});
+        setRecentOrders(res.data?.recentOrders || []);
+        setSalesData(res.data?.sales || []);
+        setProductDistribution(res.data?.productDistribution || []);
       } catch (err) {
         setError(err?.response?.data?.message || "Failed to load dashboard data");
       } finally {
@@ -67,17 +65,17 @@ export default function Dashboard() {
       </Typography>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <StatCard icon={<ShoppingCart color="primary" sx={{ fontSize: 32, mr: 2 }} />} title="Orders" value={stats?.totalOrders ?? 0} subtitle="Total orders placed" />
-        <StatCard icon={<People color="secondary" sx={{ fontSize: 32, mr: 2 }} />} title="Customers" value={stats?.totalCustomers ?? 0} subtitle="Registered customers" />
-        <StatCard icon={<LocalShipping color="success" sx={{ fontSize: 32, mr: 2 }} />} title="Deliveries" value={stats?.totalDelivered ?? 0} subtitle="Orders delivered" />
-        <StatCard icon={<MonetizationOn color="warning" sx={{ fontSize: 32, mr: 2 }} />} title="Revenue" value={`KES ${stats?.totalRevenue ? stats.totalRevenue.toLocaleString() : "0"}`} subtitle="Total revenue" />
+        <StatCard icon={<PendingActions color="warning" sx={{ fontSize: 32, mr: 2 }} />} title="New orders" value={stats?.pendingOrders ?? 0} subtitle="Pending — waiting to be confirmed" />
+        <StatCard icon={<ReceiptLong color="info" sx={{ fontSize: 32, mr: 2 }} />} title="Codes to check" value={stats?.paymentsToCheck ?? 0} subtitle="M-Pesa codes to find on the statement" />
+        <StatCard icon={<ShoppingCart color="primary" sx={{ fontSize: 32, mr: 2 }} />} title="Orders" value={stats?.totalOrders ?? 0} subtitle={`${stats?.totalDelivered ?? 0} delivered`} />
+        <StatCard icon={<MonetizationOn color="success" sx={{ fontSize: 32, mr: 2 }} />} title="Revenue" value={formatKES(stats?.totalRevenue || 0)} subtitle="Paid, dispatched and delivered" />
       </Grid>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ borderRadius: 2, height: "100%" }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
                 Sales Overview (Last 6 Months)
               </Typography>
               <Box sx={{ height: 300 }}>
@@ -87,8 +85,8 @@ export default function Dashboard() {
                   series={[
                     {
                       dataKey: "total",
-                      label: "Total Sales (KES)",
-                      valueFormatter: (v) => `KES ${Number(v || 0).toLocaleString()}`,
+                      label: "Paid sales",
+                      valueFormatter: (v) => formatKES(Number(v || 0)),
                       color: theme.palette.primary.main,
                     },
                   ]}
@@ -97,10 +95,10 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ borderRadius: 2, height: "100%" }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
                 Product Categories
               </Typography>
               <Box sx={{ height: 300 }}>
@@ -131,7 +129,7 @@ export default function Dashboard() {
 
       <Card sx={{ borderRadius: 2, mb: 4 }}>
         <CardContent>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+          <Typography variant="h6" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
             Recent Orders
           </Typography>
           {recentOrders.length > 0 ? (
@@ -151,7 +149,7 @@ export default function Dashboard() {
                     <tr key={order._id} style={{ borderBottom: `1px solid ${theme.palette.grey[200]}` }}>
                       <td style={{ padding: "12px 16px" }}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          #{order.orderNumber}
+                          <Link href="/admin/orders">{order.orderNumber || "Legacy order"}</Link>
                         </Typography>
                       </td>
                       <td style={{ padding: "12px 16px" }}>
@@ -162,7 +160,11 @@ export default function Dashboard() {
                       </td>
                       <td style={{ padding: "12px 16px" }}>
                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          KES {Number(order.totalAmount || 0).toLocaleString()}
+                          {!order.totals
+                            ? "—"
+                            : order.totals.total == null
+                              ? `${formatKES((order.totals.subtotal || 0) - (order.totals.itemsDiscount || 0))} + delivery`
+                              : formatKES(order.totals.total)}
                         </Typography>
                       </td>
                       <td style={{ padding: "12px 16px" }}>
@@ -188,14 +190,14 @@ export default function Dashboard() {
 
 function StatCard({ icon, title, value, subtitle }) {
   return (
-    <Grid item xs={12} sm={6} md={3}>
+    <Grid size={{ xs: 12, sm: 6, md: 3 }}>
       <Card sx={{ borderRadius: 2 }}>
         <CardContent>
           <Box display="flex" alignItems="center" mb={2}>
             {icon}
-            <Typography variant="h6">{title}</Typography>
+            <Typography variant="h6" component="h2">{title}</Typography>
           </Box>
-          <Typography variant="h4" fontWeight={700}>
+          <Typography variant="h4" component="p" fontWeight={700}>
             {value}
           </Typography>
           <Typography variant="body2" color="textSecondary">
@@ -207,34 +209,18 @@ function StatCard({ icon, title, value, subtitle }) {
   );
 }
 
-function StatusChip({ status, theme }) {
-  const bg =
-    status === "completed"
-      ? "success.light"
-      : status === "pending"
-      ? "warning.light"
+function StatusChip({ status }) {
+  // Explicit pairs: MUI's *.light fills with *.dark text measured under 4.5:1.
+  const done = ["paid", "dispatched", "delivered"].includes(status);
+  const tone = done
+    ? { bgcolor: "#dcfce7", color: "#166534" }
+    : status === "pending"
+      ? { bgcolor: "#fef3c7", color: "#92400e" }
       : status === "cancelled"
-      ? "error.light"
-      : "grey.100";
-  const color =
-    status === "completed"
-      ? "success.dark"
-      : status === "pending"
-      ? "warning.dark"
-      : status === "cancelled"
-      ? "error.dark"
-      : "grey.800";
+        ? { bgcolor: "#fee2e2", color: "#991b1b" }
+        : { bgcolor: "#f3f4f6", color: "#374151" };
   return (
-    <Box
-      sx={{
-        display: "inline-block",
-        px: 1.5,
-        py: 0.5,
-        borderRadius: 1,
-        bgcolor: bg,
-        color,
-      }}
-    >
+    <Box sx={{ display: "inline-block", px: 1.5, py: 0.5, borderRadius: 1, ...tone }}>
       <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
         {status}
       </Typography>

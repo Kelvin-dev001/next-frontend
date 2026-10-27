@@ -1,399 +1,247 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  Box, Button, Typography, TextField, Card, CardContent, Table, TableBody, TableCell, TableContainer,
-  Grid, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
-  Divider, useTheme, useMediaQuery, CircularProgress, Tooltip, TablePagination, Select, MenuItem,
-  InputLabel, FormControl
+  Alert, Box, Button, Card, CardContent, Chip, CircularProgress, Dialog, DialogActions, DialogContent,
+  DialogTitle, Divider, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, Snackbar, Stack,
+  Tab, Tabs, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField,
+  Tooltip, Typography, useMediaQuery, useTheme,
 } from "@mui/material";
-import { Search, Clear, Visibility, LocalShipping, CheckCircle, Cancel, AccessTime } from "@mui/icons-material";
+import { Search, Clear, Visibility, Refresh, WhatsApp, Phone } from "@mui/icons-material";
 import { format } from "date-fns";
 import { Api } from "@/lib/api";
-import ErrorAlert from "@/components/ErrorAlert";
+import { formatKES, deliveryForCounty } from "@/constants/business";
+
+// P10-3: orders are placed on the site and handled here. Payment is M-Pesa Buy
+// Goods — a customer's code is a claim until it's found on the Till statement,
+// so every code is verified (or rejected) by hand. Verifying the last payment
+// due marks the order paid automatically (the API does that).
+
+const STATUSES = ["pending", "confirmed", "paid", "dispatched", "delivered", "cancelled"];
+const STATUS_LABEL = {
+  pending: "Pending", confirmed: "Confirmed", paid: "Paid", dispatched: "Dispatched", delivered: "Delivered", cancelled: "Cancelled",
+};
+// Explicit chip colours: MUI's default warning (orange) and info (light blue)
+// fills put white text at ~3:1, which fails WCAG AA. These pairs clear 4.5:1.
+const TONE = {
+  warning: { bgcolor: "#fef3c7", color: "#92400e" },
+  info: { bgcolor: "#e0f2fe", color: "#075985" },
+  success: { bgcolor: "#dcfce7", color: "#166534" },
+  primary: { bgcolor: "#dbeafe", color: "#1e40af" },
+  error: { bgcolor: "#fee2e2", color: "#991b1b" },
+  default: { bgcolor: "#f3f4f6", color: "#374151" },
+};
+const StatusChip = ({ tone = "default", label, outlined }) => (
+  <Chip size="small" label={label} variant={outlined ? "outlined" : "filled"} sx={outlined ? { color: "#374151" } : TONE[tone]} />
+);
+const STATUS_COLOR = {
+  pending: "warning", confirmed: "info", paid: "success", dispatched: "primary", delivered: "success", cancelled: "default",
+};
+const FILTERS = [
+  { value: "all", label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "payment-check", label: "Codes to check" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "paid", label: "Paid" },
+  { value: "dispatched", label: "Dispatched" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+];
+const PART_LABEL = { full: "Full payment", items: "Items", delivery: "Delivery fee" };
+const REFRESH_MS = 60 * 1000;
+
+const when = (d) => (d ? format(new Date(d), "dd MMM yyyy, HH:mm") : "");
+const waNumber = (phone) => String(phone || "").replace(/^\+/, "");
+
+// One word for the money side of an order, for the list.
+function paymentChip(order) {
+  if (!order.orderNumber) return <StatusChip label="Legacy" />;
+  const parts = Object.values(order.payment || {});
+  if (parts.some((p) => p.state === "submitted")) return <StatusChip tone="warning" label="Code to check" />;
+  if (parts.every((p) => p.state === "verified" || p.state === "none")) return <StatusChip tone="success" label="Paid" />;
+  if (parts.some((p) => p.state === "awaiting-fee")) {
+    const itemsPaid = order.payment?.items?.state === "verified";
+    return <StatusChip tone="info" label={itemsPaid ? "Set delivery fee" : "Unpaid · fee TBC"} />;
+  }
+  return <StatusChip outlined label="Unpaid" />;
+}
+
+function totalText(order) {
+  const t = order.totals || {};
+  if (!order.orderNumber) return "—";
+  if (t.total == null) return `${formatKES((t.subtotal || 0) - (t.itemsDiscount || 0))} + delivery`;
+  return formatKES(t.total);
+}
 
 export default function Orders() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [orders, setOrders] = useState([]);
+  const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [error, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalOrders, setTotalOrders] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [selectedId, setSelectedId] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const params = {
-          page: page + 1,
-          limit: rowsPerPage,
-          search: searchTerm || undefined,
-          status: statusFilter === "all" ? undefined : statusFilter,
-        };
-        const response = await Api.get("/orders", { params });
-        let fetchedOrders;
-        let count;
-        if (Array.isArray(response.data)) {
-          fetchedOrders = response.data;
-          count = response.data.length;
-        } else if (Array.isArray(response.data.orders)) {
-          fetchedOrders = response.data.orders;
-          count = response.data.count || response.data.orders.length;
-        } else {
-          fetchedOrders = [];
-          count = 0;
-        }
-        setOrders(fetchedOrders);
-        setTotalOrders(count);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load orders");
-        setOrders([]);
-        setTotalOrders(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, [page, rowsPerPage, searchTerm, statusFilter]);
+  // Stable, so the open order dialog doesn't refetch every time the list refreshes.
+  const notify = useCallback((message, severity = "success") => setSnackbar({ open: true, message, severity }), []);
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const load = useCallback(async () => {
     try {
-      setLoading(true);
-      await Api.patch(`/orders/${orderId}/status`, { status: newStatus });
-      const params = {
-        page: page + 1,
-        limit: rowsPerPage,
-        search: searchTerm || undefined,
-        status: statusFilter === "all" ? undefined : statusFilter,
-      };
-      const response = await Api.get("/orders", { params });
-      const fetchedOrders = Array.isArray(response.data?.orders)
-        ? response.data.orders
-        : Array.isArray(response.data)
-        ? response.data
-        : [];
-      const count = response.data?.count || fetchedOrders.length;
-      setOrders(fetchedOrders);
-      setTotalOrders(count);
+      const res = await Api.get("/orders", {
+        params: { page: page + 1, limit: rowsPerPage, search: search || undefined, status: filter === "all" ? undefined : filter },
+      });
+      setOrders(res.data?.orders || []);
+      setCount(res.data?.count || 0);
+      setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update order status");
+      setError(err?.response?.data?.message || "Failed to load orders");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage, search, filter]);
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES" }).format(price || 0);
+  useEffect(() => {
+    load();
+    const timer = setInterval(() => { if (document.visibilityState === "visible") load(); }, REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [load]);
 
-  if (loading && orders.length === 0) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) return <ErrorAlert error={error} onClose={() => setError(null)} />;
+  // Search waits until typing pauses, so each keystroke isn't a request.
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(0); }, 400);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   return (
     <Box sx={{ p: isMobile ? 2 : 3 }}>
-      <Typography variant="h4" component="h1" sx={{ mb: 3, fontWeight: 600 }}>
-        Orders Management
-      </Typography>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>Orders</Typography>
+        <Tooltip title="Refresh">
+          <IconButton aria-label="Refresh orders" onClick={() => { setLoading(true); load(); }}><Refresh /></IconButton>
+        </Tooltip>
+      </Stack>
 
-      <Card sx={{ mb: 3, borderRadius: 2 }}>
-        <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(0);
-              }}
-              InputProps={{
-                startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />,
-                endAdornment: searchTerm && (
-                  <IconButton
-                    onClick={() => {
-                      setSearchTerm("");
-                      setPage(0);
-                    }}
-                  >
-                    <Clear fontSize="small" />
-                  </IconButton>
-                ),
-              }}
-            />
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(0);
-                }}
-              >
-                <MenuItem value="all">All Statuses</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="processing">Processing</MenuItem>
-                <MenuItem value="shipped">Shipped</MenuItem>
-                <MenuItem value="delivered">Delivered</MenuItem>
-                <MenuItem value="cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
+      <Card sx={{ mb: 2, borderRadius: 2 }}>
+        <CardContent sx={{ pb: "12px !important" }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search order no., name, phone or M-Pesa code"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            inputProps={{ "aria-label": "Search orders" }}
+            InputProps={{
+              startAdornment: <Search sx={{ color: "action.active", mr: 1 }} />,
+              endAdornment: searchInput && (
+                <IconButton aria-label="Clear search" size="small" onClick={() => setSearchInput("")}><Clear fontSize="small" /></IconButton>
+              ),
+            }}
+          />
+          <Tabs
+            value={filter}
+            onChange={(_, v) => { setFilter(v); setPage(0); }}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{ mt: 1 }}
+            aria-label="Filter orders by status"
+          >
+            {FILTERS.map((f) => <Tab key={f.value} value={f.value} label={f.label} />)}
+          </Tabs>
         </CardContent>
       </Card>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <Card sx={{ borderRadius: 2 }}>
         <CardContent>
-          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: theme.palette.grey[100], "& th": { fontWeight: 600 } }}>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
-                    <TableRow key={order._id} hover>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          #{order.orderNumber}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{order.customer?.name || "Guest"}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {order.customer?.phone || order.customer?.email || ""}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">{format(new Date(order.createdAt), "dd MMM yyyy")}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {format(new Date(order.createdAt), "hh:mm a")}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {formatPrice(order.totalAmount)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={order.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <Tooltip title="View Details">
-                            <IconButton size="small" color="primary" onClick={() => { setSelectedOrder(order); setOpenDialog(true); }}>
-                              <Visibility fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Update Status">
-                            <FormControl size="small" sx={{ minWidth: 120 }}>
-                              <Select
-                                value={order.status}
-                                onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                sx={{ height: "32px" }}
-                              >
-                                <MenuItem value="pending">Pending</MenuItem>
-                                <MenuItem value="processing">Processing</MenuItem>
-                                <MenuItem value="shipped">Shipped</MenuItem>
-                                <MenuItem value="delivered">Delivered</MenuItem>
-                                <MenuItem value="cancelled">Cancelled</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
+          {loading && orders.length === 0 ? (
+            <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
+          ) : (
+            <>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ "& th": { fontWeight: 600 } }}>
+                      <TableCell>Order</TableCell>
+                      <TableCell>Customer</TableCell>
+                      <TableCell>Delivery</TableCell>
+                      <TableCell>Total</TableCell>
+                      <TableCell>Payment</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="right">Open</TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      No orders found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={totalOrders}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-          />
+                  </TableHead>
+                  <TableBody>
+                    {orders.length === 0 ? (
+                      <TableRow><TableCell colSpan={7} align="center">No orders found.</TableCell></TableRow>
+                    ) : orders.map((o) => (
+                      <TableRow key={o._id} hover>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>{o.orderNumber || "Legacy order"}</Typography>
+                          <Typography variant="caption" color="text.secondary">{when(o.createdAt)}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{o.customer?.name || "—"}</Typography>
+                          <Typography variant="caption" color="text.secondary">{o.customer?.phone || o.phone || ""}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          {o.fulfilment?.method === "pickup" ? "Pickup" : o.fulfilment?.county || "—"}
+                        </TableCell>
+                        <TableCell>{totalText(o)}</TableCell>
+                        <TableCell>{paymentChip(o)}</TableCell>
+                        <TableCell>
+                          <StatusChip tone={STATUS_COLOR[o.status]} label={STATUS_LABEL[o.status] || o.status} />
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton aria-label={`Open order ${o.orderNumber || o._id}`} color="primary" onClick={() => setSelectedId(o._id)}>
+                            <Visibility fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component="div"
+                count={count}
+                page={page}
+                onPageChange={(_, p) => setPage(p)}
+                rowsPerPage={rowsPerPage}
+                rowsPerPageOptions={[10, 20, 50]}
+                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+              />
+            </>
+          )}
         </CardContent>
       </Card>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="md">
-        {selectedOrder && (
-          <>
-            <DialogTitle>
-              Order #{selectedOrder.orderNumber}
-              <Typography variant="body2" color="text.secondary">
-                {format(new Date(selectedOrder.createdAt), "PPPPpp")}
-              </Typography>
-            </DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Section title="Customer Information">
-                    <Typography variant="body1" sx={{ fontWeight: 500, mb: 1 }}>
-                      {selectedOrder.customer?.name || "Guest Customer"}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>Phone:</strong> {selectedOrder.customer?.phone || "N/A"}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>Email:</strong> {selectedOrder.customer?.email || "N/A"}
-                    </Typography>
-                    {selectedOrder.shippingAddress && (
-                      <>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          <strong>Address:</strong> {selectedOrder.shippingAddress.street}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>City:</strong> {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.country}
-                        </Typography>
-                      </>
-                    )}
-                  </Section>
+      {selectedId && (
+        <OrderDialog
+          id={selectedId}
+          onClose={() => setSelectedId(null)}
+          onChanged={load}
+          notify={notify}
+          fullScreen={isMobile}
+        />
+      )}
 
-                  <Section title="Order Summary">
-                    <Row label="Subtotal:" value={formatPrice(selectedOrder.subtotal)} />
-                    <Row label="Shipping:" value={selectedOrder.shippingFee === 0 ? "FREE" : formatPrice(selectedOrder.shippingFee)} />
-                    <Divider sx={{ my: 1 }} />
-                    <Row label="Total:" value={formatPrice(selectedOrder.totalAmount)} bold />
-                    <Row label="Payment Method:" value={selectedOrder.paymentMethod} />
-                    <Row label="Delivery Method:" value={selectedOrder.deliveryMethod} />
-                  </Section>
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <Section title="Order Items">
-                    {selectedOrder.items.map((item, index) => (
-                      <Box
-                        key={index}
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 2,
-                          pb: 2,
-                          borderBottom: index < selectedOrder.items.length - 1 ? "1px solid #eee" : "none",
-                        }}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Box
-                            sx={{
-                              width: 60,
-                              height: 60,
-                              borderRadius: 1,
-                              overflow: "hidden",
-                              mr: 2,
-                              bgcolor: "grey.200",
-                            }}
-                          >
-                            {item.product?.images?.[0] && (
-                              <img
-                                src={item.product.images[0]}
-                                alt={item.product.name}
-                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                              />
-                            )}
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {item.product?.name || "Product not available"}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {item.quantity} × {formatPrice(item.price)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {formatPrice(item.price * item.quantity)}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Section>
-
-                  <Section title="Order Status">
-                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                      <StatusIcon status={selectedOrder.status} />
-                      <Box>
-                        <Typography variant="body1" sx={{ fontWeight: 500, textTransform: "capitalize" }}>
-                          {selectedOrder.status}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Last updated: {format(new Date(selectedOrder.updatedAt), "PPPPpp")}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <FormControl fullWidth>
-                      <InputLabel>Update Status</InputLabel>
-                      <Select
-                        value={selectedOrder.status}
-                        label="Update Status"
-                        onChange={(e) => {
-                          const newStatus = e.target.value;
-                          handleStatusChange(selectedOrder._id, newStatus);
-                          setSelectedOrder((prev) => ({ ...prev, status: newStatus }));
-                        }}
-                      >
-                        <MenuItem value="pending">Pending</MenuItem>
-                        <MenuItem value="processing">Processing</MenuItem>
-                        <MenuItem value="shipped">Shipped</MenuItem>
-                        <MenuItem value="delivered">Delivered</MenuItem>
-                        <MenuItem value="cancelled">Cancelled</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Section>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDialog(false)} sx={{ borderRadius: "50px" }}>
-                Close
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+      <Snackbar open={snackbar.open} autoHideDuration={3500} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 }
 
 function Section({ title, children }) {
   return (
-    <Box sx={{ bgcolor: "background.paper", p: 2, borderRadius: 1, mb: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-        {title}
-      </Typography>
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{title}</Typography>
       {children}
     </Box>
   );
@@ -401,69 +249,225 @@ function Section({ title, children }) {
 
 function Row({ label, value, bold }) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mb: 0.5 }}>
       <Typography variant="body2">{label}</Typography>
-      <Typography variant="body2" sx={{ fontWeight: bold ? 600 : 400 }}>
-        {value}
-      </Typography>
+      <Typography variant="body2" sx={{ fontWeight: bold ? 700 : 400, textAlign: "right" }}>{value}</Typography>
     </Box>
   );
 }
 
-function StatusBadge({ status }) {
-  const map = {
-    delivered: { bg: "success.light", color: "success.dark", icon: <CheckCircle fontSize="small" /> },
-    cancelled: { bg: "error.light", color: "error.dark", icon: <Cancel fontSize="small" /> },
-    shipped: { bg: "info.light", color: "info.dark", icon: <LocalShipping fontSize="small" /> },
-    processing: { bg: "warning.light", color: "warning.dark", icon: <AccessTime fontSize="small" /> },
-    pending: { bg: "warning.light", color: "warning.dark", icon: <AccessTime fontSize="small" /> },
-  };
-  const { bg, color, icon } = map[status] || { bg: "grey.100", color: "grey.800", icon: <AccessTime fontSize="small" /> };
-  return (
-    <Box
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 0.5,
-        px: 1.5,
-        py: 0.5,
-        borderRadius: 1,
-        bgcolor: bg,
-        color,
-      }}
-    >
-      {icon}
-      <Typography variant="body2" sx={{ textTransform: "capitalize" }}>
-        {status}
-      </Typography>
-    </Box>
-  );
-}
+function OrderDialog({ id, onClose, onChanged, notify, fullScreen }) {
+  const [order, setOrder] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [fee, setFee] = useState("");
+  const [newCode, setNewCode] = useState("");
+  const [notes, setNotes] = useState(null);
 
-function StatusIcon({ status }) {
-  const map = {
-    delivered: { bg: "success.light", color: "success.dark", icon: <CheckCircle fontSize="small" /> },
-    cancelled: { bg: "error.light", color: "error.dark", icon: <Cancel fontSize="small" /> },
-    shipped: { bg: "info.light", color: "info.dark", icon: <LocalShipping fontSize="small" /> },
-    processing: { bg: "warning.light", color: "warning.dark", icon: <AccessTime fontSize="small" /> },
-    pending: { bg: "warning.light", color: "warning.dark", icon: <AccessTime fontSize="small" /> },
+  useEffect(() => {
+    let cancelled = false;
+    Api.get(`/orders/${id}`)
+      .then((res) => { if (!cancelled) setOrder(res.data.order); })
+      .catch((err) => { if (!cancelled) notify(err?.response?.data?.message || "Failed to load order", "error"); });
+    return () => { cancelled = true; };
+  }, [id, notify]);
+
+  const patch = async (body, okMessage) => {
+    setBusy(true);
+    try {
+      const res = await Api.patch(`/orders/${id}`, body);
+      setOrder(res.data.order);
+      notify(okMessage);
+      onChanged();
+      return true;
+    } catch (err) {
+      notify(err?.response?.data?.message || "Update failed", "error");
+      return false;
+    } finally {
+      setBusy(false);
+    }
   };
-  const { bg, color, icon } = map[status] || { bg: "grey.100", color: "grey.800", icon: <AccessTime fontSize="small" /> };
+
+  if (!order) {
+    return (
+      <Dialog open onClose={onClose} fullWidth maxWidth="md" fullScreen={fullScreen}>
+        <DialogContent><Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box></DialogContent>
+      </Dialog>
+    );
+  }
+
+  const legacy = !order.orderNumber;
+  const t = order.totals || {};
+  const f = order.fulfilment || {};
+  const range = deliveryForCounty(f.county);
+  const feeEditable = !legacy && f.method === "delivery" && ["tbc", "confirmed"].includes(order.deliveryStatus);
+  const unpaidKinds = Object.entries(order.payment || {}).filter(([, p]) => p.state === "due" || p.state === "submitted").map(([k]) => k);
+
   return (
-    <Box
-      sx={{
-        width: 40,
-        height: 40,
-        borderRadius: "50%",
-        bgcolor: bg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        mr: 2,
-        color,
-      }}
-    >
-      {icon}
-    </Box>
+    <Dialog open onClose={onClose} fullWidth maxWidth="md" fullScreen={fullScreen} aria-labelledby="order-dialog-title">
+      <DialogTitle id="order-dialog-title">
+        {legacy ? "Legacy order" : `Order ${order.orderNumber}`}
+        <Typography variant="body2" color="text.secondary">Placed {when(order.createdAt)}</Typography>
+      </DialogTitle>
+      <DialogContent dividers>
+        {legacy ? (
+          <Alert severity="info">
+            This order is from before online checkout and can&apos;t be edited here. Phone: {order.phone || "—"}.
+          </Alert>
+        ) : (
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Section title="Customer">
+                <Typography variant="body1" fontWeight={600}>{order.customer?.name}</Typography>
+                <Stack direction="row" spacing={1} sx={{ my: 1 }} flexWrap="wrap">
+                  <Button size="small" variant="outlined" startIcon={<Phone />} href={`tel:${order.customer?.phone}`}>{order.customer?.phone}</Button>
+                  <Button size="small" variant="outlined" color="success" startIcon={<WhatsApp />} href={`https://wa.me/${waNumber(order.customer?.phone)}`} target="_blank" rel="noopener">WhatsApp</Button>
+                </Stack>
+                {order.customer?.email && <Typography variant="body2">{order.customer.email}</Typography>}
+              </Section>
+
+              <Section title={f.method === "pickup" ? "Pickup from the shop" : "Delivery"}>
+                {f.method === "pickup" ? (
+                  <Typography variant="body2">Customer collects from Digo Rd.</Typography>
+                ) : (
+                  <>
+                    <Typography variant="body2"><strong>{f.county}</strong>{f.town ? ` — ${f.town}` : ""}</Typography>
+                    <Typography variant="body2">{f.address}</Typography>
+                  </>
+                )}
+                {f.notes && <Typography variant="body2" sx={{ mt: 1 }}><strong>Notes:</strong> {f.notes}</Typography>}
+              </Section>
+
+              <Section title="Status">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="order-status-label">Status</InputLabel>
+                  <Select
+                    labelId="order-status-label"
+                    label="Status"
+                    value={order.status}
+                    disabled={busy}
+                    onChange={(e) => patch({ status: e.target.value }, `Status set to ${STATUS_LABEL[e.target.value]}`)}
+                  >
+                    {STATUSES.map((s) => <MenuItem key={s} value={s}>{STATUS_LABEL[s]}</MenuItem>)}
+                  </Select>
+                </FormControl>
+                <Box component="ul" sx={{ pl: 2, mt: 1, mb: 0 }}>
+                  {(order.statusHistory || []).slice().reverse().map((h, i) => (
+                    <Typography component="li" variant="caption" display="list-item" key={i} color="text.secondary">
+                      {when(h.at)} — {STATUS_LABEL[h.status] || h.status}{h.note ? `: ${h.note}` : ""}
+                    </Typography>
+                  ))}
+                </Box>
+              </Section>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Section title="Items">
+                {(order.items || []).map((item, i) => (
+                  <Row key={i} label={`${item.name} × ${item.quantity}`} value={formatKES(item.lineTotal)} />
+                ))}
+                <Divider sx={{ my: 1 }} />
+                <Row label="Subtotal" value={formatKES(t.subtotal)} />
+                {t.itemsDiscount > 0 && <Row label={`Coupon ${order.coupon?.code || ""}`} value={`−${formatKES(t.itemsDiscount)}`} />}
+                <Row
+                  label={f.method === "pickup" ? "Pickup" : "Delivery"}
+                  value={f.method === "pickup" ? "No fee" : t.deliveryFee == null ? `To be confirmed (${range?.priceDisplay || ""})` : formatKES(t.deliveryFee)}
+                />
+                {t.deliveryDiscount > 0 && <Row label="Coupon on delivery" value={`−${formatKES(t.deliveryDiscount)}`} />}
+                <Row label="Total" value={totalText(order)} bold />
+              </Section>
+
+              {feeEditable && (
+                <Section title="Delivery fee">
+                  <Stack direction="row" spacing={1}>
+                    <TextField
+                      size="small"
+                      type="number"
+                      sx={{ minWidth: 170 }}
+                      label={`KSh ${range?.priceKESMin ?? ""}–${range?.priceKESMax ?? ""}`}
+                      value={fee}
+                      onChange={(e) => setFee(e.target.value)}
+                      inputProps={{ min: range?.priceKESMin, max: range?.priceKESMax, step: 50, "aria-label": "Delivery fee in KSh" }}
+                    />
+                    <Button variant="contained" disabled={busy || !fee} onClick={async () => { if (await patch({ deliveryFee: Number(fee) }, "Delivery fee saved")) setFee(""); }}>
+                      {order.deliveryStatus === "confirmed" ? "Change fee" : "Set fee"}
+                    </Button>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">
+                    Call the customer first. They pay this separately with M-Pesa and send the code from Track your order.
+                  </Typography>
+                </Section>
+              )}
+
+              <Section title="M-Pesa payments">
+                {(order.payments || []).length === 0 && <Typography variant="body2" color="text.secondary">No codes yet.</Typography>}
+                {(order.payments || []).map((p) => (
+                  <Box key={p._id} sx={{ p: 1, mb: 1, border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1} flexWrap="wrap">
+                      <Box>
+                        <Typography variant="body2" fontWeight={700} sx={{ letterSpacing: 1 }}>{p.mpesaCode}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {PART_LABEL[p.kind]} · {p.submittedBy === "admin" ? "recorded by admin" : "from customer"} · {when(p.submittedAt)}
+                        </Typography>
+                      </Box>
+                      <StatusChip label={p.status} tone={p.status === "verified" ? "success" : p.status === "rejected" ? "error" : "warning"} />
+                    </Stack>
+                    {p.possibleDuplicate && (
+                      <Alert severity="warning" sx={{ mt: 1, py: 0 }}>This code also appears on another order. Check before verifying.</Alert>
+                    )}
+                    {p.status === "submitted" && (
+                      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                        <Button size="small" variant="contained" color="success" disabled={busy}
+                          onClick={() => patch({ payment: { id: p._id, action: "verify" } }, "Payment verified")}>
+                          Found on statement
+                        </Button>
+                        <Button size="small" variant="outlined" color="error" disabled={busy}
+                          onClick={() => patch({ payment: { id: p._id, action: "reject" } }, "Code rejected — the customer will be asked to resend")}>
+                          Not found
+                        </Button>
+                      </Stack>
+                    )}
+                  </Box>
+                ))}
+                {unpaidKinds.length > 0 && (
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <TextField
+                      size="small"
+                      label={`Code received by phone (${PART_LABEL[unpaidKinds[0]]})`}
+                      value={newCode}
+                      onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+                      inputProps={{ maxLength: 14 }}
+                      fullWidth
+                    />
+                    <Button variant="outlined" disabled={busy || newCode.trim().length < 8}
+                      onClick={async () => { if (await patch({ addPayment: { mpesaCode: newCode, kind: unpaidKinds[0] } }, "Payment recorded as verified")) setNewCode(""); }}>
+                      Record
+                    </Button>
+                  </Stack>
+                )}
+              </Section>
+
+              <Section title="Notes (staff only)">
+                <TextField
+                  multiline
+                  minRows={2}
+                  fullWidth
+                  size="small"
+                  value={notes ?? order.adminNotes ?? ""}
+                  onChange={(e) => setNotes(e.target.value)}
+                  inputProps={{ maxLength: 2000, "aria-label": "Staff notes" }}
+                />
+                <Button size="small" sx={{ mt: 1 }} disabled={busy || notes == null}
+                  onClick={async () => { if (await patch({ adminNotes: notes }, "Notes saved")) setNotes(null); }}>
+                  Save notes
+                </Button>
+              </Section>
+            </Grid>
+          </Grid>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
