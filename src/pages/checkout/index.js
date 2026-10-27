@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { FaStore, FaTruck } from "react-icons/fa";
 import useCart from "@/hooks/useCart";
+import useCustomer, { loadCustomer, signedInAs } from "@/hooks/useCustomer";
 import { Api } from "@/lib/api";
 import { saveLastOrder } from "@/lib/lastOrder";
 import {
@@ -34,6 +35,9 @@ function Field({ id, label, hint, error, children }) {
 
 const describedBy = (id, error, hint) => (error ? `${id}-error` : hint ? `${id}-hint` : undefined);
 
+// "+254712345678" -> "0712345678", the way people write their own number.
+const localPhone = (e164) => (/^\+254\d{9}$/.test(e164 || "") ? `0${e164.slice(4)}` : e164 || "");
+
 /**
  * P10-3 — guest checkout. Replaces "Buy on WhatsApp" (owner, 27 Oct 2026).
  * Payment is M-Pesa Buy Goods; the code is optional here because a customer
@@ -47,11 +51,38 @@ export default function CheckoutPage() {
     name: "", phone: "", email: "", method: "delivery", county: "", town: "", address: "", notes: "", mpesaCode: "",
   });
   const [showErrors, setShowErrors] = useState(false);
-  const [submit, setSubmit] = useState({ busy: false, placed: false, error: "", lineErrors: [] });
+  const [submit, setSubmit] = useState({ busy: false, placed: false, error: "", lineErrors: [], emailTaken: false });
   const [quote, setQuote] = useState({ key: null, data: null, failed: false });
+  // P10-4: optional "Create an account" for guests.
+  const [account, setAccount] = useState({ create: false, password: "" });
   const errorSummaryRef = useRef(null);
+  const touched = useRef(false);
+  const customer = useCustomer();
+  const signedIn = customer.status === "signedIn" && customer.user;
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const set = (key) => (e) => {
+    touched.current = true;
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+  };
+
+  // A signed-in customer's details and saved address fill in, unless they have
+  // already started typing.
+  useEffect(() => {
+    let cancelled = false;
+    loadCustomer().then((user) => {
+      if (cancelled || !user || touched.current) return;
+      setForm((f) => ({
+        ...f,
+        name: user.name || f.name,
+        email: user.email || f.email,
+        phone: user.phone ? localPhone(user.phone) : f.phone,
+        ...(user.defaultAddress
+          ? { method: "delivery", county: user.defaultAddress.county, town: user.defaultAddress.town, address: user.defaultAddress.address }
+          : {}),
+      }));
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const itemsKey = cart.lines.map((l) => `${l.id}:${l.qty}`).join(",");
   const fulfilmentKey = form.method === "pickup" ? "pickup" : form.county ? `delivery:${form.county}` : "";
@@ -94,6 +125,11 @@ export default function CheckoutPage() {
   if (form.mpesaCode.trim() && !codeOk(form.mpesaCode)) {
     errors.mpesaCode = "That doesn't look like an M-Pesa code. Leave it blank to pay later.";
   }
+  const creatingAccount = !signedIn && account.create;
+  if (creatingAccount) {
+    if (!form.email.trim()) errors.email = "Enter your email address to create an account.";
+    if (account.password.length < 8) errors.password = "Use a password of at least 8 characters.";
+  }
   const shown = showErrors ? errors : {};
 
   const onSubmit = async (e) => {
@@ -104,7 +140,7 @@ export default function CheckoutPage() {
       setTimeout(() => errorSummaryRef.current?.focus(), 0);
       return;
     }
-    setSubmit({ busy: true, placed: false, error: "", lineErrors: [] });
+    setSubmit({ busy: true, placed: false, error: "", lineErrors: [], emailTaken: false });
     try {
       const res = await Api.placeOrder({
         customer: { name: form.name.trim(), phone: form.phone, email: form.email.trim() || undefined },
@@ -113,10 +149,12 @@ export default function CheckoutPage() {
           : { method: "delivery", county: form.county, town: form.town.trim(), address: form.address.trim(), notes: form.notes.trim() },
         items: cart.lines.map((l) => ({ productId: l.id, quantity: l.qty })),
         mpesaCode: form.mpesaCode.trim() || undefined,
+        ...(creatingAccount ? { createAccount: true, password: account.password } : {}),
       });
       const order = res.data.order;
+      if (res.data.account) signedInAs(res.data.account);
       saveLastOrder({ order, phone: form.phone });
-      setSubmit({ busy: true, placed: true, error: "", lineErrors: [] });
+      setSubmit({ busy: true, placed: true, error: "", lineErrors: [], emailTaken: false });
       cart.clear();
       router.push(`/checkout/thank-you?order=${encodeURIComponent(order.orderNumber)}`);
     } catch (err) {
@@ -126,6 +164,7 @@ export default function CheckoutPage() {
         placed: false,
         error: data?.message || "We couldn't reach our server. Check your connection and try again — your cart is saved.",
         lineErrors: data?.lineErrors || [],
+        emailTaken: data?.code === "EMAIL_TAKEN",
       });
       setTimeout(() => errorSummaryRef.current?.focus(), 0);
     }
@@ -183,6 +222,9 @@ export default function CheckoutPage() {
                 <Link href="/cart" className="mt-2 inline-block font-semibold underline">Review your cart</Link>
               </>
             )}
+            {submit.emailTaken && (
+              <Link href="/account/login?next=/checkout" className="mt-2 inline-block font-semibold underline">Sign in to your account</Link>
+            )}
           </div>
         )}
 
@@ -190,6 +232,18 @@ export default function CheckoutPage() {
           <div className="space-y-6">
             <fieldset className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">
               <legend className="px-1 text-lg font-bold">1. Your details</legend>
+              {signedIn ? (
+                <p className="rounded-lg bg-brand-50 p-3 text-sm">
+                  Signed in as <strong>{customer.user.name}</strong> ({customer.user.email}). This order will be saved to{" "}
+                  <Link href="/account" className="font-semibold text-brand-700 underline">your account</Link>.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-700">
+                  Have an account?{" "}
+                  <Link href="/account/login?next=/checkout" className="font-semibold text-brand-700 underline">Sign in</Link>
+                  {" "}— or carry on as a guest.
+                </p>
+              )}
               <Field id="co-name" label="Full name" error={shown.name}>
                 <input id="co-name" className={FIELD} value={form.name} onChange={set("name")} autoComplete="name" maxLength={80}
                   aria-invalid={Boolean(shown.name)} aria-describedby={describedBy("co-name", shown.name)} />
@@ -198,10 +252,31 @@ export default function CheckoutPage() {
                 <input id="co-phone" type="tel" inputMode="tel" className={FIELD} value={form.phone} onChange={set("phone")} autoComplete="tel" maxLength={20}
                   placeholder="0712 345 678" aria-invalid={Boolean(shown.phone)} aria-describedby={describedBy("co-phone", shown.phone, true)} />
               </Field>
-              <Field id="co-email" label="Email (optional)" hint="For your records." error={shown.email}>
+              <Field id="co-email" label={creatingAccount ? "Email" : "Email (optional)"} hint={creatingAccount ? "You'll sign in with this." : "For your records."} error={shown.email}>
                 <input id="co-email" type="email" inputMode="email" className={FIELD} value={form.email} onChange={set("email")} autoComplete="email" maxLength={120}
                   aria-invalid={Boolean(shown.email)} aria-describedby={describedBy("co-email", shown.email, true)} />
               </Field>
+              {!signedIn && (
+                <div className="rounded-lg border border-gray-200 p-3">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" className="mt-1" checked={account.create}
+                      onChange={(e) => setAccount((a) => ({ ...a, create: e.target.checked }))} />
+                    <span>
+                      <span className="font-semibold">Create an account</span>
+                      <span className="block text-sm text-gray-600">Optional. See your orders and check out faster next time.</span>
+                    </span>
+                  </label>
+                  {account.create && (
+                    <div className="mt-3">
+                      <Field id="co-password" label="Choose a password" hint="At least 8 characters." error={shown.password}>
+                        <input id="co-password" type="password" className={FIELD} value={account.password} autoComplete="new-password" minLength={8} maxLength={128}
+                          onChange={(e) => setAccount((a) => ({ ...a, password: e.target.value }))}
+                          aria-invalid={Boolean(shown.password)} aria-describedby={describedBy("co-password", shown.password, true)} />
+                      </Field>
+                    </div>
+                  )}
+                </div>
+              )}
             </fieldset>
 
             <fieldset className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">

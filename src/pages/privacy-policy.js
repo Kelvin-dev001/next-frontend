@@ -44,10 +44,23 @@ export default function PrivacyPolicyPage() {
             number if you choose to give one. The phone number is never shown on the site.
           </li>
           <li>
-            <strong>On your own device:</strong> your cart and wishlist are saved in your browser, not on our
-            servers, until you place an order.
+            <strong>If you create an account:</strong> your name, email address, phone number if you give one,
+            the delivery address you save, your wishlist, and when you last signed in. Your password is stored
+            only in a scrambled form that nobody, including us, can read back.
+          </li>
+          <li>
+            <strong>On your own device:</strong> your cart is saved in your browser, not on our servers, until
+            you place an order. Your wishlist is saved in your browser too, and also to your account if you
+            are signed in.
           </li>
         </ul>
+
+        <h2 className={H2}>Cookies</h2>
+        <p>
+          If you sign in, we set one cookie that keeps you signed in for up to 30 days. It cannot be read by
+          the page&apos;s own scripts and is not used for advertising or tracking. We set no advertising
+          cookies.
+        </p>
 
         <h2 className={H2}>How we use it</h2>
         <ul className="list-disc space-y-1 pl-5">
@@ -86,7 +99,9 @@ export default function PrivacyPolicyPage() {
         <h2 className={H2}>Your rights</h2>
         <p>
           Under Kenya&apos;s Data Protection Act, 2019 you can ask what personal details we hold about you,
-          ask us to correct or delete them, and object to how we use them. Contact us using the details below.
+          ask us to correct or delete them (including closing your account), and object to how we use them.
+          You can update your own account details at any time from My account. Contact us using the details
+          below.
           If you are not satisfied with our answer, you can complain to the Office of the Data Protection
           Commissioner.
         </p>
