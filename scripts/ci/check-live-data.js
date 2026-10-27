@@ -6,12 +6,19 @@
  *     browse filter returns 0, or a whatsapp card claims NEW IN STOCK)
  *   - two published cards point at the same destination
  *   - a brand is duplicated by case/whitespace (the Redmi/REDMI class of split)
+ *   - (P10-3) the API prices checkout with a different Till or delivery matrix
+ *     than the site shows (snaap-backend/config/business.js vs
+ *     src/constants/business.js — the API needs its own copy to price orders)
  *
  * Runs on a schedule (data rots silently) as well as on PRs. Only GET requests to
  * public endpoints — no secret required.
  *
  * Env: LIVE_API_URL (default https://snaap-connections.onrender.com/api)
  */
+const fs = require("fs");
+const path = require("path");
+const vm = require("vm");
+
 const BASE = (process.env.LIVE_API_URL || "https://snaap-connections.onrender.com/api").replace(/\/$/, "");
 
 const failures = [];
@@ -124,10 +131,64 @@ async function checkBrands() {
   }
 }
 
+// The site's business facts, read from src/constants/business.js. That file is
+// an ES module with no imports, and this script runs as CommonJS on Node 20, so
+// it is evaluated in a sandbox with the `export` keywords stripped.
+function siteFacts() {
+  const file = path.join(__dirname, "..", "..", "src", "constants", "business.js");
+  const src = fs.readFileSync(file, "utf8").replace(/^export\s+/gm, "");
+  const sandbox = {};
+  vm.runInNewContext(`${src}\n;this.__facts = { MPESA_TILL, DELIVERY_ZONES };`, sandbox);
+  return sandbox.__facts;
+}
+
+async function checkCheckoutConfig() {
+  let facts;
+  try {
+    facts = siteFacts();
+  } catch (e) {
+    fail(`could not read src/constants/business.js: ${e.message}`);
+    return;
+  }
+  let cfg;
+  try {
+    cfg = await getJson("/orders/config");
+  } catch (e) {
+    fail(`checkout config unreachable: ${e.message}`);
+    return;
+  }
+
+  if (cfg.till !== facts.MPESA_TILL) {
+    fail(`M-Pesa Till drift: the site shows ${facts.MPESA_TILL}, the API prices orders for ${cfg.till}`);
+  }
+  const apiZones = cfg.deliveryZones || [];
+  const siteCounties = facts.DELIVERY_ZONES.flatMap((z) => z.counties);
+  for (const zone of facts.DELIVERY_ZONES) {
+    for (const county of zone.counties) {
+      const apiZone = apiZones.find((z) => (z.counties || []).includes(county));
+      if (!apiZone) {
+        fail(`Delivery drift: the site serves ${county} but the API does not price it`);
+        continue;
+      }
+      const siteFee = zone.priceKES ?? null;
+      const apiFee = apiZone.feeKES ?? null;
+      if (siteFee !== apiFee) {
+        fail(`Delivery drift for ${county}: the site shows ${siteFee ?? "to be confirmed"}, the API charges ${apiFee ?? "to be confirmed"}`);
+      } else if (siteFee == null && (apiZone.feeMinKES !== zone.priceKESMin || apiZone.feeMaxKES !== zone.priceKESMax)) {
+        fail(`Delivery range drift for ${county}: site ${zone.priceKESMin}–${zone.priceKESMax}, API ${apiZone.feeMinKES}–${apiZone.feeMaxKES}`);
+      }
+    }
+  }
+  for (const county of apiZones.flatMap((z) => z.counties || [])) {
+    if (!siteCounties.includes(county)) fail(`Delivery drift: the API prices ${county}, which the site does not serve`);
+  }
+}
+
 (async () => {
   console.log(`Live-data checks against ${BASE}`);
   await checkPromoCards();
   await checkBrands();
+  await checkCheckoutConfig();
   for (const w of warnings) console.warn("  warn:", w);
   if (failures.length) {
     console.error(`\n✗ ${failures.length} live-data check(s) failed:`);

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi, FaRegHeart } from "react-icons/fa";
+import { FaBars, FaSearch, FaTimes, FaStore, FaTags, FaStar, FaThLarge, FaWifi, FaRegHeart, FaShoppingBag, FaTruck } from "react-icons/fa";
 import { SiBrandfolder } from "react-icons/si";
 import AutoCompleteSearch from "@/components/AutoCompleteSearch";
 import { Api } from "@/lib/api";
 import useWishlist from "@/hooks/useWishlist";
+import useCart from "@/hooks/useCart";
 
 // Header icon with a count bubble. The count comes from this device's storage,
 // so it is empty in the server HTML and fills in right after hydration.
@@ -15,7 +16,7 @@ function CountLink({ href, label, count, children }) {
       href={href}
       prefetch={false}
       aria-label={count ? `${label}, ${count} item${count !== 1 ? "s" : ""}` : label}
-      className="relative grid h-10 w-10 place-items-center rounded-full text-brand-700 hover:bg-brand-50"
+      className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full text-brand-700 hover:bg-brand-50 md:h-10 md:w-10"
     >
       {children}
       {count > 0 && (
@@ -37,6 +38,7 @@ const menuSections = [
   { label: "New Arrivals", icon: <FaStar />, link: "/products?sort=newest" },
   { label: "Best Sellers", icon: <FaStar />, link: "/products?sort=popular" },
   { label: "Pocket Friendly", icon: <FaTags />, link: "/products?sort=price-low&maxPrice=15000" },
+  { label: "Track your order", icon: <FaTruck />, link: "/track-order" },
 ];
 
 const navLinks = [
@@ -53,6 +55,7 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
   const [brands, setBrands] = useState(brandsProp);
   const [categories, setCategories] = useState(categoriesProp);
   const wishlist = useWishlist();
+  const cart = useCart();
 
   const shouldFetchBrands = brandsProp.length === 0;
   const shouldFetchCategories = categoriesProp.length === 0;
@@ -75,13 +78,17 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
 
   return (
     <header className="sticky top-0 z-50 bg-white text-gray-900 shadow-[0_2px_24px_0_rgba(0,0,0,0.06)]">
-      <div className="mx-auto flex min-h-16 max-w-screen-2xl items-center gap-2 px-3 md:min-h-[72px] md:px-6">
-        <button onClick={openDrawer} className="md:hidden" aria-label="Open menu"><FaBars className="text-2xl" /></button>
+      <div className="mx-auto flex min-h-16 max-w-screen-2xl items-center gap-1 px-3 sm:gap-2 md:min-h-[72px] md:px-6">
+        <button onClick={openDrawer} className="shrink-0 md:hidden" aria-label="Open menu"><FaBars className="text-2xl" /></button>
 
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex min-w-0 items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/snaap-logo.jpeg" alt="Snaap Connections Logo" className="h-10 w-10 rounded-full object-cover" />
-          <span className="whitespace-nowrap font-bold tracking-[1.5px]">Snaap Connections</span>
+          <img src="/snaap-logo.jpeg" alt="Snaap Connections Logo" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+          {/* Two lines on small phones so the search, wishlist and cart icons fit
+              at 320–360px without cutting the name to "Snaap Co…". */}
+          <span className="text-[0.9rem] font-bold leading-[1.1] sm:whitespace-nowrap sm:text-base sm:tracking-[1.5px]">
+            Snaap <br className="sm:hidden" />Connections
+          </span>
         </Link>
 
         <div className="flex-1" />
@@ -95,11 +102,15 @@ export default function MainNavbar({ brands: brandsProp = [], categories: catego
           </div>
         </nav>
 
+        <button onClick={openDrawer} className="grid h-9 w-9 shrink-0 place-items-center text-brand-700 md:hidden" aria-label="Search"><FaSearch className="text-xl" /></button>
+
         <CountLink href="/wishlist" label="Wishlist" count={wishlist.count}>
           <FaRegHeart className="text-xl" aria-hidden="true" />
         </CountLink>
 
-        <button onClick={openDrawer} className="text-brand-700 md:hidden" aria-label="Search"><FaSearch className="text-xl" /></button>
+        <CountLink href="/cart" label="Cart" count={cart.count}>
+          <FaShoppingBag className="text-xl" aria-hidden="true" />
+        </CountLink>
       </div>
 
       {drawerOpen && (

@@ -1,12 +1,12 @@
 import Head from "next/head";
 import Link from "next/link";
 import { FaWhatsapp, FaChevronDown } from "react-icons/fa";
-import { SITE_URL, ADDRESS, HOURS_DISPLAY, DELIVERY_ZONES, waLink } from "@/constants/business";
+import { SITE_URL, ADDRESS, HOURS_DISPLAY, DELIVERY_ZONES, MPESA_TILL, waLink } from "@/constants/business";
 
 const PATH = "/faqs";
 const TITLE = "FAQs | Snaap Connections — Ordering, Delivery & Payment";
 const DESCRIPTION =
-  "How to order on WhatsApp, delivery cost and time by county, opening hours, payment options and how Lipa Mdogo Mdogo works at Snaap Connections.";
+  "How to order online, delivery cost and time by county, opening hours, paying with M-Pesa and how Lipa Mdogo Mdogo works at Snaap Connections.";
 
 const coast = DELIVERY_ZONES.find((z) => z.id === "coast");
 const upcountry = DELIVERY_ZONES.find((z) => z.id === "upcountry");
@@ -14,7 +14,7 @@ const upcountry = DELIVERY_ZONES.find((z) => z.id === "upcountry");
 const faqs = [
   {
     q: "How do I place an order?",
-    a: "Browse the products you want, then tap the WhatsApp button to send us your order. WhatsApp is our checkout — we confirm availability, price and delivery with you before anything is dispatched.",
+    a: "Add the products you want to your cart and check out. Choose delivery to your county or pickup from our Mombasa shop, then pay with M-Pesa. We contact you to confirm your order, and you can follow it any time on the Track your order page.",
   },
   {
     q: "How much is delivery and how long does it take?",
@@ -34,7 +34,7 @@ const faqs = [
   },
   {
     q: "How can I pay?",
-    a: "You place the order on WhatsApp and pay directly — M-Pesa (Lipa Na Mpesa) is supported. We agree the payment method with you when you order.",
+    a: `With M-Pesa: Lipa na M-PESA, Buy Goods, Till ${MPESA_TILL}. Checkout shows the exact amount. Enter the code from your M-Pesa SMS when you order, or pay afterwards and send the code from the Track your order page. For ${upcountry.counties.join(" and ")} you pay for your items at checkout and the delivery fee separately, once we have called to confirm it. We will never ask for your M-Pesa PIN.`,
   },
   {
     q: "Do your products come with a warranty?",

@@ -11,8 +11,10 @@ import ReviewSection from "@/components/ReviewsSection";
 import ProductGrid from "@/components/ProductGrid";
 import Chip from "@/components/ui/Chip";
 import { getOptimizedCloudinaryUrl } from "@/utils/cloudinaryUrl";
-import { DELIVERY_ZONES, formatKES, waLink } from "@/constants/business";
+import { DELIVERY_ZONES, formatKES, waLink, MAX_QTY_PER_PRODUCT } from "@/constants/business";
 import useWishlist from "@/hooks/useWishlist";
+import useCart from "@/hooks/useCart";
+import AddToCartButton from "@/components/AddToCartButton";
 
 const FALLBACK_IMAGE = "/fallback.png";
 const SITE_NAME = "Snaap Connections";
@@ -22,6 +24,7 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
   const router = useRouter();
 
   const wishlist = useWishlist();
+  const cart = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [tabValue, setTabValue] = useState(0);
@@ -38,19 +41,17 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
     );
   }
 
+  const maxQty = product?.inStock ? MAX_QTY_PER_PRODUCT : 0;
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value, 10);
-    if (value > 0 && value <= (product?.inStock ? 10 : 0)) setQuantity(value);
+    if (value > 0 && value <= maxQty) setQuantity(value);
   };
-  const incrementQuantity = () => { if (quantity < (product?.inStock ? 10 : 0)) setQuantity(quantity + 1); };
+  const incrementQuantity = () => { if (quantity < maxQty) setQuantity(quantity + 1); };
   const decrementQuantity = () => { if (quantity > 1) setQuantity(quantity - 1); };
   const formatPrice = (price) => formatKES(price);
 
-  const handleWhatsAppBuy = () => {
-    const message = `I'm interested in: ${product.name}${product.sku ? ` (SKU ${product.sku})` : ""}\nPrice: ${formatPrice(product.discountPrice || product.price)}\nQuantity: ${quantity}\nLink: ${window.location.href}`;
-    window.open(waLink(message), "_blank");
-  };
-
+  // Still an enquiry on WhatsApp: Lipa Mdogo Mdogo terms differ per device
+  // (owner, P10-3). Buying the phone outright is the cart.
   const handleLipaWhatsApp = () => {
     const message = `Hi Snaap Connections, I'd like to know about Lipa Mdogo Mdogo for the ${product.name}.`;
     window.open(waLink(message), "_blank");
@@ -260,19 +261,27 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
             <div className="mb-2 flex items-center gap-4">
               <div className="flex overflow-hidden rounded border border-gray-300">
                 <button type="button" aria-label="Decrease quantity" onClick={decrementQuantity} disabled={quantity <= 1} className="min-w-9 px-2 py-1 disabled:opacity-40">−</button>
-                <input id="product-qty" type="number" value={quantity} min={1} max={product.inStock ? 10 : 0} onChange={handleQuantityChange} className="w-11 border-0 text-center text-[0.95rem] outline-none" />
-                <button type="button" aria-label="Increase quantity" onClick={incrementQuantity} disabled={quantity >= (product.inStock ? 10 : 0)} className="min-w-9 px-2 py-1 disabled:opacity-40">+</button>
+                <input id="product-qty" type="number" value={quantity} min={1} max={maxQty} onChange={handleQuantityChange} className="w-11 border-0 text-center text-[0.95rem] outline-none" />
+                <button type="button" aria-label="Increase quantity" onClick={incrementQuantity} disabled={quantity >= maxQty} className="min-w-9 px-2 py-1 disabled:opacity-40">+</button>
               </div>
-              <span className="text-[0.85rem] text-gray-500">{product.inStock ? "In stock" : "Out of stock"}</span>
+              <span className="text-[0.85rem] text-gray-600">{product.inStock ? "In stock" : "Out of stock"}</span>
             </div>
 
-            <button
-              onClick={handleWhatsAppBuy}
-              disabled={!product.inStock}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-600 py-3 font-semibold text-white transition hover:bg-brand-700 disabled:opacity-50 text-[0.95rem] md:py-3.5 md:text-[1.1rem]"
-            >
-              <FaWhatsapp /> Buy on WhatsApp
-            </button>
+            {/* P10-3: ordered on the site, paid by M-Pesa. "Buy now" is a real link
+                to /checkout that drops the item in the cart on the way. */}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <AddToCartButton product={product} quantity={quantity} className="py-3 text-[0.95rem] md:py-3.5 md:text-[1.05rem]" />
+              {product.inStock && (
+                <Link
+                  href="/checkout"
+                  prefetch={false}
+                  onClick={() => cart.add(product, quantity)}
+                  className="inline-flex w-full items-center justify-center rounded-full border-2 border-brand-700 py-2.5 font-semibold text-brand-700 no-underline transition hover:bg-brand-700 hover:text-white text-[0.95rem] md:py-3 md:text-[1.05rem]"
+                >
+                  Buy now
+                </Link>
+              )}
+            </div>
 
             <div className="mt-3 flex gap-2">
               <button
@@ -382,7 +391,7 @@ export default function ProductDetailPage({ product, related = [], reviews = [],
         {related.length > 0 && (
           <div className="mt-8 md:mt-16">
             <h2 className="mb-4 font-semibold text-[1.1rem] md:text-[1.5rem]">You may also like</h2>
-            <ProductGrid items={related} eagerCount={4} size="compact" showWhatsApp showViewBtn />
+            <ProductGrid items={related} eagerCount={4} size="compact" showAddToCart showViewBtn />
           </div>
         )}
       </div>

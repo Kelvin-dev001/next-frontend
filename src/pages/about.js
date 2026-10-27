@@ -8,7 +8,7 @@ import {
 const PATH = "/about";
 const TITLE = "About Snaap Connections | Phone Shop in Mombasa";
 const DESCRIPTION =
-  "Snaap Connections is a smartphone and accessories shop on Digo Rd, Opp Baroda Mall, Mombasa, delivering to five counties across Kenya. Order on WhatsApp.";
+  "Snaap Connections is a smartphone and accessories shop on Digo Rd, Opp Baroda Mall, Mombasa, delivering to five counties across Kenya. Order online and pay with M-Pesa.";
 
 export default function AboutPage() {
   return (
@@ -36,9 +36,9 @@ export default function AboutPage() {
         </p>
 
         <p className="mb-6 text-gray-500">
-          Ordering is simple: browse the catalogue, then send us the item on WhatsApp. We confirm
-          availability, the price and the delivery details with you before anything is dispatched —
-          WhatsApp is our checkout, and it&apos;s where you&apos;ll always reach a real person.
+          Ordering is simple: add what you want to your cart, check out, and pay with M-Pesa. Choose
+          delivery or pick up from the shop, and follow your order on the Track your order page.
+          Questions? WhatsApp is where you&apos;ll always reach a real person.
         </p>
 
         <ul className="mb-6 list-disc space-y-2 pl-6 text-gray-500">

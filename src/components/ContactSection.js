@@ -36,7 +36,7 @@ export default function ContactSection() {
         <div className="space-y-6">
           <h2 className="text-3xl font-bold text-gray-800">Contact Us</h2>
           <p className="text-gray-600">
-            WhatsApp is the fastest way to reach us — that is how we take orders.
+            WhatsApp is the fastest way to reach us with a question. Orders are placed on the site.
             Walk-ins are welcome at the shop on Digo Road.
           </p>
 

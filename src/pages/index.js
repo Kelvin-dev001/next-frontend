@@ -136,7 +136,7 @@ export default function Home({ featured, newArrivals, brands, categories, recent
               </h1>
               <p className="mt-1 max-w-[720px] text-gray-500 text-[0.9rem] md:text-[1.05rem]">
                 The latest phones, tablets, audio and accessories with fast delivery across our five
-                served counties. Order on WhatsApp.
+                served counties. Order online and pay with M-Pesa.
               </p>
             </>
           )}

@@ -1,9 +1,11 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Badge,
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Divider,
@@ -11,6 +13,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
+import { Api } from "@/lib/api";
 import {
   Dashboard as DashboardIcon,
   ShoppingCart as OrdersIcon,
@@ -27,10 +30,39 @@ import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import SlideshowIcon from "@mui/icons-material/Slideshow";
 
 const DRAWER_WIDTH = 240;
+const POLL_MS = 60 * 1000;
+
+// P10-3: the owner chose the admin portal as the ONLY new-order alert (no email
+// or SMS), so the sidebar keeps a live count. Polls once a minute while the tab
+// is visible, and immediately when the admin comes back to it.
+function useOrderCounts() {
+  const [counts, setCounts] = useState({ pending: 0, paymentsToCheck: 0 });
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      if (document.visibilityState !== "visible") return;
+      Api.get("/orders/pending-count")
+        .then((res) => { if (!cancelled) setCounts({ pending: res.data?.pending || 0, paymentsToCheck: res.data?.paymentsToCheck || 0 }); })
+        .catch(() => {});
+    };
+    load();
+    const timer = setInterval(load, POLL_MS);
+    document.addEventListener("visibilitychange", load);
+    return () => { cancelled = true; clearInterval(timer); document.removeEventListener("visibilitychange", load); };
+  }, []);
+  return counts;
+}
 
 export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
   const theme = useTheme();
   const pathname = usePathname();
+  const orderCounts = useOrderCounts();
+
+  // The tab title shows waiting orders even when the admin is on another tab.
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\) /, "");
+    document.title = orderCounts.pending ? `(${orderCounts.pending}) ${base || "Snaap Admin"}` : base;
+  }, [orderCounts.pending, pathname]);
 
   const menuItems = [
     { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
@@ -75,27 +107,37 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
       <List sx={{ flexGrow: 1 }}>
         {menuItems.map((item) => {
           const selected = pathname === item.path;
+          const isOrders = item.path === "/admin/orders";
           return (
-            <ListItem
-              key={item.text}
-              component={Link}
-              href={item.path}
-              selected={selected}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: theme.palette.action.selected,
-                  "&:hover": { backgroundColor: theme.palette.action.selected },
-                },
-                "&:hover": { backgroundColor: theme.palette.action.hover },
-              }}
-            >
-              <ListItemIcon sx={{ color: selected ? theme.palette.primary.main : theme.palette.text.secondary }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
-              />
+            // ListItem renders the <li>; the link goes inside it (a bare <a> in a
+            // <ul> is invalid list markup — axe "list").
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                selected={selected}
+                aria-label={isOrders && orderCounts.pending ? `Orders, ${orderCounts.pending} new` : undefined}
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: theme.palette.action.selected,
+                    "&:hover": { backgroundColor: theme.palette.action.selected },
+                  },
+                  "&:hover": { backgroundColor: theme.palette.action.hover },
+                }}
+              >
+                <ListItemIcon sx={{ color: selected ? theme.palette.primary.main : theme.palette.text.secondary }}>
+                  {isOrders ? (
+                    <Badge badgeContent={orderCounts.pending} color="error" max={99}>
+                      {item.icon}
+                    </Badge>
+                  ) : item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  secondary={isOrders && orderCounts.paymentsToCheck ? `${orderCounts.paymentsToCheck} M-Pesa code${orderCounts.paymentsToCheck !== 1 ? "s" : ""} to check` : undefined}
+                  primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
+                />
+              </ListItemButton>
             </ListItem>
           );
         })}
@@ -107,26 +149,27 @@ export default function Sidebar({ mobileOpen, handleDrawerToggle }) {
         {secondaryItems.map((item) => {
           const selected = pathname === item.path;
           return (
-            <ListItem
-              key={item.text}
-              component={Link}
-              href={item.path}
-              selected={selected}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: theme.palette.action.selected,
-                  "&:hover": { backgroundColor: theme.palette.action.selected },
-                },
-                "&:hover": { backgroundColor: theme.palette.action.hover },
-              }}
-            >
-              <ListItemIcon sx={{ color: selected ? theme.palette.primary.main : theme.palette.text.secondary }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
-              />
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                component={Link}
+                href={item.path}
+                selected={selected}
+                sx={{
+                  "&.Mui-selected": {
+                    backgroundColor: theme.palette.action.selected,
+                    "&:hover": { backgroundColor: theme.palette.action.selected },
+                  },
+                  "&:hover": { backgroundColor: theme.palette.action.hover },
+                }}
+              >
+                <ListItemIcon sx={{ color: selected ? theme.palette.primary.main : theme.palette.text.secondary }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{ fontWeight: selected ? 600 : 400 }}
+                />
+              </ListItemButton>
             </ListItem>
           );
         })}

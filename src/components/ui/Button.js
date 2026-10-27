@@ -10,10 +10,9 @@ import React, { useCallback, useState } from "react";
  * so it is used for borders and accents here, never as a fill under white text.
  */
 const VARIANTS = {
-  // The WhatsApp CTA — the only checkout path on the site, so it gets the
-  // brightest passing blue. The glyph is white: the word "WhatsApp" carries the
-  // meaning, and green-on-blue would measure ~1.9:1.
-  whatsapp: "bg-brand-600 text-white hover:bg-brand-700 shadow-[0_2px_10px_rgba(1,151,212,0.28)]",
+  // The buying CTA ("Add to cart" since P10-3, "Buy on WhatsApp" before), so it
+  // gets the brightest blue that still passes AA under white text.
+  cart: "bg-brand-600 text-white hover:bg-brand-700 shadow-[0_2px_10px_rgba(1,151,212,0.28)]",
   view:
     "border border-brand-300 text-brand-700 hover:text-white hover:border-transparent " +
     "hover:bg-[linear-gradient(96deg,var(--color-brand-400)_10%,var(--color-brand-700)_90%)] " +
@@ -37,9 +36,9 @@ export default function Button({
 }) {
   const [ripple, setRipple] = useState(null);
 
-  // Decorative only. This never gates the consumer's onClick — ProductCard opens
-  // wa.me inside its click handler and popup blockers require that to stay in
-  // the user gesture, so the animation has to run alongside, not before.
+  // Decorative only. This never gates the consumer's onClick: the animation runs
+  // alongside the click, so a button that opens a window (popup blockers need
+  // the user gesture) still works.
   const handlePointerDown = useCallback(
     (event) => {
       const rect = event.currentTarget.getBoundingClientRect();

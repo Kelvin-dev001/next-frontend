@@ -1,12 +1,12 @@
 import Head from "next/head";
 import Link from "next/link";
-import { FaWhatsapp, FaTruck, FaClock, FaMapMarkerAlt, FaChevronDown, FaStore } from "react-icons/fa";
+import { FaWhatsapp, FaTruck, FaClock, FaMapMarkerAlt, FaChevronDown, FaStore, FaShoppingBag } from "react-icons/fa";
 import { Api } from "@/lib/api";
 import ProductGrid from "@/components/ProductGrid";
 import { LOCATIONS, LOCATION_SLUGS } from "@/constants/locations";
 import {
   BUSINESS_NAME, SITE_URL, ADDRESS, HOURS_DISPLAY, PHONE_E164, EMAIL,
-  OPENING_HOURS_SPEC, SAME_AS, deliveryForCounty, waLink,
+  OPENING_HOURS_SPEC, SAME_AS, deliveryForCounty, deliveryIsToBeConfirmed, waLink,
 } from "@/constants/business";
 
 const OG_IMAGE = `${SITE_URL}/snaap-logo.jpeg`;
@@ -18,23 +18,29 @@ export default function LocationPage({ loc, zone, products = [] }) {
   const url = `${SITE_URL}${path}`;
 
   // Delivery cost + time come from business.js (single source), never hardcoded here.
+  // A range (Nairobi/Machakos) is confirmed by phone and paid separately from
+  // the items (owner, P10-3), so "the price you see is the price you pay" is
+  // only said where the fee is fixed.
+  const tbc = deliveryIsToBeConfirmed(zone);
+  const feeNote = tbc
+    ? "We call you to confirm the exact fee, which you pay separately from your items. There is no free-delivery threshold."
+    : "There is no free-delivery threshold — the price you see is the price you pay.";
   const deliveryFaqs = zone
     ? [
         {
           q: `How much is delivery to ${loc.county}?`,
-          a: `Delivery to ${loc.county} is ${zone.priceDisplay}. There is no free-delivery threshold — the price you see is the price you pay.`,
+          a: `Delivery to ${loc.county} is ${zone.priceDisplay}. ${feeNote}`,
         },
         {
           q: `How long does delivery to ${loc.county} take?`,
-          a: `${zone.time}. We confirm the timing with you on WhatsApp when you order.`,
+          a: `${zone.time}. We contact you to arrange delivery after you order.`,
         },
       ]
     : [];
   const faqs = [...deliveryFaqs, ...(loc.localFaqs || [])];
 
-  const waMessage = loc.isShop
-    ? `Hi Snaap Connections, I'd like to ask about a phone at your Mombasa shop.`
-    : `Hi Snaap Connections, I'd like to order a phone for delivery to ${loc.county}.`;
+  // Support only since P10-3 — buying is the cart.
+  const waMessage = `Hi Snaap Connections, I'd like to ask about a phone at your Mombasa shop.`;
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -129,7 +135,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
               <p className="mt-1 text-gray-700">
                 <span className="font-semibold">{zone.priceDisplay}</span> · {zone.time}
               </p>
-              <p className="mt-1 text-[0.82rem] text-gray-500">No free-delivery threshold — the price you see is the price you pay.</p>
+              <p className="mt-1 text-[0.82rem] text-gray-600">{feeNote}</p>
             </div>
           )}
           {loc.isShop ? (
@@ -147,10 +153,10 @@ export default function LocationPage({ loc, zone, products = [] }) {
           ) : (
             <div className="rounded-xl border border-gray-200 p-4">
               <p className="flex items-center gap-2 font-bold text-brand-700">
-                <FaWhatsapp aria-hidden="true" /> How to order
+                <FaShoppingBag aria-hidden="true" /> How to order
               </p>
               <p className="mt-1 text-gray-700">
-                Browse a phone, tap WhatsApp, and we confirm price and delivery with you before dispatch.
+                Add a phone to your cart, check out with your delivery details and pay with M-Pesa.
               </p>
               {loc.towns?.length > 0 && (
                 <p className="mt-1 text-[0.82rem] text-gray-500">Covering {loc.towns.slice(0, 4).join(", ")} and more.</p>
@@ -159,14 +165,24 @@ export default function LocationPage({ loc, zone, products = [] }) {
           )}
         </div>
 
-        <a
-          href={waLink(waMessage)}
-          target="_blank"
-          rel="noopener"
-          className="mb-8 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
-        >
-          <FaWhatsapp className="text-lg" /> {loc.isShop ? "Message the Mombasa shop" : `Order on WhatsApp for ${loc.county}`}
-        </a>
+        <div className="mb-8 flex flex-wrap gap-3">
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 font-bold text-white no-underline transition hover:bg-brand-700"
+          >
+            <FaShoppingBag className="text-lg" aria-hidden="true" /> {loc.isShop ? "Shop online" : `Shop phones for ${loc.county}`}
+          </Link>
+          {loc.isShop && (
+            <a
+              href={waLink(waMessage)}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-brand-700 px-5 py-2 font-bold text-brand-700 no-underline transition hover:bg-brand-700 hover:text-white"
+            >
+              <FaWhatsapp className="text-lg" aria-hidden="true" /> Message the Mombasa shop
+            </a>
+          )}
+        </div>
 
         {/* Areas covered */}
         {loc.towns?.length > 0 && (
@@ -186,7 +202,7 @@ export default function LocationPage({ loc, zone, products = [] }) {
         {products.length > 0 && (
           <div className="mb-8">
             <h2 className="mb-3 text-[1.15rem] font-bold text-brand-700">Popular phones we deliver to {loc.county}</h2>
-            <ProductGrid items={products} eagerCount={4} size="compact" showWhatsApp showViewBtn />
+            <ProductGrid items={products} eagerCount={4} size="compact" showAddToCart showViewBtn />
           </div>
         )}
 

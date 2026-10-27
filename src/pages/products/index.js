@@ -269,7 +269,7 @@ export default function ProductListingPage({
               skeletonCount={filters.limit > 12 ? 12 : filters.limit}
               eagerCount={6}
               size="compact"
-              showWhatsApp
+              showAddToCart
               showViewBtn
             />
 

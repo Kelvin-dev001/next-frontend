@@ -71,7 +71,7 @@ export default function AdminReviewsTable() {
     <Card sx={{ borderRadius: 2, mt: 4 }}>
       <CardContent>
         <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 2, mb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
             Customer Reviews (Moderation)
           </Typography>
           <ToggleButtonGroup

@@ -1,5 +1,3 @@
-import { waLink } from "@/constants/business";
-
 /**
  * Where an admin-authored card actually points.
  *
@@ -8,19 +6,16 @@ import { waLink } from "@/constants/business";
  * against the catalogue and refused if the product is gone. Turning that intent
  * back into an href is this function's job.
  *
- * Shared by the hero sliders and the entry pop-up so the two cannot drift: a
- * WhatsApp card must open the same chat with the same prefilled message
- * wherever the visitor meets it.
+ * Shared by the hero sliders and the entry pop-up so the two cannot drift.
+ *
+ * P10-3: "whatsapp" cards are no longer offered — the owner removed WhatsApp as
+ * a buying path (orders go through the cart; WhatsApp is support). Any legacy
+ * card still carrying that type falls through to the catalogue rather than
+ * opening a chat.
  */
 export default function ctaTarget(item, fallback = "/products") {
   if (!item) return { href: fallback, external: false };
 
-  if (item.ctaType === "whatsapp") {
-    return {
-      href: waLink(`Hello Snaap Connections, I'm interested in: ${item.title || "this offer"}`),
-      external: true,
-    };
-  }
   if (item.ctaType === "product" && item.productId) {
     return { href: `/products/${item.productId}`, external: false };
   }

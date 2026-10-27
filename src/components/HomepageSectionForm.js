@@ -31,7 +31,7 @@ const ctaTypeOptions = [
   { label: "None (service tile)", value: "" },
   { label: "Product — deep link to one product", value: "product" },
   { label: "Browse — a filtered listing", value: "browse" },
-  { label: "WhatsApp — enquiry / sell-to-order", value: "whatsapp" },
+  // WhatsApp removed as a card destination in P10-3 (owner): buying is the cart.
 ];
 
 const toneOptions = ["", "soft", "light", "cool", "dark", "midnight"];
@@ -163,7 +163,8 @@ export default function HomepageSectionForm({ section, onSave, onCancel }) {
       title: item.title, subtitle: item.subtitle, iconKey: item.iconKey,
       category: item.category, search: item.search,
       ctaLabel: item.ctaLabel, ctaLink: item.ctaLink, image: item.image || "",
-      type: item.type || "service", ctaType: item.ctaType || "",
+      // A legacy WhatsApp card opens as "browse" so the admin picks a real link.
+      type: item.type || "service", ctaType: item.ctaType === "whatsapp" ? "browse" : item.ctaType || "",
       productId: item.productId || null,
       badge: item.badge || "", badgeTone: item.badgeTone || "", tone: item.tone || "",
       alt: item.alt || "", priority: Number(item.priority) || 0,
@@ -281,7 +282,7 @@ export default function HomepageSectionForm({ section, onSave, onCancel }) {
 
                 {isPromo && (
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                    <TextField label="Badge" value={item.badge} onChange={(e) => updateItem(idx, "badge", e.target.value)} fullWidth helperText={item.ctaType === "whatsapp" ? "Use PRE-ORDER / ORDER ON REQUEST" : "e.g. NEW IN STOCK"} />
+                    <TextField label="Badge" value={item.badge} onChange={(e) => updateItem(idx, "badge", e.target.value)} fullWidth helperText="e.g. NEW IN STOCK" />
                     <FormControl fullWidth>
                       <InputLabel>Tone</InputLabel>
                       <Select value={item.tone || ""} label="Tone" onChange={(e) => updateItem(idx, "tone", e.target.value)}>

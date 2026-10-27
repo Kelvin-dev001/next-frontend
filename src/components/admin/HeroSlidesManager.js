@@ -117,7 +117,8 @@ const LINK_KINDS = [
   { value: "category", label: "A category listing" },
   { value: "brand", label: "A brand listing" },
   { value: "custom", label: "A custom link" },
-  { value: "whatsapp", label: "A WhatsApp enquiry" },
+  // No WhatsApp option since P10-3: the owner removed WhatsApp as a buying path
+  // (orders go through the cart). WhatsApp stays as support only.
 ];
 
 const emptySlide = () => ({
@@ -147,8 +148,9 @@ function slideFromApi(item, index) {
   const link = String(item.ctaLink || "");
   const params = new URLSearchParams(link.includes("?") ? link.slice(link.indexOf("?") + 1) : "");
   let linkKind = "custom";
+  // A legacy WhatsApp card has no link, so it opens as "custom" with an empty
+  // link and validation asks for a real destination before it can be saved.
   if (item.ctaType === "product") linkKind = "product";
-  else if (item.ctaType === "whatsapp") linkKind = "whatsapp";
   else if (params.get("category")) linkKind = "category";
   else if (params.get("brand")) linkKind = "brand";
 
@@ -212,8 +214,6 @@ function slideToApi(slide) {
         productId: null,
         ctaLink: `/products?brand=${encodeURIComponent(slide.brandName || "")}`,
       };
-    case "whatsapp":
-      return { ...base, ctaType: "whatsapp", productId: null, ctaLink: "" };
     default:
       return { ...base, ctaType: "browse", productId: null, ctaLink: slide.customLink || "" };
   }
@@ -644,12 +644,6 @@ export default function HeroSlidesManager() {
                         fullWidth
                         size="small"
                       />
-                    )}
-
-                    {slide.linkKind === "whatsapp" && (
-                      <Alert severity="info">
-                        Opens a WhatsApp chat pre-filled with the headline of this slide.
-                      </Alert>
                     )}
 
                     <TextField

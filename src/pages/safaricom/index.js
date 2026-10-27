@@ -13,7 +13,7 @@ const OG_IMAGE = `${SITE_URL}/snaap-logo.jpeg`;
 
 const PAGE_TITLE = "Safaricom Corner — Services & Devices in Mombasa | Snaap Connections";
 const PAGE_DESCRIPTION =
-  "M-PESA, SIM and line services, airtime and data, home internet and business services at our Digo Road shop in Mombasa — plus Safaricom smartphones, routers and MiFi. Order on WhatsApp.";
+  "M-PESA, SIM and line services, airtime and data, home internet and business services at our Digo Road shop in Mombasa — plus Safaricom smartphones, routers and MiFi. Devices order online; services, ask us on WhatsApp.";
 
 const WA_MESSAGE =
   "Hello Snaap Connections, I'd like help with a Safaricom service or device. Here's what I need: ______.";

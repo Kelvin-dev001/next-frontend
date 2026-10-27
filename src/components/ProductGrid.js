@@ -12,7 +12,7 @@ export default function ProductGrid({
   skeletonCount = 8,
   eagerCount = 6,
   size = "compact",
-  showWhatsApp = true,
+  showAddToCart = true,
   showViewBtn = true,
   // RevealGrid needs to tag and measure this container; everything else spreads
   // straight through (e.g. data-pages).
@@ -37,7 +37,7 @@ export default function ProductGrid({
           key={product._id || product.id || idx}
           product={product}
           size={size}
-          showWhatsApp={showWhatsApp}
+          showAddToCart={showAddToCart}
           showViewBtn={showViewBtn}
           imagePriority={idx < eagerCount}
         />

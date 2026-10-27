@@ -16,7 +16,7 @@ export default function CatalogueLanding({ type, name, slug, copy = null, produc
   const title = copy?.title || `${name} — Buy in Mombasa & Kenya | ${BUSINESS_NAME}`;
   const description =
     copy?.description ||
-    `Shop ${name} at ${BUSINESS_NAME}, Mombasa. ${total} product${total === 1 ? "" : "s"} with fast delivery across Kenya. Order on WhatsApp.`;
+    `Shop ${name} at ${BUSINESS_NAME}, Mombasa. ${total} product${total === 1 ? "" : "s"} with fast delivery across Kenya. Order online and pay with M-Pesa.`;
 
   const collectionJsonLd = {
     "@context": "https://schema.org",
@@ -76,12 +76,12 @@ export default function CatalogueLanding({ type, name, slug, copy = null, produc
         ) : (
           // No approved copy yet → the page is noindex; a minimal factual line only.
           <p className="mb-6 max-w-[820px] text-gray-600">
-            Browse our {name} range and order on WhatsApp for fast delivery across Kenya.
+            Browse our {name} range and order online for fast delivery across Kenya.
           </p>
         )}
 
         {products.length > 0 ? (
-          <ProductGrid items={products} eagerCount={6} size="compact" showWhatsApp showViewBtn />
+          <ProductGrid items={products} eagerCount={6} size="compact" showAddToCart showViewBtn />
         ) : (
           <p className="text-gray-500">
             No {name} products in stock right now.{" "}

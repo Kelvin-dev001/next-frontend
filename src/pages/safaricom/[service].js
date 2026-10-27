@@ -123,7 +123,7 @@ export default function SafaricomServicePage({ svc, shelves = [] }) {
           <p key={i} className="mb-3 max-w-[760px] text-gray-600">{p}</p>
         ))}
 
-        {/* Top CTA — WhatsApp is the only checkout */}
+        {/* Top CTA — a service enquiry on WhatsApp (owner, P10-3: services are not sold through the cart) */}
         <a
           href={waLink(svc.cta.message)}
           target="_blank"
@@ -143,8 +143,8 @@ export default function SafaricomServicePage({ svc, shelves = [] }) {
               In the shop now
             </h2>
             <p className="mb-5 max-w-[760px] text-gray-600">
-              Prices are the shop price. Every device is ordered on WhatsApp, the same as everything
-              else we sell.
+              Prices are the shop price. Every device is ordered online through the cart, the same as
+              everything else we sell.
             </p>
             <SafaricomDevices shelves={shelves} variant="grid" />
           </section>

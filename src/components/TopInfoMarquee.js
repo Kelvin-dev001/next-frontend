@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTruck, FaWhatsapp, FaClock } from "react-icons/fa";
+import { FaTruck, FaMobileAlt, FaClock } from "react-icons/fa";
 import Marquee from "@/components/ui/Marquee";
 import { SAME_DAY_COUNTIES, HOURS_DISPLAY } from "@/constants/business";
 
@@ -16,13 +16,16 @@ import { SAME_DAY_COUNTIES, HOURS_DISPLAY } from "@/constants/business";
  */
 const MESSAGES = [
   { key: "delivery", Icon: FaTruck, text: `Same-day delivery in ${SAME_DAY_COUNTIES.join(", ")}` },
-  { key: "whatsapp", Icon: FaWhatsapp, text: "Order on WhatsApp" },
+  // P10-3: ordering moved onto the site; payment is M-Pesa only.
+  { key: "order", Icon: FaMobileAlt, text: "Order online · Pay with M-Pesa" },
   { key: "hours", Icon: FaClock, text: `Open ${HOURS_DISPLAY}` },
 ];
 
 export default function TopInfoMarquee() {
   return (
-    <div className="bg-brand-700 text-white">
+    // A labelled landmark, so the bar isn't stray content outside every region
+    // (axe "region").
+    <aside aria-label="Store information" className="bg-brand-700 text-white">
       <Marquee
         items={MESSAGES}
         itemKey={(m) => m.key}
@@ -37,6 +40,6 @@ export default function TopInfoMarquee() {
         className="py-2"
         aria-label="Delivery, ordering and opening hours"
       />
-    </div>
+    </aside>
   );
 }
