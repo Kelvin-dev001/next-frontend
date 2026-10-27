@@ -32,6 +32,10 @@ const footerLinks = [
     // nothing 404s; restore this line once the copy is signed off.
     // { label: "Returns", href: "/returns" },
     { label: "Shipping", href: "/shipping" },
+    { label: "Track your order", href: "/track-order" },
+    // The page ships noindex while its copy awaits the owner's review (P10-3),
+    // but customers must be able to read it, so it is linked.
+    { label: "Privacy policy", href: "/privacy-policy" },
   ] },
 ];
 
@@ -80,7 +84,9 @@ export default function Footer() {
                   aria-label={label}
                   className="grid h-9 w-9 place-items-center rounded-full bg-white/15 text-white transition hover:bg-white/35 hover:text-brand-600"
                 >
-                  {icon}
+                  {/* The link's aria-label names it. Hidden so the Simple Icons
+                      svg (role="img", no title) isn't announced as a nameless image. */}
+                  <span aria-hidden="true" className="grid place-items-center">{icon}</span>
                 </a>
               ))}
             </div>
